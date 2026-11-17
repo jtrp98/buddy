@@ -12,8 +12,8 @@
 
 .env-stage {
   --env-h: clamp(188px, 52cqw, 224px);
-  --env-headroom: clamp(188px, 52cqw, 224px);
-  --env-rise: calc(var(--env-h) * 0.72);
+  --env-headroom: clamp(210px, 58cqw, 248px);
+  --env-rise: calc(var(--env-h) * 0.8);
   position: relative;
   width: 100%;
   padding-top: var(--env-headroom);
@@ -115,7 +115,7 @@
   box-shadow:
     0 2px 6px rgba(70, 53, 44, 0.16),
     0 12px 24px -8px rgba(70, 53, 44, 0.28);
-  padding: clamp(8px, 2.2cqw, 12px) clamp(11px, 3.2cqw, 17px) clamp(14px, 3.6cqw, 20px);
+  padding: clamp(8px, 2cqw, 12px) clamp(11px, 3.2cqw, 17px) clamp(24px, 6cqw, 32px);
 }
 
 /* Top folded crest of the letter (hinged at its bottom edge so it unfolds upward) */
