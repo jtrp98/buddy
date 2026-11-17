@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Charm, Fraunces, IBM_Plex_Sans_Thai, Inter, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { FestiveAtmosphereProvider } from "@/components/FestiveAtmosphere";
 import { ForestEdge } from "@/components/scenery/WinterScene";
+import { SITE_DESCRIPTION, SITE_TITLE, siteUrl } from "@/lib/site";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-thai",
@@ -43,9 +44,30 @@ const charm = Charm({
 });
 
 export const metadata: Metadata = {
-  title: "Secret Buddy — A Magical Christmas Adventure | แลกของขวัญแบบลับ ๆ",
-  description:
-    "เนรมิตกิจกรรม Secret Buddy และ Secret Santa ให้กลายเป็นความทรงจำคริสต์มาสสุดมหัศจรรย์ จับคู่ลับ 100% พร้อม Wish List และการเปิดกล่องของขวัญสุดพิเศษ",
+  metadataBase: siteUrl(),
+  applicationName: "Secret Buddy",
+  title: {
+    default: SITE_TITLE,
+    template: "%s · Secret Buddy",
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Secret Buddy",
+    locale: "th_TH",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0d1829",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
