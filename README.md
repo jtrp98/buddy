@@ -38,7 +38,7 @@
    - `DATABASE_URL`: PostgreSQL Connection String (แนะนำ Neon Pooled URL ที่มี `?sslmode=require`)
    - `AUTH_SECRET`: ค่าสุ่ม 32-byte hex สำหรับลงนาม Admin JWT cookie
    - `ASSIGNMENT_ENCRYPTION_KEY`: ค่าสุ่ม 32-byte hex สำหรับเข้ารหัสผลจับคู่ Buddy
-   - `APP_URL`: URL จริงของเว็บ Vercel (เช่น `https://your-app.vercel.app`) เพื่อให้ลิงก์ในอีเมลชี้ไปยังโดเมนที่ถูกต้อง
+   - *(ไม่บังคับ)* `APP_URL`: URL สำรองกรณีเรียกงานที่ไม่มี HTTP Request Host (โดยปกติระบบจะสร้างลิงก์ในอีเมลตามโดเมนที่เข้าใช้งานจริงให้อัตโนมัติ)
    - **ตั้งค่าการส่งอีเมล (เลือกอย่างใดอย่างหนึ่ง)**:
      - **Gmail SMTP**: `SMTP_HOST="smtp.gmail.com"`, `SMTP_PORT="465"`, `SMTP_USER`, `SMTP_PASS` (App Password), `EMAIL_FROM`
      - **Resend API**: `RESEND_API_KEY`, `EMAIL_FROM`

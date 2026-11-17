@@ -10,6 +10,7 @@ import { formatBudget } from "./budget";
 import { sendMail } from "./email/mailer";
 import { buildResultNotificationEmail } from "./email/templates";
 import { assertValidDerangement, generateDerangement, type Pairing } from "./derangement";
+import { getAppBaseUrl } from "./url";
 
 export { assertValidDerangement, generateDerangement, type Pairing };
 
@@ -187,10 +188,7 @@ export async function dispatchResultEmailsForGroup(
     },
   });
 
-  const baseUrl = (options?.baseUrl || process.env.APP_URL || "http://localhost:3000").replace(
-    /\/+$/,
-    ""
-  );
+  const baseUrl = (options?.baseUrl || getAppBaseUrl()).replace(/\/+$/, "");
   const budgetText = formatBudget(group.budgetType, group.budgetMin, group.budgetMax);
 
   let sent = 0;
