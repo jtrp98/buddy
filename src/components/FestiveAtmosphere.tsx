@@ -5,11 +5,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { usePathname } from "next/navigation";
 import { playAnalogClick, playFestiveChime, playStampSound } from "@/lib/sound";
+import {
+  CHRISTMAS_POP_PLAYLIST,
+  getChristmasPopEngine,
+  type ChristmasTrack,
+} from "@/lib/christmas-music";
 import {
   SnowCanvas,
   dispatchSnowBoost,
@@ -21,6 +28,8 @@ interface FestiveAtmosphereContextValue {
   toggleFestiveFx: () => void;
   soundEnabled: boolean;
   toggleSound: () => void;
+  currentTrack: ChristmasTrack;
+  nextTrack: () => void;
   triggerClickSound: () => void;
   triggerStampSound: () => void;
   triggerChimeSound: () => void;
@@ -33,6 +42,8 @@ const FestiveAtmosphereContext = createContext<FestiveAtmosphereContextValue>({
   toggleFestiveFx: () => {},
   soundEnabled: false,
   toggleSound: () => {},
+  currentTrack: CHRISTMAS_POP_PLAYLIST[0],
+  nextTrack: () => {},
   triggerClickSound: () => {},
   triggerStampSound: () => {},
   triggerChimeSound: () => {},
@@ -106,6 +117,41 @@ function SnowfallOverlay() {
 export function FestiveAtmosphereProvider({ children }: { children: ReactNode }) {
   const festiveFx = useSyncExternalStore(subscribePrefs, getFxSnapshot, () => true);
   const soundEnabled = useSyncExternalStore(subscribePrefs, getSoundSnapshot, () => false);
+  const [trackIndex, setTrackIndex] = useState(0);
+
+  useEffect(() => {
+    const engine = getChristmasPopEngine();
+    engine.setOnTrackChange((idx) => setTrackIndex(idx));
+    return () => {
+      engine.setOnTrackChange(null);
+    };
+  }, []);
+
+  useEffect(() => {
+    const engine = getChristmasPopEngine();
+    if (!soundEnabled) {
+      engine.stop();
+      return;
+    }
+
+    const startedImmediately = engine.start();
+    if (startedImmediately) return;
+
+    const resumeOnGesture = () => {
+      if (getSoundSnapshot()) {
+        engine.start();
+      }
+      window.removeEventListener("pointerdown", resumeOnGesture);
+      window.removeEventListener("keydown", resumeOnGesture);
+    };
+
+    window.addEventListener("pointerdown", resumeOnGesture, { passive: true });
+    window.addEventListener("keydown", resumeOnGesture, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", resumeOnGesture);
+      window.removeEventListener("keydown", resumeOnGesture);
+    };
+  }, [soundEnabled]);
 
   const toggleFestiveFx = useCallback(() => {
     const next = !getFxSnapshot();
@@ -126,9 +172,21 @@ export function FestiveAtmosphereProvider({ children }: { children: ReactNode })
       // ignore
     }
     window.dispatchEvent(new Event(PREFS_EVENT));
+    const engine = getChristmasPopEngine();
     if (next) {
       playFestiveChime();
+      engine.start();
+    } else {
+      engine.stop();
     }
+  }, []);
+
+  const nextTrack = useCallback(() => {
+    if (getSoundSnapshot()) {
+      playAnalogClick(740);
+    }
+    const nextIdx = getChristmasPopEngine().nextTrack();
+    setTrackIndex(nextIdx);
   }, []);
 
   const triggerClickSound = useCallback(() => {
@@ -143,6 +201,9 @@ export function FestiveAtmosphereProvider({ children }: { children: ReactNode })
     if (soundEnabled) playFestiveChime();
   }, [soundEnabled]);
 
+  const currentTrack =
+    CHRISTMAS_POP_PLAYLIST[trackIndex] ?? CHRISTMAS_POP_PLAYLIST[0];
+
   return (
     <FestiveAtmosphereContext.Provider
       value={{
@@ -150,6 +211,8 @@ export function FestiveAtmosphereProvider({ children }: { children: ReactNode })
         toggleFestiveFx,
         soundEnabled,
         toggleSound,
+        currentTrack,
+        nextTrack,
         triggerClickSound,
         triggerStampSound,
         triggerChimeSound,

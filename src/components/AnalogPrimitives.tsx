@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { Snowflake, Volume2, VolumeX } from "lucide-react";
+import { SkipForward, Snowflake, Volume2, VolumeX } from "lucide-react";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { Ornament, type OrnamentName } from "@/components/vintage/Ornament";
 
@@ -161,10 +161,17 @@ export function PostageStamp({
 }
 
 /**
- * Accessible switches for toggling snowfall/lights and sound effects.
+ * Accessible switches for toggling snowfall/lights and sound effects + Christmas Pop music.
  */
 export function FestiveToggleSwitches() {
-  const { festiveFx, toggleFestiveFx, soundEnabled, toggleSound } = useFestiveAtmosphere();
+  const {
+    festiveFx,
+    toggleFestiveFx,
+    soundEnabled,
+    toggleSound,
+    currentTrack,
+    nextTrack,
+  } = useFestiveAtmosphere();
 
   return (
     <div className="flex items-center gap-1.5">
@@ -187,25 +194,47 @@ export function FestiveToggleSwitches() {
         <span className="hidden md:inline">{festiveFx ? "หิมะ ON" : "หิมะ OFF"}</span>
       </button>
 
-      <button
-        type="button"
-        onClick={toggleSound}
-        title={soundEnabled ? "ปิดเสียงเอฟเฟกต์" : "เปิดเสียงเอฟเฟกต์"}
-        aria-label={soundEnabled ? "ปิดเสียงเอฟเฟกต์" : "เปิดเสียงเอฟเฟกต์"}
-        aria-pressed={soundEnabled}
-        className={`analog-btn inline-flex min-h-[40px] min-w-[40px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-2.5 text-xs font-semibold sm:px-3 ${
-          soundEnabled
-            ? "border-success/50 bg-success-bg text-success"
-            : "border-border bg-surface text-text-secondary"
-        }`}
-      >
-        {soundEnabled ? (
-          <Volume2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-        ) : (
-          <VolumeX className="h-4 w-4 shrink-0" aria-hidden="true" />
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={toggleSound}
+          title={
+            soundEnabled
+              ? `กำลังเล่น: ${currentTrack.title} · คลิกเพื่อปิดเพลงและเสียงเอฟเฟกต์`
+              : "เปิดเพลงคริสต์มาสสากลป๊อปและเสียงเอฟเฟกต์"
+          }
+          aria-label={
+            soundEnabled
+              ? `ปิดเพลงคริสต์มาสและเสียงเอฟเฟกต์ (กำลังเล่น ${currentTrack.title})`
+              : "เปิดเพลงคริสต์มาสสากลป๊อปและเสียงเอฟเฟกต์"
+          }
+          aria-pressed={soundEnabled}
+          className={`analog-btn inline-flex min-h-[40px] min-w-[40px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-2.5 text-xs font-semibold sm:px-3 ${
+            soundEnabled
+              ? "border-success/50 bg-success-bg text-success"
+              : "border-border bg-surface text-text-secondary"
+          }`}
+        >
+          {soundEnabled ? (
+            <Volume2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+          ) : (
+            <VolumeX className="h-4 w-4 shrink-0" aria-hidden="true" />
+          )}
+          <span className="hidden md:inline">{soundEnabled ? "เสียง ON" : "เสียง OFF"}</span>
+        </button>
+
+        {soundEnabled && (
+          <button
+            type="button"
+            onClick={nextTrack}
+            title={`เปลี่ยนเพลงคริสต์มาสถัดไป (ตอนนี้: ${currentTrack.title})`}
+            aria-label={`เปลี่ยนเพลงคริสต์มาสถัดไป (ตอนนี้: ${currentTrack.title})`}
+            className="analog-btn inline-flex min-h-[40px] min-w-[36px] shrink-0 items-center justify-center rounded-xl border border-success/40 bg-surface-elevated/90 px-2 text-xs font-semibold text-success hover:border-success/70"
+          >
+            <SkipForward className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          </button>
         )}
-        <span className="hidden md:inline">{soundEnabled ? "เสียง ON" : "เสียง OFF"}</span>
-      </button>
+      </div>
     </div>
   );
 }

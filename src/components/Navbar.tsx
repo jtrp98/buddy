@@ -8,7 +8,9 @@ import {
   KeyRound,
   Mail,
   Menu,
+  Music2,
   ShieldCheck,
+  SkipForward,
   Snowflake,
   Volume2,
   VolumeX,
@@ -77,8 +79,14 @@ function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
 
 export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { festiveFx, toggleFestiveFx, soundEnabled, toggleSound } =
-    useFestiveAtmosphere();
+  const {
+    festiveFx,
+    toggleFestiveFx,
+    soundEnabled,
+    toggleSound,
+    currentTrack,
+    nextTrack,
+  } = useFestiveAtmosphere();
 
   return (
     <>
@@ -212,6 +220,23 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
                   <span>{soundEnabled ? "เสียง: เปิด" : "เสียง: ปิด"}</span>
                 </button>
               </div>
+
+              {soundEnabled && (
+                <button
+                  type="button"
+                  onClick={nextTrack}
+                  className="analog-btn flex min-h-[44px] w-full items-center justify-between rounded-xl border border-success/40 bg-surface-elevated px-3.5 text-xs font-semibold text-success"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Music2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{currentTrack.title}</span>
+                  </span>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-text-secondary">
+                    <span>เปลี่ยนเพลง</span>
+                    <SkipForward className="h-3.5 w-3.5 text-success" aria-hidden="true" />
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         )}
