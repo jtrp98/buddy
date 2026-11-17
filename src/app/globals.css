@@ -1,153 +1,250 @@
 @import "tailwindcss";
+@import "../styles/materials.css";
+@import "../styles/envelope.css";
 
-:root {
-  --background: #fbf4e6;
-  --foreground: #2a1f1b;
-  --paper-card: #fffdf7;
-  --paper-kraft: #f3e7d1;
-  --ink: #2a1f1b;
-  --ink-muted: #675449;
-  --santa-red: #c8322b;
-  --santa-red-dark: #9e221d;
-  --pine-green: #1f5e46;
-  --pine-green-dark: #154231;
-  --brass-gold: #d49a2a;
+@theme {
+  /* Brand inks — North Pole Post 1950s */
+  --color-xmas-red: #8e2527;
+  --color-xmas-red-deep: #6b1a1c;
+  --color-pine: #193c34;
+  --color-pine-deep: #0f2621;
+  --color-cream: #f3e7cf;
+  --color-gold: #b59659;
+  --color-ink: #46352c;
+
+  /* Derived paper, ink, & semantic status tokens */
+  --color-paper: #faf4e6;
+  --color-linen: #e9dcc2;
+  --color-kraft: #d9c29a;
+  --color-ink-soft: #6b5646;
+  --color-gold-ink: #7a5f2a;
+  --color-rule: #cdb894;
+  --color-red-wash: #f4dcd3;
+  --color-pine-wash: #dce5d9;
+  --color-amber-ink: #7c5410;
+  --color-amber-wash: #f5e6c4;
+  --color-plum: #4c3a5e;
+  --color-plum-wash: #e6dfea;
+
+  /* Layered physical paper shadows */
+  --shadow-paper:
+    0 1px 1px rgb(70 53 44 / 0.08),
+    0 2px 4px rgb(70 53 44 / 0.08),
+    0 10px 22px -8px rgb(70 53 44 / 0.28);
+  --shadow-paper-lifted:
+    0 2px 2px rgb(70 53 44 / 0.08),
+    0 8px 14px rgb(70 53 44 / 0.1),
+    0 22px 40px -12px rgb(70 53 44 / 0.35);
+  --shadow-paper-pressed:
+    0 1px 1px rgb(70 53 44 / 0.12),
+    0 2px 4px -2px rgb(70 53 44 / 0.2);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-linen);
+  --color-foreground: var(--color-ink);
+  --font-display: var(--font-chonburi), var(--font-trirong), Georgia, serif;
+  --font-serif: var(--font-trirong), Georgia, "Palatino Linotype", serif;
+  --font-script: var(--font-charm), var(--font-trirong), cursive;
   --font-sans: var(--font-thai), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: var(--font-mono), monospace;
-  --font-serif: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  --font-type: var(--font-special-elite), var(--font-thai), "Courier New", monospace;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+:root {
+  --background: #e9dcc2;
+  --foreground: #46352c;
+  --paper-card: #f3e7cf;
+  --paper-kraft: #d9c29a;
+  --ink: #46352c;
+  --ink-muted: #6b5646;
+  --santa-red: #8e2527;
+  --santa-red-dark: #6b1a1c;
+  --pine-green: #193c34;
+  --pine-green-dark: #0f2621;
+  --brass-gold: #b59659;
 }
 
 body {
-  background-color: var(--background);
-  background-image:
-    radial-gradient(rgba(42, 31, 27, 0.055) 1px, transparent 1px),
-    radial-gradient(circle at 12% 8%, rgba(200, 50, 43, 0.055), transparent 36%),
-    radial-gradient(circle at 88% 18%, rgba(31, 94, 70, 0.06), transparent 40%);
-  background-size: 22px 22px, 100% 100%, 100% 100%;
-  color: var(--foreground);
-  font-family: var(--font-thai), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--color-linen);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  text-rendering: optimizeLegibility;
 }
 
-/* Analog Tactile Surfaces */
+/* Global accessible focus ring */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gold-ink);
+  outline-offset: 3px;
+}
+
+/* Tactile Paper Surfaces */
 .analog-card {
-  background-color: var(--paper-card);
-  border: 2px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
+  position: relative;
+  background-color: var(--color-cream);
+  background-image: radial-gradient(
+    ellipse at center,
+    rgba(250, 244, 230, 0.48) 45%,
+    rgba(169, 139, 96, 0.14) 100%
+  );
+  border: 1px solid rgba(70, 53, 44, 0.22);
+  box-shadow: var(--shadow-paper);
+}
+
+.analog-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.7'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
 }
 
 .analog-card-lg {
-  background-color: var(--paper-card);
-  border: 2px solid var(--ink);
-  box-shadow: 6px 6px 0 var(--ink);
+  position: relative;
+  background-color: var(--color-paper);
+  background-image: radial-gradient(
+    ellipse at center,
+    rgba(255, 253, 248, 0.52) 50%,
+    rgba(181, 150, 89, 0.14) 100%
+  );
+  border: 1px solid rgba(70, 53, 44, 0.25);
+  box-shadow: var(--shadow-paper-lifted);
+}
+
+.analog-card-lg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.7'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
 }
 
 .analog-kraft {
-  background-color: var(--paper-kraft);
-  border: 2px solid var(--ink);
-  box-shadow: 3px 3px 0 rgba(42, 31, 27, 0.22);
+  position: relative;
+  background-color: color-mix(in srgb, var(--color-kraft) 48%, var(--color-cream));
+  border: 1px dashed rgba(70, 53, 44, 0.34);
+  box-shadow: var(--shadow-paper-pressed);
 }
 
-/* Tactile Pressable Keycap / Letterpress Button */
-.analog-btn {
-  border: 2px solid var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
-  transition: transform 110ms ease, box-shadow 110ms ease, background-color 150ms ease;
-}
-
-.analog-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 0 var(--ink);
-}
-
-.analog-btn:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--ink);
-}
-
+/* Tactile Letterpress Buttons */
+.analog-btn,
 .analog-btn-lg {
-  border: 2px solid var(--ink);
-  box-shadow: 0 4px 0 var(--ink);
-  transition: transform 110ms ease, box-shadow 110ms ease, background-color 150ms ease;
+  border: 1px solid rgba(70, 53, 44, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 2px 0 rgba(70, 53, 44, 0.42),
+    0 4px 10px -4px rgba(70, 53, 44, 0.24);
+  transition:
+    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 130ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
 
+.analog-btn:hover:not(:disabled),
 .analog-btn-lg:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 3px 0 rgba(70, 53, 44, 0.46),
+    0 8px 16px -6px rgba(70, 53, 44, 0.3);
 }
 
+.analog-btn:active:not(:disabled),
 .analog-btn-lg:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--ink);
+  transform: translateY(1.5px);
+  box-shadow:
+    inset 0 1px 2px rgba(70, 53, 44, 0.22),
+    0 1px 0 rgba(70, 53, 44, 0.34),
+    0 2px 4px -2px rgba(70, 53, 44, 0.2);
 }
 
-/* Analog Stationery Input */
+/* Stationery Inputs (Debossed Paper Impression) */
 .analog-input {
-  background-color: #fffef9;
-  border: 2px solid #b9a494;
-  color: var(--ink);
-  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+  background-color: var(--color-paper);
+  border: 1px solid rgba(70, 53, 44, 0.28);
+  color: var(--color-ink);
+  min-height: 44px;
+  box-shadow: inset 0 1px 2px rgba(70, 53, 44, 0.08);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+@media (max-width: 639px) {
+  .analog-input {
+    font-size: 16px;
+  }
 }
 
 .analog-input:focus {
   outline: none;
-  background-color: #ffffff;
-  border-color: var(--ink);
-  box-shadow: 3px 3px 0 rgba(200, 50, 43, 0.24);
+  background-color: #fffdf8;
+  border-color: var(--color-pine);
+  box-shadow:
+    inset 0 1px 2px rgba(25, 60, 52, 0.08),
+    0 0 0 2px rgba(25, 60, 52, 0.22),
+    0 0 0 4px rgba(181, 150, 89, 0.26);
 }
 
 .analog-input:disabled {
-  background-color: #f3ece0;
-  color: #6b584d;
+  background-color: #ebe0ca;
+  color: var(--color-ink-soft);
   cursor: not-allowed;
 }
 
-/* Airmail / Candy-Cane Holiday Ribbon */
+/* Muted 1950s Airmail / Holiday Ribbon */
 .candy-stripe-bar {
   background-image: repeating-linear-gradient(
     -45deg,
-    #c8322b 0 12px,
-    #fffdf7 12px 22px,
-    #1f5e46 22px 34px,
-    #fffdf7 34px 44px
+    var(--color-xmas-red) 0 11px,
+    var(--color-paper) 11px 20px,
+    var(--color-pine) 20px 31px,
+    var(--color-paper) 31px 40px
   );
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 1px solid rgba(70, 53, 44, 0.28);
 }
 
 .candy-stripe-frame {
   background-image: repeating-linear-gradient(
     -45deg,
-    #c8322b 0 10px,
-    #fffdf7 10px 18px,
-    #1f5e46 18px 28px,
-    #fffdf7 28px 36px
+    var(--color-xmas-red) 0 10px,
+    var(--color-cream) 10px 18px,
+    var(--color-pine) 18px 28px,
+    var(--color-cream) 28px 36px
   );
 }
 
 /* Perforated Ticket Divider */
 .perforated-divider {
   position: relative;
-  border-top: 2px dashed #cbb7a6;
+  border-top: 1.5px dashed var(--color-rule);
 }
 
-/* Festive Animations */
+/* Gentle Festive Snow & 1950s C9 Warm Filament Twinkle */
 @keyframes snowfall {
   0% {
     transform: translate3d(0, -10vh, 0) rotate(0deg);
     opacity: 0;
   }
-  10% {
-    opacity: 0.75;
+  12% {
+    opacity: 0.65;
   }
-  90% {
-    opacity: 0.75;
+  88% {
+    opacity: 0.65;
   }
   100% {
-    transform: translate3d(var(--snow-drift, 16px), 108vh, 0) rotate(240deg);
+    transform: translate3d(var(--snow-drift, 14px), 108vh, 0) rotate(180deg);
     opacity: 0;
   }
 }
@@ -162,22 +259,20 @@ body {
   0%,
   100% {
     opacity: 1;
-    filter: drop-shadow(0 0 4px rgba(242, 193, 78, 0.7));
   }
   50% {
-    opacity: 0.62;
-    filter: none;
+    opacity: 0.7;
   }
 }
 
 .fairy-bulb {
-  animation: fairyTwinkle 2.4s ease-in-out infinite;
+  animation: fairyTwinkle 3.2s ease-in-out infinite;
 }
 
 @keyframes parcelReveal {
   0% {
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: translateY(10px) scale(0.985);
   }
   100% {
     opacity: 1;
@@ -186,7 +281,7 @@ body {
 }
 
 .parcel-reveal {
-  animation: parcelReveal 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: parcelReveal 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -194,5 +289,10 @@ body {
   .fairy-bulb,
   .parcel-reveal {
     animation: none !important;
+  }
+
+  .analog-btn,
+  .analog-btn-lg {
+    transition: background-color 150ms ease, border-color 150ms ease !important;
   }
 }

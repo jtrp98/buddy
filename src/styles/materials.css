@@ -1,0 +1,228 @@
+/* ==========================================================================
+   North Pole Post Office (1950s) — Tactile Paper, Ink, & Material Primitives
+   Pure CSS & Inline SVG data URIs (zero raster dependencies)
+   ========================================================================== */
+
+/* Antique Linen Desk Surface */
+.linen-desk {
+  background-color: var(--color-linen);
+  background-image:
+    radial-gradient(ellipse 80% 55% at 50% 10%, rgba(250, 244, 230, 0.6), transparent 70%),
+    radial-gradient(circle at 15% 25%, rgba(142, 37, 39, 0.035), transparent 42%),
+    radial-gradient(circle at 85% 75%, rgba(25, 60, 52, 0.04), transparent 45%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(70, 53, 44, 0.022) 0 1px,
+      transparent 1px 24px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(70, 53, 44, 0.018) 0 1px,
+      transparent 1px 24px
+    );
+}
+
+/* Deep Pine Felt Desk Blotter (Hero Backdrop) */
+.felt-blotter {
+  position: relative;
+  background-color: var(--color-pine);
+  background-image:
+    radial-gradient(ellipse 75% 65% at 50% 35%, rgba(44, 98, 84, 0.55), transparent 72%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(10, 28, 24, 0.55) 100%);
+  box-shadow:
+    inset 0 10px 26px rgba(10, 28, 24, 0.42),
+    inset 0 -10px 26px rgba(10, 28, 24, 0.36);
+}
+
+.felt-blotter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.09;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23f)' opacity='0.65'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+/* Aged Cream & Fine Stationery Paper Grain */
+.paper-surface {
+  position: relative;
+  background-color: var(--color-cream);
+  background-image:
+    radial-gradient(ellipse at center, rgba(250, 244, 230, 0.45) 45%, rgba(169, 139, 96, 0.14) 100%);
+}
+
+.paper-sheet {
+  position: relative;
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(ellipse at center, rgba(255, 253, 248, 0.55) 55%, rgba(190, 162, 122, 0.14) 100%);
+}
+
+.paper-grain {
+  position: relative;
+}
+
+.paper-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.7'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+/* Inset Double-Rule Printed Card Border */
+.printed-double-rule {
+  position: relative;
+}
+
+.printed-double-rule::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(181, 150, 89, 0.55);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.printed-double-rule:has(> .candy-stripe-bar)::after {
+  top: 15px;
+}
+
+/* Authentic 4-Edge Perforated Postage Stamp */
+.stamp-shadow {
+  filter:
+    drop-shadow(0 1px 1px rgba(70, 53, 44, 0.16))
+    drop-shadow(0 3px 5px rgba(70, 53, 44, 0.2));
+}
+
+.stamp-perforated {
+  --tooth-r: 3.2px;
+  --tooth-step: 11px;
+  -webkit-mask-image:
+    radial-gradient(circle at 0 50%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 100% 50%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 50% 0, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 50% 100%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px));
+  -webkit-mask-position: 0 0, 0 0, 0 0, 0 0;
+  -webkit-mask-size:
+    100% var(--tooth-step),
+    100% var(--tooth-step),
+    var(--tooth-step) 100%,
+    var(--tooth-step) 100%;
+  -webkit-mask-repeat: repeat-y, repeat-y, repeat-x, repeat-x;
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(circle at 0 50%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 100% 50%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 50% 0, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px)),
+    radial-gradient(circle at 50% 100%, transparent var(--tooth-r), #000 calc(var(--tooth-r) + 0.6px));
+  mask-position: 0 0, 0 0, 0 0, 0 0;
+  mask-size:
+    100% var(--tooth-step),
+    100% var(--tooth-step),
+    var(--tooth-step) 100%,
+    var(--tooth-step) 100%;
+  mask-repeat: repeat-y, repeat-y, repeat-x, repeat-x;
+  mask-composite: intersect;
+}
+
+/* Ticket / Card Right-Edge Perforation (for Postal Cards & Invite Stubs) */
+.perforated-edge-right {
+  position: relative;
+}
+
+.perforated-edge-right::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 10px;
+  width: 0;
+  border-right: 1.5px dashed rgba(70, 53, 44, 0.24);
+  pointer-events: none;
+}
+
+/* Muted 1950s Airmail Ribbon & Border */
+.airmail-stripe {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-xmas-red) 0 11px,
+    var(--color-paper) 11px 20px,
+    var(--color-pine) 20px 31px,
+    var(--color-paper) 31px 40px
+  );
+}
+
+.airmail-frame {
+  padding: 5px;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-xmas-red) 0 12px,
+    var(--color-cream) 12px 22px,
+    var(--color-pine) 22px 34px,
+    var(--color-cream) 34px 44px
+  );
+}
+
+/* Letterpress & Gold Foil Typography Treatments */
+.letterpress {
+  text-shadow: 0 1px 0 rgba(255, 252, 245, 0.5);
+}
+
+.letterpress-on-dark {
+  text-shadow: 0 1px 2px rgba(15, 38, 33, 0.55);
+}
+
+.gold-foil-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(181, 150, 89, 0.45) 12%,
+    #d4b97c 50%,
+    rgba(181, 150, 89, 0.45) 88%,
+    transparent
+  );
+}
+
+/* Dotted Leader for Ledger & Letter Lines */
+.dotted-leader {
+  flex: 1 1 auto;
+  min-width: 1rem;
+  border-bottom: 1.5px dotted rgba(70, 53, 44, 0.35);
+  margin: 0 0.5rem 0.28rem;
+}
+
+/* Gummed Kraft Paper Tape (Replaces modern Washi Tape) */
+.gummed-tape {
+  background-color: rgba(217, 194, 154, 0.86);
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 250, 238, 0.12) 0 3px,
+      rgba(70, 53, 44, 0.04) 3px 6px
+    );
+  border: 1px solid rgba(70, 53, 44, 0.2);
+  box-shadow: 0 1px 3px rgba(70, 53, 44, 0.16);
+}
+
+/* Lined Ledger Paper (for Admin Tables & Letter Body) */
+.ledger-ruled {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 31px,
+    rgba(205, 184, 148, 0.35) 31px 32px
+  );
+}
+
+/* Thai Phrase Break Discipline */
+.thai-keep {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}

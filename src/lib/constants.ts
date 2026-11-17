@@ -18,31 +18,31 @@ export const GROUP_STATUS_META = {
     label: "Draft — กำลังตั้งค่า",
     shortLabel: "Draft",
     description: "กำลังตั้งค่ากลุ่ม ยังไม่เปิดรับสมัคร",
-    badgeClass: "bg-[#f3ead8] text-[#4d3d35] border-[#6e5a50]",
+    badgeClass: "bg-cream text-ink-soft border-ink-soft",
   },
   OPEN: {
     label: "Open — เปิดรับสมัคร",
     shortLabel: "Open",
     description: "กำลังเปิดให้สมาชิกเข้าร่วมและกรอก Buddy Profile",
-    badgeClass: "bg-[#dff0e6] text-[#154231] border-[#1f5e46]",
+    badgeClass: "bg-pine-wash text-pine-deep border-pine",
   },
   DRAWING: {
     label: "Drawing — กำลังสุ่มจับคู่",
     shortLabel: "Drawing",
     description: "ระบบกำลังประมวลผลการสุ่มจับคู่",
-    badgeClass: "bg-[#fbe9be] text-[#7c4d08] border-[#b7791f]",
+    badgeClass: "bg-amber-wash text-amber-ink border-amber-ink/50",
   },
   ACTIVE: {
     label: "Active — สุ่มเรียบร้อย",
     shortLabel: "Active",
     description: "สุ่มจับคู่เรียบร้อยและเปิดให้สมาชิกดูผล Buddy แล้ว",
-    badgeClass: "bg-[#fde2df] text-[#9e221d] border-[#c8322b]",
+    badgeClass: "bg-red-wash text-xmas-red-deep border-xmas-red",
   },
   COMPLETED: {
     label: "Completed — จบกิจกรรม",
     shortLabel: "Completed",
     description: "กิจกรรมเสร็จสิ้นเรียบร้อยแล้ว",
-    badgeClass: "bg-[#e7e5f8] text-[#352f75] border-[#5148a3]",
+    badgeClass: "bg-plum-wash text-plum border-plum",
   },
 } as const;
 

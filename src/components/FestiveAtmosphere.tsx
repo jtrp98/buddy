@@ -34,18 +34,15 @@ export function useFestiveAtmosphere() {
 }
 
 const SNOWFLAKES = [
-  { left: "4%", size: 10, delay: "0s", duration: "13s", drift: "18px", char: "❄" },
-  { left: "11%", size: 8, delay: "-4s", duration: "16s", drift: "-14px", char: "✦" },
-  { left: "19%", size: 12, delay: "-2s", duration: "14s", drift: "22px", char: "❄" },
-  { left: "27%", size: 9, delay: "-8s", duration: "18s", drift: "-18px", char: "•" },
-  { left: "36%", size: 11, delay: "-5s", duration: "15s", drift: "15px", char: "❄" },
-  { left: "44%", size: 8, delay: "-11s", duration: "17s", drift: "-12px", char: "✦" },
-  { left: "53%", size: 12, delay: "-3s", duration: "13.5s", drift: "20px", char: "❄" },
-  { left: "62%", size: 9, delay: "-7s", duration: "16.5s", drift: "-16px", char: "•" },
-  { left: "71%", size: 11, delay: "-1s", duration: "14.5s", drift: "14px", char: "❄" },
-  { left: "79%", size: 8, delay: "-9s", duration: "17.5s", drift: "-20px", char: "✦" },
-  { left: "88%", size: 12, delay: "-6s", duration: "15.5s", drift: "16px", char: "❄" },
-  { left: "95%", size: 9, delay: "-12s", duration: "18.5s", drift: "-14px", char: "•" },
+  { left: "6%", size: 10, delay: "0s", duration: "16s", drift: "16px", char: "❄", tone: "text-paper/65 drop-shadow-[0_1px_1px_rgba(70,53,44,0.18)]" },
+  { left: "16%", size: 8, delay: "-5s", duration: "19s", drift: "-14px", char: "✦", tone: "text-gold/55" },
+  { left: "28%", size: 11, delay: "-2s", duration: "17s", drift: "18px", char: "❄", tone: "text-paper/60 drop-shadow-[0_1px_1px_rgba(70,53,44,0.18)]" },
+  { left: "40%", size: 8, delay: "-9s", duration: "21s", drift: "-16px", char: "•", tone: "text-gold/45" },
+  { left: "52%", size: 10, delay: "-4s", duration: "16.5s", drift: "15px", char: "❄", tone: "text-paper/65 drop-shadow-[0_1px_1px_rgba(70,53,44,0.18)]" },
+  { left: "64%", size: 9, delay: "-11s", duration: "20s", drift: "-14px", char: "✦", tone: "text-gold/50" },
+  { left: "75%", size: 11, delay: "-3s", duration: "17.5s", drift: "16px", char: "❄", tone: "text-paper/60 drop-shadow-[0_1px_1px_rgba(70,53,44,0.18)]" },
+  { left: "86%", size: 8, delay: "-8s", duration: "19.5s", drift: "-15px", char: "•", tone: "text-gold/45" },
+  { left: "94%", size: 10, delay: "-6s", duration: "18s", drift: "12px", char: "❄", tone: "text-paper/55 drop-shadow-[0_1px_1px_rgba(70,53,44,0.18)]" },
 ] as const;
 
 const FX_STORAGE_KEY = "buddy_festive_fx";
@@ -142,7 +139,7 @@ export function FestiveAtmosphereProvider({ children }: { children: ReactNode })
           {SNOWFLAKES.map((flake, idx) => (
             <span
               key={idx}
-              className="snow-flake absolute -top-6 text-[#c8322b]/20"
+              className={`snow-flake absolute -top-6 ${flake.tone}`}
               style={{
                 left: flake.left,
                 fontSize: `${flake.size}px`,
