@@ -1,6 +1,7 @@
 import { prisma } from "./db";
 import {
   computeReceiverHmac,
+  decryptReceiverId,
   encryptReceiverId,
   generateRawToken,
   hashToken,
@@ -8,7 +9,7 @@ import {
 } from "./crypto";
 import { formatBudget } from "./budget";
 import { sendMail } from "./email/mailer";
-import { buildResultNotificationEmail } from "./email/templates";
+import { buildResultNotificationEmail, type BuddyEmailProfile } from "./email/templates";
 import { assertValidDerangement, generateDerangement, type Pairing } from "./derangement";
 import { getAppBaseUrl } from "./url";
 
@@ -183,10 +184,36 @@ export async function dispatchResultEmailsForGroup(
           id: true,
           displayName: true,
           email: true,
+          givenAssignment: {
+            select: {
+              encryptedReceiverId: true,
+            },
+          },
         },
       },
     },
   });
+
+  const groupMembers = await prisma.member.findMany({
+    where: { groupId },
+    select: {
+      id: true,
+      displayName: true,
+      interests: true,
+      interestOther: true,
+      favoriteColor: true,
+      favoriteFoodDrink: true,
+      hobbies: true,
+      giftStyle: true,
+      dislikes: true,
+      allergies: true,
+      wishList: true,
+      noteToBuddy: true,
+    },
+  });
+  const memberProfileMap = new Map<string, BuddyEmailProfile>(
+    groupMembers.map((m) => [m.id, m])
+  );
 
   const baseUrl = (options?.baseUrl || getAppBaseUrl()).replace(/\/+$/, "");
   const budgetText = formatBudget(group.budgetType, group.budgetMin, group.budgetMax);
@@ -199,10 +226,30 @@ export async function dispatchResultEmailsForGroup(
     const tokenHash = hashToken(rawToken);
     const resultUrl = `${baseUrl}/buddy?token=${encodeURIComponent(rawToken)}`;
 
+    const rawManageToken = generateRawToken();
+    const manageTokenHash = hashToken(rawManageToken);
+    const manageUrl = `${baseUrl}/me/profile?token=${encodeURIComponent(rawManageToken)}`;
+
+    let buddyProfile: BuddyEmailProfile | undefined;
+    if (log.member.givenAssignment?.encryptedReceiverId) {
+      try {
+        const receiverId = decryptReceiverId(
+          group.id,
+          log.member.givenAssignment.encryptedReceiverId
+        );
+        buddyProfile = memberProfileMap.get(receiverId);
+      } catch {
+        buddyProfile = undefined;
+      }
+    }
+
     try {
       await prisma.member.update({
         where: { id: log.member.id },
-        data: { resultTokenHash: tokenHash },
+        data: {
+          resultTokenHash: tokenHash,
+          manageTokenHash,
+        },
       });
 
       const mail = buildResultNotificationEmail({
@@ -210,6 +257,8 @@ export async function dispatchResultEmailsForGroup(
         groupTitle: group.title,
         budgetText,
         resultUrl,
+        buddy: buddyProfile,
+        manageUrl,
       });
 
       await sendMail({

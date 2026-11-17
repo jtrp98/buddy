@@ -107,21 +107,29 @@ export async function POST(req: Request) {
       return jsonNoStore(GENERIC_RESPONSE);
     }
 
-    // Case 2: Verified member & already drawn -> rotate resultTokenHash (revokes previous link!)
+    // Case 2: Verified member & already drawn -> rotate resultTokenHash (and manageTokenHash if still ACTIVE)
     if (group.status === "ACTIVE" || group.status === "COMPLETED") {
       const rawResultToken = generateRawToken();
+      const rawManageToken = group.status === "ACTIVE" ? generateRawToken() : null;
       await prisma.member.update({
         where: { id: member.id },
-        data: { resultTokenHash: hashToken(rawResultToken) },
+        data: {
+          resultTokenHash: hashToken(rawResultToken),
+          ...(rawManageToken ? { manageTokenHash: hashToken(rawManageToken) } : {}),
+        },
       });
 
       const targetUrl = `${baseUrl}/buddy?token=${encodeURIComponent(rawResultToken)}`;
+      const secondaryManageUrl = rawManageToken
+        ? `${baseUrl}/me/profile?token=${encodeURIComponent(rawManageToken)}`
+        : undefined;
       const mail = buildRecoveryLinkEmail({
         memberName: member.displayName,
         groupTitle: group.title,
         budgetText,
         targetUrl,
         isResultLink: true,
+        secondaryManageUrl,
       });
 
       try {

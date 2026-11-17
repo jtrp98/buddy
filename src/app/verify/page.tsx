@@ -126,8 +126,10 @@ function VerifyContent() {
 
           <div className="mx-auto mt-6 max-w-md rounded-2xl border border-border bg-surface/60 p-4 text-sm leading-relaxed text-text-secondary">
             <Sparkles className="mx-auto mb-1.5 h-4 w-4 text-primary" aria-hidden="true" />
-            เราส่งลิงก์ส่วนตัวสำหรับแก้ไข Wish List ไปที่อีเมลของคุณแล้ว เมื่อถึงเวลาจับคู่
-            ระบบจะส่งลิงก์เปิดกล่องของขวัญให้โดยอัตโนมัติ
+            <p>
+              คุณสามารถเข้ามา <strong className="text-text-primary">เพิ่มหรือแก้ไขข้อมูลความชอบและ Wish List ได้ทุกเมื่อที่เว็บนี้</strong>{" "}
+              ผ่านปุ่มด้านล่างหรือลิงก์ที่ส่งไปในอีเมล (หากอัปเดตข้อมูลเพิ่มหลังสุ่มจับคู่แล้ว ระบบจะส่งอีเมลแจ้งซานต้าของคุณให้อัตโนมัติ)
+            </p>
           </div>
 
           <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -136,7 +138,7 @@ function VerifyContent() {
               className={christmasButtonClass("primary", "lg")}
             >
               <Edit3 className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>ดู / แก้ไข Buddy Profile &amp; Wish List</span>
+              <span>เพิ่ม / แก้ไข Buddy Profile &amp; Wish List</span>
             </Link>
             <Link href={`/join/${encodeURIComponent(result.inviteCode)}`} className={christmasButtonClass("secondary", "lg")}>
               ไปดูต้นคริสต์มาสของกลุ่ม

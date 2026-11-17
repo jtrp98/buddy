@@ -1,3 +1,19 @@
+import { getInterestLabel } from "../constants";
+
+export interface BuddyEmailProfile {
+  displayName: string;
+  interests: string[];
+  interestOther: string | null;
+  favoriteColor: string | null;
+  favoriteFoodDrink: string | null;
+  hobbies: string | null;
+  giftStyle: string | null;
+  dislikes: string | null;
+  allergies: string | null;
+  wishList: string | null;
+  noteToBuddy: string | null;
+}
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -48,6 +64,133 @@ function wrapEmailLayout(title: string, innerHtml: string): string {
 </html>`;
 }
 
+function renderBuddyProfileDetailsHtml(buddy: BuddyEmailProfile): string {
+  const interestLabels = buddy.interests.map((k) => getInterestLabel(k));
+  const interestsDisplay =
+    interestLabels.length > 0 ? interestLabels.map(escapeHtml).join(", ") : "ไม่ได้ระบุ";
+
+  const detailRows: Array<{ label: string; value: string | null }> = [
+    { label: "🎁 Wish List ของที่อยากได้", value: buddy.wishList },
+    { label: "🎨 สีที่ชอบ", value: buddy.favoriteColor },
+    { label: "☕ อาหาร / เครื่องดื่มโปรด", value: buddy.favoriteFoodDrink },
+    { label: "❤️ งานอดิเรก", value: buddy.hobbies },
+    { label: "✨ สไตล์ของขวัญที่ชอบ", value: buddy.giftStyle },
+  ];
+
+  const filledRows = detailRows.filter((r) => r.value && r.value.trim().length > 0);
+  const hasAnyOptional =
+    filledRows.length > 0 ||
+    Boolean(buddy.interestOther?.trim()) ||
+    Boolean(buddy.dislikes?.trim()) ||
+    Boolean(buddy.allergies?.trim()) ||
+    Boolean(buddy.noteToBuddy?.trim());
+
+  const rowsHtml = filledRows
+    .map(
+      (r) => `
+      <tr>
+        <td style="padding:8px 0;border-top:1px dashed #dccbb5;font-size:13px;font-weight:700;color:#5c493e;width:42%;vertical-align:top;">
+          ${escapeHtml(r.label)}
+        </td>
+        <td style="padding:8px 0 8px 12px;border-top:1px dashed #dccbb5;font-size:14px;color:#2a1f1b;vertical-align:top;white-space:pre-line;">
+          ${escapeHtml(r.value!.trim())}
+        </td>
+      </tr>`
+    )
+    .join("");
+
+  const warningsHtml = [
+    buddy.dislikes?.trim()
+      ? `<div style="background-color:#fff4db;border:1.5px solid #c98a1b;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:13px;color:#6e4706;">
+          <strong>👎 สิ่งที่ไม่ชอบ:</strong> ${escapeHtml(buddy.dislikes.trim())}
+        </div>`
+      : "",
+    buddy.allergies?.trim()
+      ? `<div style="background-color:#fde2df;border:1.5px solid #c8322b;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:13px;color:#9e221d;">
+          <strong>⚠️ สิ่งที่แพ้ / ควรหลีกเลี่ยง:</strong> ${escapeHtml(buddy.allergies.trim())}
+        </div>`
+      : "",
+    buddy.noteToBuddy?.trim()
+      ? `<div style="background-color:#eef7f2;border:1.5px solid #1f5e46;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:13px;color:#184735;">
+          <strong>💌 ข้อความถึงซานต้า:</strong> “${escapeHtml(buddy.noteToBuddy.trim())}”
+        </div>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  return `
+    <div style="background-color:#fff8ea;border:2px solid #2a1f1b;border-radius:16px;padding:18px 20px;margin:0 0 18px;">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;color:#1f5e46;text-transform:uppercase;">★ SECRET BUDDY ของคุณ ★</div>
+      <div style="font-size:26px;font-weight:700;color:#c8322b;margin:4px 0 12px;">
+        ${escapeHtml(buddy.displayName)}
+      </div>
+
+      <div style="font-size:13px;color:#5c493e;margin-bottom:4px;"><strong>หมวดหมู่ของขวัญที่สนใจ:</strong></div>
+      <div style="font-size:14px;font-weight:600;color:#2a1f1b;margin-bottom:${buddy.interestOther?.trim() ? "6px" : "10px"};">
+        ${interestsDisplay}
+      </div>
+      ${
+        buddy.interestOther?.trim()
+          ? `<div style="font-size:13px;color:#4d3d35;margin-bottom:10px;"><strong>ระบุเพิ่มเติม:</strong> ${escapeHtml(buddy.interestOther.trim())}</div>`
+          : ""
+      }
+
+      ${
+        filledRows.length > 0
+          ? `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:6px;">${rowsHtml}</table>`
+          : ""
+      }
+
+      ${warningsHtml}
+
+      ${
+        !hasAnyOptional
+          ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #dccbb5;font-size:12px;color:#6d5a4e;">
+              (ขณะนี้ ${escapeHtml(buddy.displayName)} ระบุไว้เฉพาะหมวดหมู่ความชอบเบื้องต้น)
+            </div>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+function renderBuddyProfileDetailsText(buddy: BuddyEmailProfile): string[] {
+  const interestLabels = buddy.interests.map((k) => getInterestLabel(k));
+  const lines: string[] = [
+    `🎯 Buddy ที่คุณต้องดูแลคือ: ${buddy.displayName}`,
+    `• หมวดหมู่ของขวัญที่สนใจ: ${interestLabels.length > 0 ? interestLabels.join(", ") : "ไม่ได้ระบุ"}`,
+  ];
+  if (buddy.interestOther?.trim()) {
+    lines.push(`• ความชอบอื่น ๆ เพิ่มเติม: ${buddy.interestOther.trim()}`);
+  }
+  if (buddy.wishList?.trim()) {
+    lines.push(`• Wish List ของที่อยากได้: ${buddy.wishList.trim()}`);
+  }
+  if (buddy.favoriteColor?.trim()) {
+    lines.push(`• สีที่ชอบ: ${buddy.favoriteColor.trim()}`);
+  }
+  if (buddy.favoriteFoodDrink?.trim()) {
+    lines.push(`• อาหาร/เครื่องดื่มโปรด: ${buddy.favoriteFoodDrink.trim()}`);
+  }
+  if (buddy.hobbies?.trim()) {
+    lines.push(`• งานอดิเรก: ${buddy.hobbies.trim()}`);
+  }
+  if (buddy.giftStyle?.trim()) {
+    lines.push(`• สไตล์ของขวัญที่ชอบ: ${buddy.giftStyle.trim()}`);
+  }
+  if (buddy.dislikes?.trim()) {
+    lines.push(`• สิ่งที่ไม่ชอบ: ${buddy.dislikes.trim()}`);
+  }
+  if (buddy.allergies?.trim()) {
+    lines.push(`• สิ่งที่แพ้/ควรหลีกเลี่ยง: ${buddy.allergies.trim()}`);
+  }
+  if (buddy.noteToBuddy?.trim()) {
+    lines.push(`• ข้อความถึงซานต้า: "${buddy.noteToBuddy.trim()}"`);
+  }
+  return lines;
+}
+
 export function buildVerifyEmail(params: {
   memberName: string;
   groupTitle: string;
@@ -75,6 +218,9 @@ export function buildVerifyEmail(params: {
         ยืนยันอีเมลของฉัน
       </a>
     </div>
+    <div style="background-color:#eef7f2;border:1.5px solid #1f5e46;border-radius:12px;padding:12px 16px;margin:18px 0 0;font-size:13px;line-height:1.6;color:#184735;">
+      💡 <strong>เพิ่มข้อมูลเกี่ยวกับตัวเองได้ทุกเมื่อที่เว็บนี้:</strong> หลังกดยืนยันอีเมลแล้ว ระบบจะส่งลิงก์ส่วนตัวให้คุณสามารถกลับมาเพิ่มหรือแก้ไขความชอบและ Wish List ได้ตลอดเวลา
+    </div>
     `
   );
 
@@ -86,6 +232,8 @@ export function buildVerifyEmail(params: {
     ``,
     `กรุณากดลิงก์ด้านล่างเพื่อยืนยันอีเมลของคุณ (หมดอายุภายใน 24 ชั่วโมง):`,
     verifyUrl,
+    ``,
+    `💡 หลังกดยืนยันอีเมลแล้ว คุณสามารถกลับมาเพิ่มหรือแก้ไขข้อมูลความชอบและ Wish List ได้ทุกเมื่อที่เว็บนี้`,
   ].join("\n");
 
   return { subject, html, text };
@@ -105,11 +253,11 @@ export function buildManageProfileEmail(params: {
     <p style="font-size:16px;font-weight:700;margin:0 0 12px;color:#2a1f1b;">สวัสดีคุณ${escapeHtml(memberName)} 🎄</p>
     <p style="font-size:15px;line-height:1.65;margin:0 0 18px;color:#4d3d35;">
       อีเมลของคุณได้รับการยืนยันสำหรับกิจกรรม <strong>${escapeHtml(groupTitle)}</strong> แล้ว!
-      คุณสามารถเก็บลิงก์ส่วนตัวด้านล่างไว้สำหรับกลับมาแก้ไขความชอบหรือ Wish List ก่อนปิดรับสมัครได้ตลอดเวลา
+      คุณสามารถเก็บลิงก์ส่วนตัวด้านล่างไว้สำหรับกลับมาเพิ่มหรือแก้ไขความชอบและ Wish List ได้ทุกเมื่อที่เว็บนี้ (หากอัปเดตข้อมูลหลังสุ่มจับคู่แล้ว ระบบจะส่งอีเมลแจ้งข้อมูลใหม่ให้ซานต้าของคุณโดยอัตโนมัติ)
     </p>
     <div style="text-align:center;margin:24px 0;">
       <a href="${manageUrl}" style="display:inline-block;background-color:#1f5e46;color:#fffdf7;text-decoration:none;font-weight:700;font-size:15px;padding:13px 28px;border-radius:12px;border:2px solid #2a1f1b;box-shadow:0 3px 0 #2a1f1b;">
-        แก้ไข Buddy Profile ของฉัน
+        เพิ่ม / แก้ไข Buddy Profile ของฉัน
       </a>
     </div>
     `
@@ -119,7 +267,7 @@ export function buildManageProfileEmail(params: {
     `สวัสดีคุณ${memberName}`,
     ``,
     `ยืนยันอีเมลสำหรับกิจกรรม ${groupTitle} สำเร็จแล้ว!`,
-    `คุณสามารถใช้ลิงก์ส่วนตัวนี้เพื่อแก้ไขข้อมูลความชอบก่อนปิดรับสมัคร:`,
+    `คุณสามารถใช้ลิงก์ส่วนตัวนี้เพื่อกลับมาเพิ่มหรือแก้ไขข้อมูลความชอบและ Wish List ได้ทุกเมื่อที่เว็บนี้ (หากอัปเดตหลังจับคู่แล้ว ระบบจะส่งอีเมลแจ้งซานต้าให้อัตโนมัติ):`,
     manageUrl,
   ].join("\n");
 
@@ -131,52 +279,148 @@ export function buildResultNotificationEmail(params: {
   groupTitle: string;
   budgetText: string;
   resultUrl: string;
+  buddy?: BuddyEmailProfile;
+  manageUrl?: string;
 }) {
-  const { memberName, groupTitle, budgetText, resultUrl } = params;
-  const subject = "🎁 Secret Buddy — ผลการจับคู่ของคุณมาแล้ว!";
+  const { memberName, groupTitle, budgetText, resultUrl, buddy, manageUrl } = params;
+  const subject = buddy
+    ? `🎁 Secret Buddy — คุณได้ดูแลคุณ ${buddy.displayName} (${groupTitle})`
+    : "🎁 Secret Buddy — ผลการจับคู่ของคุณมาแล้ว!";
+
+  const buddySectionHtml = buddy
+    ? `
+      ${renderBuddyProfileDetailsHtml(buddy)}
+      <div style="background-color:#eef7f2;border:1.5px solid #1f5e46;border-radius:12px;padding:12px 16px;margin:0 0 20px;font-size:13px;line-height:1.6;color:#184735;">
+        📬 <strong>แจ้งเพื่อทราบ:</strong> หากคุณ <strong>${escapeHtml(buddy.displayName)}</strong> มีการเข้ามาอัปเดตข้อมูลเกี่ยวกับตัวเองหรือ Wish List เพิ่มเติมในภายหลัง ระบบจะส่งอีเมลมาแจ้งข้อมูลล่าสุดให้คุณทราบเพิ่มโดยอัตโนมัติ
+      </div>
+    `
+    : `
+      <p style="font-size:15px;line-height:1.65;margin:0 0 18px;color:#4d3d35;">
+        ซองพัสดุลับของคุณถูกผนึกขี้ผึ้งเรียบร้อย กดเปิดดูได้แล้วว่าใครคือคนที่คุณต้องดูแล
+      </p>
+    `;
+
+  const manageSectionHtml = manageUrl
+    ? `
+      <div style="margin-top:20px;padding-top:16px;border-top:1px dashed #cbb7a6;text-align:center;">
+        <p style="font-size:13px;color:#5c493e;margin:0 0 10px;">
+          อยากเพิ่มหรืออัปเดตข้อมูลความชอบของตัวเองให้ซานต้าของคุณรู้เพิ่มไหม?
+        </p>
+        <a href="${manageUrl}" style="display:inline-block;background-color:#1f5e46;color:#fffdf7;text-decoration:none;font-weight:700;font-size:13px;padding:10px 20px;border-radius:10px;border:2px solid #2a1f1b;">
+          📝 เพิ่ม / แก้ไขข้อมูลของฉัน
+        </a>
+      </div>
+    `
+    : "";
 
   const html = wrapEmailLayout(
     subject,
     `
     <p style="font-size:16px;font-weight:700;margin:0 0 12px;color:#2a1f1b;">สวัสดีคุณ${escapeHtml(memberName)} 🎄</p>
-    <p style="font-size:15px;line-height:1.65;margin:0 0 12px;color:#4d3d35;">
+    <p style="font-size:15px;line-height:1.65;margin:0 0 14px;color:#4d3d35;">
       กิจกรรม <strong>${escapeHtml(groupTitle)}</strong> ได้สุ่มจับคู่เรียบร้อยแล้ว!
     </p>
-    <p style="font-size:15px;line-height:1.65;margin:0 0 18px;color:#4d3d35;">
-      ซองพัสดุลับของคุณถูกผนึกขี้ผึ้งเรียบร้อย กดเปิดดูได้แล้วว่าใครคือคนที่คุณต้องดูแล
-    </p>
-    <div style="background-color:#fdf3d7;border:2px solid #2a1f1b;border-radius:12px;padding:14px 18px;margin:0 0 22px;font-size:15px;color:#2a1f1b;">
+    <div style="background-color:#fdf3d7;border:2px solid #2a1f1b;border-radius:12px;padding:12px 16px;margin:0 0 18px;font-size:14px;color:#2a1f1b;">
       🎁 งบประมาณของขวัญ: <strong>${escapeHtml(budgetText)}</strong>
     </div>
-    <p style="font-size:14px;margin:0 0 16px;color:#5c493e;">
-      กดปุ่มด้านล่างเพื่อแกะซองดู Buddy ของคุณ
+    ${buddySectionHtml}
+    <p style="font-size:14px;margin:0 0 14px;color:#5c493e;text-align:center;">
+      สามารถกดเปิดกล่องของขวัญและดูการ์ดจดหมายชื่อ Buddy บนหน้าเว็บได้ที่ปุ่มด้านล่าง
     </p>
-    <div style="text-align:center;margin:24px 0;">
+    <div style="text-align:center;margin:20px 0;">
       <a href="${resultUrl}" style="display:inline-block;background-color:#c8322b;color:#fffdf7;text-decoration:none;font-weight:700;font-size:16px;padding:14px 32px;border-radius:12px;border:2px solid #2a1f1b;box-shadow:0 3px 0 #2a1f1b;">
         🎁 แกะซองดู Buddy ของฉัน
       </a>
     </div>
-    <p style="font-size:14px;margin:18px 0 6px;color:#4d3d35;">อย่าบอกใครว่าคุณได้ใครนะ 🤫</p>
-    <p style="font-size:14px;margin:0;color:#4d3d35;">ขอให้สนุกกับกิจกรรม Secret Buddy!</p>
+    <p style="font-size:14px;margin:18px 0 6px;color:#4d3d35;text-align:center;">อย่าบอกใครว่าคุณได้ใครนะ 🤫</p>
+    <p style="font-size:14px;margin:0;color:#4d3d35;text-align:center;">ขอให้สนุกกับกิจกรรม Secret Buddy!</p>
+    ${manageSectionHtml}
     `
   );
 
-  const text = [
+  const textLines = [
     `สวัสดีคุณ${memberName} 👋`,
     ``,
     `กิจกรรม ${groupTitle} ได้สุ่มจับคู่เรียบร้อยแล้ว!`,
-    `ตอนนี้คุณสามารถดูได้แล้วว่าใครคือคนที่คุณต้องดูแล`,
-    ``,
     `🎁 งบประมาณของขวัญ: ${budgetText}`,
     ``,
-    `กดลิงก์ด้านล่างเพื่อดู Buddy ของคุณ:`,
+  ];
+
+  if (buddy) {
+    textLines.push(...renderBuddyProfileDetailsText(buddy));
+    textLines.push(
+      ``,
+      `📬 หมายเหตุ: หากคุณ ${buddy.displayName} มีการอัปเดตข้อมูลเกี่ยวกับตัวเองหรือ Wish List เพิ่มเติม ระบบจะส่งอีเมลมาแจ้งข้อมูลล่าสุดให้คุณทราบเพิ่มโดยอัตโนมัติ`,
+      ``
+    );
+  } else {
+    textLines.push(`ตอนนี้คุณสามารถดูได้แล้วว่าใครคือคนที่คุณต้องดูแล`, ``);
+  }
+
+  textLines.push(
+    `กดลิงก์ด้านล่างเพื่อเปิดกล่องดูการ์ด Buddy ของคุณบนเว็บ:`,
     resultUrl,
     ``,
     `อย่าบอกใครว่าคุณได้ใครนะ 🤫`,
-    `ขอให้สนุกกับกิจกรรม Secret Buddy!`,
-  ].join("\n");
+    `ขอให้สนุกกับกิจกรรม Secret Buddy!`
+  );
 
-  return { subject, html, text };
+  if (manageUrl) {
+    textLines.push(``, `เพิ่มหรือแก้ไขข้อมูลความชอบของตัวเองได้ที่:`, manageUrl);
+  }
+
+  return { subject, html, text: textLines.join("\n") };
+}
+
+export function buildBuddyProfileUpdatedEmail(params: {
+  memberName: string;
+  groupTitle: string;
+  budgetText: string;
+  buddy: BuddyEmailProfile;
+  resultUrl?: string;
+}) {
+  const { memberName, groupTitle, budgetText, buddy, resultUrl } = params;
+  const subject = `🔔 Buddy ของคุณ (${buddy.displayName}) อัปเดตข้อมูลเพิ่มเติมแล้ว! — ${groupTitle}`;
+
+  const ctaHtml = resultUrl
+    ? `
+    <div style="text-align:center;margin:22px 0 8px;">
+      <a href="${resultUrl}" style="display:inline-block;background-color:#c8322b;color:#fffdf7;text-decoration:none;font-weight:700;font-size:15px;padding:13px 28px;border-radius:12px;border:2px solid #2a1f1b;box-shadow:0 3px 0 #2a1f1b;">
+        🎁 เปิดดูการ์ด Buddy บนเว็บ
+      </a>
+    </div>
+    `
+    : "";
+
+  const html = wrapEmailLayout(
+    subject,
+    `
+    <p style="font-size:16px;font-weight:700;margin:0 0 12px;color:#2a1f1b;">สวัสดีคุณ${escapeHtml(memberName)} 🎄</p>
+    <p style="font-size:15px;line-height:1.65;margin:0 0 14px;color:#4d3d35;">
+      Buddy ของคุณในกิจกรรม <strong>${escapeHtml(groupTitle)}</strong> ได้เข้ามาอัปเดตข้อมูลความชอบ / Wish List เพิ่มเติมแล้ว นี่คือข้อมูลล่าสุดของ <strong>${escapeHtml(buddy.displayName)}</strong> ครับ:
+    </p>
+    <div style="background-color:#fdf3d7;border:2px solid #2a1f1b;border-radius:12px;padding:12px 16px;margin:0 0 18px;font-size:14px;color:#2a1f1b;">
+      🎁 งบประมาณของขวัญ: <strong>${escapeHtml(budgetText)}</strong>
+    </div>
+    ${renderBuddyProfileDetailsHtml(buddy)}
+    ${ctaHtml}
+    `
+  );
+
+  const textLines = [
+    `สวัสดีคุณ${memberName} 🎄`,
+    ``,
+    `Buddy ของคุณในกิจกรรม ${groupTitle} ได้เข้ามาอัปเดตข้อมูลความชอบ / Wish List เพิ่มเติมแล้ว!`,
+    `🎁 งบประมาณของขวัญ: ${budgetText}`,
+    ``,
+    ...renderBuddyProfileDetailsText(buddy),
+  ];
+
+  if (resultUrl) {
+    textLines.push(``, `ดูการ์ด Buddy บนเว็บ:`, resultUrl);
+  }
+
+  return { subject, html, text: textLines.join("\n") };
 }
 
 export function buildRecoveryLinkEmail(params: {
@@ -185,16 +429,30 @@ export function buildRecoveryLinkEmail(params: {
   budgetText: string;
   targetUrl: string;
   isResultLink: boolean;
+  secondaryManageUrl?: string;
 }) {
-  const { memberName, groupTitle, budgetText, targetUrl, isResultLink } = params;
+  const { memberName, groupTitle, budgetText, targetUrl, isResultLink, secondaryManageUrl } = params;
   const subject = isResultLink
-    ? `🔑 ลิงก์ใหม่สำหรับดู Buddy ของคุณ — ${groupTitle}`
+    ? `🔑 ลิงก์ใหม่สำหรับดู Buddy & แก้ไขข้อมูลของคุณ — ${groupTitle}`
     : `🔑 ลิงก์ใหม่สำหรับแก้ไขข้อมูลของคุณ — ${groupTitle}`;
 
   const ctaLabel = isResultLink ? "ดู Buddy ของฉัน (ลิงก์ใหม่)" : "แก้ไข Buddy Profile ของฉัน";
   const detailText = isResultLink
-    ? "เราได้ออกลิงก์ใหม่สำหรับดูผลการจับคู่ของคุณแล้ว ลิงก์เดิมก่อนหน้านี้จะไม่สามารถใช้งานได้อีกเพื่อความปลอดภัย"
-    : "เราได้ออกลิงก์ใหม่สำหรับแก้ไขข้อมูลความชอบของคุณในกิจกรรมนี้แล้ว ลิงก์เดิมจะถูกยกเลิกโดยอัตโนมัติ";
+    ? "เราได้ออกลิงก์ใหม่สำหรับดูผลการจับคู่และลิงก์แก้ไขข้อมูลส่วนตัวของคุณแล้ว ลิงก์เดิมก่อนหน้านี้จะไม่สามารถใช้งานได้อีกเพื่อความปลอดภัย"
+    : "เราได้ออกลิงก์ใหม่สำหรับเพิ่มหรือแก้ไขข้อมูลความชอบของคุณในกิจกรรมนี้แล้ว ลิงก์เดิมจะถูกยกเลิกโดยอัตโนมัติ";
+
+  const secondaryHtml = secondaryManageUrl
+    ? `
+    <div style="margin-top:18px;padding-top:16px;border-top:1px dashed #cbb7a6;text-align:center;">
+      <p style="font-size:13px;color:#5c493e;margin:0 0 10px;">
+        หากต้องการเพิ่มหรืออัปเดตข้อมูลความชอบ / Wish List ของตัวเอง (ระบบจะส่งเมลแจ้งซานต้าให้อัตโนมัติ):
+      </p>
+      <a href="${secondaryManageUrl}" style="display:inline-block;background-color:#1f5e46;color:#fffdf7;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:10px;border:2px solid #2a1f1b;">
+        📝 แก้ไข Buddy Profile ของฉัน (ลิงก์ใหม่)
+      </a>
+    </div>
+    `
+    : "";
 
   const html = wrapEmailLayout(
     subject,
@@ -211,17 +469,23 @@ export function buildRecoveryLinkEmail(params: {
         ${ctaLabel}
       </a>
     </div>
+    ${secondaryHtml}
     `
   );
 
-  const text = [
+  const textLines = [
     `สวัสดีคุณ${memberName}`,
     ``,
     detailText,
     `🎁 งบประมาณของขวัญ: ${budgetText}`,
     ``,
+    `${ctaLabel}:`,
     targetUrl,
-  ].join("\n");
+  ];
 
-  return { subject, html, text };
+  if (secondaryManageUrl) {
+    textLines.push(``, `แก้ไข Buddy Profile ของฉัน (ลิงก์ใหม่):`, secondaryManageUrl);
+  }
+
+  return { subject, html, text: textLines.join("\n") };
 }

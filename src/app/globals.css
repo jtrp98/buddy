@@ -98,7 +98,7 @@
   --font-display-en: var(--font-fraunces), var(--font-serif-thai), Georgia, serif;
   --font-serif: var(--font-fraunces), var(--font-serif-thai), Georgia, serif;
   --font-sans: var(--font-thai), var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-script: var(--font-charm), var(--font-thai), cursive;
+  --font-script: var(--font-fraunces), var(--font-serif-thai), var(--font-thai), Georgia, serif;
   --font-type: var(--font-inter), var(--font-thai), ui-monospace, monospace;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }

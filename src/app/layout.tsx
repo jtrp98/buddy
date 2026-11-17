@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Charm, Fraunces, IBM_Plex_Sans_Thai, Inter, Noto_Serif_Thai } from "next/font/google";
+import { Fraunces, IBM_Plex_Sans_Thai, Inter, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { FestiveAtmosphereProvider } from "@/components/FestiveAtmosphere";
@@ -33,13 +33,6 @@ const notoSerifThai = Noto_Serif_Thai({
   variable: "--font-serif-thai",
   subsets: ["thai"],
   weight: ["500", "600", "700"],
-  display: "swap",
-});
-
-const charm = Charm({
-  variable: "--font-charm",
-  subsets: ["thai", "latin"],
-  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -76,7 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${ibmPlexSansThai.variable} ${inter.variable} ${fraunces.variable} ${notoSerifThai.variable} ${charm.variable} h-full antialiased`}
+      className={`${ibmPlexSansThai.variable} ${inter.variable} ${fraunces.variable} ${notoSerifThai.variable} h-full antialiased`}
     >
       <body className="evergreen-canvas min-h-full flex flex-col bg-background text-text-primary selection:bg-christmas-red selection:text-snow-white">
         <a

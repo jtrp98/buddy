@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, type RefObject } from "react";
 import { BUDDY_INTEREST_OPTIONS } from "@/lib/constants";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { WishListGiftStack3D } from "@/components/illustrations/ChristmasIllustrations";
@@ -76,12 +76,18 @@ interface BuddyProfileFormFieldsProps {
   value: BuddyProfileValues;
   onChange: (next: BuddyProfileValues) => void;
   disabled?: boolean;
+  showOptionalFields?: boolean;
+  firstOptionalFieldRef?: RefObject<HTMLDivElement | null>;
+  firstOptionalInputRef?: RefObject<HTMLInputElement | null>;
 }
 
 export function BuddyProfileFormFields({
   value,
   onChange,
   disabled = false,
+  showOptionalFields = true,
+  firstOptionalFieldRef,
+  firstOptionalInputRef,
 }: BuddyProfileFormFieldsProps) {
   const { triggerClickSound } = useFestiveAtmosphere();
 
@@ -203,224 +209,231 @@ export function BuddyProfileFormFields({
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField
-            label={
-              <span className="inline-flex items-center gap-1.5">
-                <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
-                <span>สีที่ชอบ</span>
-              </span>
-            }
-            htmlFor={colorId}
-          >
-            <Input
-              id={colorId}
-              type="text"
-              disabled={disabled}
-              value={value.favoriteColor}
-              onChange={(e) => setField("favoriteColor", e.target.value)}
-              placeholder="เช่น เอิร์ธโทน, เขียวมัทฉะ, แดงเบอร์กันดี"
-            />
-          </FormField>
-
-          <FormField
-            label={
-              <span className="inline-flex items-center gap-1.5">
-                <Coffee className="h-4 w-4 text-primary" aria-hidden="true" />
-                <span>อาหารหรือเครื่องดื่มโปรด</span>
-              </span>
-            }
-            htmlFor={foodId}
-          >
-            <Input
-              id={foodId}
-              type="text"
-              disabled={disabled}
-              value={value.favoriteFoodDrink}
-              onChange={(e) => setField("favoriteFoodDrink", e.target.value)}
-              placeholder="เช่น ลาเต้เย็นไม่หวาน, ชาเขียว, ช็อกโกแลต"
-            />
-          </FormField>
-
-          <FormField
-            label={
-              <span className="inline-flex items-center gap-1.5">
-                <Heart className="h-4 w-4 text-christmas-red-light" aria-hidden="true" />
-                <span>งานอดิเรก</span>
-              </span>
-            }
-            htmlFor={hobbiesId}
-          >
-            <Input
-              id={hobbiesId}
-              type="text"
-              disabled={disabled}
-              value={value.hobbies}
-              onChange={(e) => setField("hobbies", e.target.value)}
-              placeholder="เช่น อ่านนิยาย, วิ่ง, ถ่ายรูปฟิล์ม, เล่นบอร์ดเกม"
-            />
-          </FormField>
-
-          <FormField
-            label={
-              <span className="inline-flex items-center gap-1.5">
-                <Gift className="h-4 w-4 text-ice-blue" aria-hidden="true" />
-                <span>สไตล์ของขวัญที่ชอบ</span>
-              </span>
-            }
-            htmlFor={styleId}
-          >
-            <Input
-              id={styleId}
-              type="text"
-              disabled={disabled}
-              value={value.giftStyle}
-              onChange={(e) => setField("giftStyle", e.target.value)}
-              placeholder="เช่น มินิมอล, ใช้งานได้จริง, วินเทจ, ของกิน"
-            />
-          </FormField>
-        </div>
-      </section>
-
-      {/* Group 2: Dislikes & Allergies */}
-      <section className="space-y-4 border-t border-border pt-6">
-        <div>
-          <h3 className="text-base font-bold text-christmas-red-light">
-            สิ่งที่ไม่ชอบและอาการแพ้ (Dislikes &amp; Allergies)
-          </h3>
-          <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
-            ช่วยให้ Buddy หลีกเลี่ยงของที่คุณแพ้หรือไม่สะดวกใช้งานได้อย่างปลอดภัย
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-warning/35 bg-warning-bg/70 p-4">
+        {showOptionalFields && (
+          <div ref={firstOptionalFieldRef} className="scroll-mt-28 grid gap-4 sm:grid-cols-2">
             <FormField
               label={
-                <span className="inline-flex items-center gap-1.5 text-warning">
-                  <ThumbsDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>สิ่งที่ไม่ชอบ</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span>สีที่ชอบ</span>
                 </span>
               }
-              htmlFor={dislikesId}
+              htmlFor={colorId}
             >
-              <Textarea
-                id={dislikesId}
-                rows={2}
+              <Input
+                ref={firstOptionalInputRef}
+                id={colorId}
+                type="text"
                 disabled={disabled}
-                value={value.dislikes}
-                onChange={(e) => setField("dislikes", e.target.value)}
-                placeholder="เช่น น้ำหอมกลิ่นฉุน, ตุ๊กตาตัวใหญ่"
+                value={value.favoriteColor}
+                onChange={(e) => setField("favoriteColor", e.target.value)}
+                placeholder="เช่น เอิร์ธโทน, เขียวมัทฉะ, แดงเบอร์กันดี"
+              />
+            </FormField>
+
+            <FormField
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Coffee className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span>อาหารหรือเครื่องดื่มโปรด</span>
+                </span>
+              }
+              htmlFor={foodId}
+            >
+              <Input
+                id={foodId}
+                type="text"
+                disabled={disabled}
+                value={value.favoriteFoodDrink}
+                onChange={(e) => setField("favoriteFoodDrink", e.target.value)}
+                placeholder="เช่น ลาเต้เย็นไม่หวาน, ชาเขียว, ช็อกโกแลต"
+              />
+            </FormField>
+
+            <FormField
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Heart className="h-4 w-4 text-christmas-red-light" aria-hidden="true" />
+                  <span>งานอดิเรก</span>
+                </span>
+              }
+              htmlFor={hobbiesId}
+            >
+              <Input
+                id={hobbiesId}
+                type="text"
+                disabled={disabled}
+                value={value.hobbies}
+                onChange={(e) => setField("hobbies", e.target.value)}
+                placeholder="เช่น อ่านนิยาย, วิ่ง, ถ่ายรูปฟิล์ม, เล่นบอร์ดเกม"
+              />
+            </FormField>
+
+            <FormField
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Gift className="h-4 w-4 text-ice-blue" aria-hidden="true" />
+                  <span>สไตล์ของขวัญที่ชอบ</span>
+                </span>
+              }
+              htmlFor={styleId}
+            >
+              <Input
+                id={styleId}
+                type="text"
+                disabled={disabled}
+                value={value.giftStyle}
+                onChange={(e) => setField("giftStyle", e.target.value)}
+                placeholder="เช่น มินิมอล, ใช้งานได้จริง, วินเทจ, ของกิน"
               />
             </FormField>
           </div>
-
-          <div className="rounded-2xl border border-error/35 bg-error-bg/70 p-4">
-            <FormField
-              label={
-                <span className="inline-flex items-center gap-1.5 text-text-primary">
-                  <AlertOctagon className="h-4 w-4 shrink-0 text-christmas-red-light" aria-hidden="true" />
-                  <span>สิ่งที่แพ้หรือควรหลีกเลี่ยง (ไม่บังคับ)</span>
-                </span>
-              }
-              htmlFor={allergiesId}
-            >
-              <Textarea
-                id={allergiesId}
-                rows={2}
-                disabled={disabled}
-                value={value.allergies}
-                onChange={(e) => setField("allergies", e.target.value)}
-                placeholder="เช่น แพ้ถั่ว, แพ้นมวัว, แพ้แอลกอฮอล์"
-              />
-            </FormField>
-          </div>
-        </div>
+        )}
       </section>
 
-      {/* Group 3: Christmas Wish List Showcase & Personal Note */}
-      <section className="space-y-5 border-t border-border pt-6">
-        <div className="rounded-2xl border border-border-strong bg-surface/60 p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {showOptionalFields && (
+        <>
+          {/* Group 2: Dislikes & Allergies */}
+          <section className="space-y-4 border-t border-border pt-6">
             <div>
-              <span className="font-display-en text-sm font-semibold italic text-primary">
-                What&apos;s on Your Christmas Wish List?
-              </span>
-              <h3 className="mt-0.5 text-lg font-bold text-text-primary">
-                ใบขอพร Christmas Wish List ของคุณ
+              <h3 className="text-base font-bold text-christmas-red-light">
+                สิ่งที่ไม่ชอบและอาการแพ้ (Dislikes &amp; Allergies)
               </h3>
-              <p className="mt-1 text-xs leading-relaxed text-text-secondary sm:text-sm">
-                บอกใบ้ของขวัญที่อยากได้ในใจให้ซานต้าลับของคุณ หรือกดเลือกไอเดียแนะนำด้านล่างได้เลย
+              <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+                ช่วยให้ Buddy หลีกเลี่ยงของที่คุณแพ้หรือไม่สะดวกใช้งานได้อย่างปลอดภัย
               </p>
             </div>
-            <div className="hidden shrink-0 sm:block">
-              <WishListGiftStack3D className="h-20 w-20" />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-warning/35 bg-warning-bg/70 p-4">
+                <FormField
+                  label={
+                    <span className="inline-flex items-center gap-1.5 text-warning">
+                      <ThumbsDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span>สิ่งที่ไม่ชอบ</span>
+                    </span>
+                  }
+                  htmlFor={dislikesId}
+                >
+                  <Textarea
+                    id={dislikesId}
+                    rows={2}
+                    disabled={disabled}
+                    value={value.dislikes}
+                    onChange={(e) => setField("dislikes", e.target.value)}
+                    placeholder="เช่น น้ำหอมกลิ่นฉุน, ตุ๊กตาตัวใหญ่"
+                  />
+                </FormField>
+              </div>
+
+              <div className="rounded-2xl border border-error/35 bg-error-bg/70 p-4">
+                <FormField
+                  label={
+                    <span className="inline-flex items-center gap-1.5 text-text-primary">
+                      <AlertOctagon className="h-4 w-4 shrink-0 text-christmas-red-light" aria-hidden="true" />
+                      <span>สิ่งที่แพ้หรือควรหลีกเลี่ยง (ไม่บังคับ)</span>
+                    </span>
+                  }
+                  htmlFor={allergiesId}
+                >
+                  <Textarea
+                    id={allergiesId}
+                    rows={2}
+                    disabled={disabled}
+                    value={value.allergies}
+                    onChange={(e) => setField("allergies", e.target.value)}
+                    placeholder="เช่น แพ้ถั่ว, แพ้นมวัว, แพ้แอลกอฮอล์"
+                  />
+                </FormField>
+              </div>
             </div>
-          </div>
+          </section>
 
-          <div className="mt-4">
-            <FormField
-              label={
-                <span className="inline-flex items-center gap-1.5 text-text-primary">
-                  <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                  <span>Wish List ของที่อยากได้</span>
-                </span>
-              }
-              htmlFor={wishListId}
-              helperText="ใส่ได้มากกว่า 1 อย่างเพื่อเป็นตัวเลือกให้ Buddy เซอร์ไพรส์คุณ"
-            >
-              <Textarea
-                id={wishListId}
-                rows={3}
-                disabled={disabled}
-                value={value.wishList}
-                onChange={(e) => setField("wishList", e.target.value)}
-                placeholder="เช่น แก้วเก็บความเย็นสีเข้ม, สมุดโน้ตปกแข็ง, เมล็ดกาแฟคั่วกลาง"
-              />
-            </FormField>
-
-            {!disabled && (
-              <div className="mt-3">
-                <span className="block text-[11px] font-bold tracking-wider text-primary uppercase">
-                  แตะเพื่อเพิ่มไอเดียยอดฮิต:
-                </span>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {WISHLIST_IDEAS.map((idea) => (
-                    <button
-                      key={idea}
-                      type="button"
-                      onClick={() => addWishIdea(idea)}
-                      className="analog-btn inline-flex min-h-[34px] items-center gap-1 rounded-full border border-primary/35 bg-surface/60 px-3 py-1 text-xs font-semibold text-text-primary transition hover:border-primary hover:bg-primary/15"
-                    >
-                      <Plus className="h-3 w-3 text-primary" aria-hidden="true" />
-                      <span>{idea}</span>
-                    </button>
-                  ))}
+          {/* Group 3: Christmas Wish List Showcase & Personal Note */}
+          <section className="space-y-5 border-t border-border pt-6">
+            <div className="rounded-2xl border border-border-strong bg-surface/60 p-5 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <span className="font-display-en text-sm font-semibold italic text-primary">
+                    What&apos;s on Your Christmas Wish List?
+                  </span>
+                  <h3 className="mt-0.5 text-lg font-bold text-text-primary">
+                    ใบขอพร Christmas Wish List ของคุณ
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary sm:text-sm">
+                    บอกใบ้ของขวัญที่อยากได้ในใจให้ซานต้าลับของคุณ หรือกดเลือกไอเดียแนะนำด้านล่างได้เลย
+                  </p>
+                </div>
+                <div className="hidden shrink-0 sm:block">
+                  <WishListGiftStack3D className="h-20 w-20" />
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        <FormField
-          label={
-            <span className="inline-flex items-center gap-1.5">
-              <MessageSquareHeart className="h-4 w-4 text-christmas-red-light" aria-hidden="true" />
-              <span>ข้อความเพิ่มเติมถึง Buddy</span>
-            </span>
-          }
-          htmlFor={noteId}
-        >
-          <Textarea
-            id={noteId}
-            rows={2}
-            disabled={disabled}
-            value={value.noteToBuddy}
-            onChange={(e) => setField("noteToBuddy", e.target.value)}
-            placeholder="ฝากข้อความน่ารัก ๆ ถึงคนที่จะมาดูแลคุณได้เลย!"
-          />
-        </FormField>
-      </section>
+              <div className="mt-4">
+                <FormField
+                  label={
+                    <span className="inline-flex items-center gap-1.5 text-text-primary">
+                      <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                      <span>Wish List ของที่อยากได้</span>
+                    </span>
+                  }
+                  htmlFor={wishListId}
+                  helperText="ใส่ได้มากกว่า 1 อย่างเพื่อเป็นตัวเลือกให้ Buddy เซอร์ไพรส์คุณ"
+                >
+                  <Textarea
+                    id={wishListId}
+                    rows={3}
+                    disabled={disabled}
+                    value={value.wishList}
+                    onChange={(e) => setField("wishList", e.target.value)}
+                    placeholder="เช่น แก้วเก็บความเย็นสีเข้ม, สมุดโน้ตปกแข็ง, เมล็ดกาแฟคั่วกลาง"
+                  />
+                </FormField>
+
+                {!disabled && (
+                  <div className="mt-3">
+                    <span className="block text-[11px] font-bold tracking-wider text-primary uppercase">
+                      แตะเพื่อเพิ่มไอเดียยอดฮิต:
+                    </span>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {WISHLIST_IDEAS.map((idea) => (
+                        <button
+                          key={idea}
+                          type="button"
+                          onClick={() => addWishIdea(idea)}
+                          className="analog-btn inline-flex min-h-[34px] items-center gap-1 rounded-full border border-primary/35 bg-surface/60 px-3 py-1 text-xs font-semibold text-text-primary transition hover:border-primary hover:bg-primary/15"
+                        >
+                          <Plus className="h-3 w-3 text-primary" aria-hidden="true" />
+                          <span>{idea}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <FormField
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <MessageSquareHeart className="h-4 w-4 text-christmas-red-light" aria-hidden="true" />
+                  <span>ข้อความเพิ่มเติมถึง Buddy</span>
+                </span>
+              }
+              htmlFor={noteId}
+            >
+              <Textarea
+                id={noteId}
+                rows={2}
+                disabled={disabled}
+                value={value.noteToBuddy}
+                onChange={(e) => setField("noteToBuddy", e.target.value)}
+                placeholder="ฝากข้อความน่ารัก ๆ ถึงคนที่จะมาดูแลคุณได้เลย!"
+              />
+            </FormField>
+          </section>
+        </>
+      )}
     </div>
   );
 }

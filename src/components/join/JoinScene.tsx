@@ -178,8 +178,6 @@ export function JoinScene({
     };
   }, [visibleSeedsKey, reducedMotion]);
 
-  const unlockedFull = stage >= CELEBRATION_THRESHOLD;
-
   return (
     <section aria-labelledby="join-scene-title" className="relative">
       <h2 id="join-scene-title" className="sr-only">
@@ -308,7 +306,7 @@ export function JoinScene({
         )}
       </div>
 
-      <TreeProgress total={total} unlockedFull={unlockedFull} />
+      <TreeProgress total={total} />
 
       <p aria-live="polite" className="sr-only">
         {announcement}
@@ -317,47 +315,11 @@ export function JoinScene({
   );
 }
 
-function TreeProgress({ total, unlockedFull }: { total: number; unlockedFull: boolean }) {
+function TreeProgress({ total }: { total: number }) {
   return (
-    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-baseline gap-2">
-        <span className="font-display text-3xl leading-none text-text-primary">{total}</span>
-        <span className="text-sm text-text-secondary">คนลงทะเบียนแล้ว</span>
-      </div>
-
-      <ol className="flex flex-wrap items-center gap-1.5" aria-label="ความคืบหน้าการตกแต่งต้นคริสต์มาส">
-        {TREE_MILESTONES.map((m) => {
-          const done = total >= m.count;
-          return (
-            <li
-              key={m.count}
-              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors duration-500 sm:text-xs ${
-                done
-                  ? m.count === CELEBRATION_THRESHOLD
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-primary/50 bg-primary/12 text-primary"
-                  : "border-border text-text-muted"
-              }`}
-            >
-              <span
-                aria-hidden="true"
-                className={`h-1.5 w-1.5 rounded-full ${done ? "bg-current shadow-[0_0_8px_currentColor]" : "bg-text-muted/50"}`}
-              />
-              <span>
-                {m.count} · {m.label}
-              </span>
-              <span className="sr-only">{done ? "(ปลดล็อกแล้ว)" : "(ยังไม่ปลดล็อก)"}</span>
-            </li>
-          );
-        })}
-      </ol>
-
-      {unlockedFull && (
-        <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-primary uppercase sm:hidden">
-          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-          Christmas Magic Unlocked
-        </p>
-      )}
+    <div className="mt-4 flex items-baseline gap-2">
+      <span className="font-display text-3xl leading-none text-text-primary">{total}</span>
+      <span className="text-sm text-text-secondary">คนลงทะเบียนแล้ว</span>
     </div>
   );
 }

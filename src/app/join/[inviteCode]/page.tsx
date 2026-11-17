@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
-import { ChristmasJourney } from "@/components/ChristmasJourney";
 import {
   BuddyProfileFormFields,
   EMPTY_BUDDY_PROFILE,
@@ -71,6 +70,8 @@ function JoinGroupContent() {
   const nameId = useId();
   const emailId = useId();
   const sceneRef = useRef<HTMLDivElement | null>(null);
+  const firstOptionalFieldRef = useRef<HTMLDivElement | null>(null);
+  const firstOptionalInputRef = useRef<HTMLInputElement | null>(null);
 
   const [group, setGroup] = useState<InviteGroupInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,6 +80,7 @@ function JoinGroupContent() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [profile, setProfile] = useState<BuddyProfileValues>(EMPTY_BUDDY_PROFILE);
+  const [optionalStep, setOptionalStep] = useState<"hidden" | "prompt" | "expanded">("hidden");
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -160,23 +162,38 @@ function JoinGroupContent() {
     void loadGroup();
   }, [loadGroup]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    triggerClickSound();
-    setSubmitError("");
+  useEffect(() => {
+    if (optionalStep !== "expanded") return;
+    const raf = window.requestAnimationFrame(() => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      firstOptionalFieldRef.current?.scrollIntoView({
+        behavior: reduce ? "auto" : "smooth",
+        block: "start",
+      });
+      firstOptionalInputRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(raf);
+  }, [optionalStep]);
 
+  const validateRequiredFields = () => {
+    setSubmitError("");
     if (!displayName.trim()) {
       setSubmitError("กรุณากรอกชื่อ / ชื่อเล่น");
-      return;
+      return false;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setSubmitError("กรุณากรอกอีเมลให้ถูกต้อง");
-      return;
+      return false;
     }
     if (profile.interests.length === 0) {
       setSubmitError("กรุณาเลือกหมวดหมู่ของขวัญที่สนใจอย่างน้อย 1 ข้อ");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const submitRegistration = async () => {
+    if (!validateRequiredFields()) return;
 
     setSubmitting(true);
     try {
@@ -218,6 +235,24 @@ function JoinGroupContent() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    triggerClickSound();
+    if (!validateRequiredFields()) return;
+
+    if (optionalStep === "hidden") {
+      setOptionalStep("prompt");
+      return;
+    }
+
+    await submitRegistration();
+  };
+
+  const handleRevealOptionalFields = () => {
+    triggerClickSound();
+    setOptionalStep("expanded");
+  };
+
   if (loading) {
     return (
       <PageContainer size="md">
@@ -251,7 +286,6 @@ function JoinGroupContent() {
       {/* Invitation heading */}
       <header className="rise-in mx-auto max-w-3xl text-center">
         <div className="flex flex-wrap items-center justify-center gap-2.5">
-          <span className="font-script text-xl text-primary sm:text-2xl">คุณได้รับเชิญ!</span>
           <StatusBadge status={group.status} />
         </div>
         <h1 className="thai-keep mt-2 text-3xl leading-tight text-text-primary sm:text-5xl">{group.title}</h1>
@@ -338,8 +372,6 @@ function JoinGroupContent() {
               </div>
             </div>
           </ChristmasCard>
-
-          <ChristmasJourney mode="participant" currentStep={submittedMsg ? 3 : 2} />
         </aside>
 
         {/* Registration */}
@@ -352,7 +384,7 @@ function JoinGroupContent() {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-bg text-success">
                 <MailCheck className="h-8 w-8" aria-hidden="true" />
               </div>
-              <p className="mt-4 font-script text-2xl text-primary">ยินดีต้อนรับสู่ต้นคริสต์มาส!</p>
+              <p className="mt-4 font-script text-xl text-primary">ยินดีต้อนรับสู่ต้นคริสต์มาส!</p>
               <h2 className="thai-keep mt-1 text-2xl text-text-primary sm:text-3xl">
                 ขั้นตอนสุดท้าย: ยืนยันอีเมลของคุณ
               </h2>
@@ -370,11 +402,11 @@ function JoinGroupContent() {
                     <strong className="text-text-primary">1. เปิดอีเมล</strong> แล้วกดยืนยันตัวตนเพื่อเข้าร่วมการสุ่ม
                   </li>
                   <li>
-                    <strong className="text-text-primary">2. รับลิงก์แก้ไข Wish List ส่วนตัว</strong>{" "}
-                    เผื่ออยากเปลี่ยนใจก่อนปิดรับสมัคร
+                    <strong className="text-text-primary">2. เพิ่มหรือแก้ไขข้อมูลได้ทุกเมื่อที่เว็บนี้</strong>{" "}
+                    หลังยืนยันอีเมลแล้ว คุณสามารถกลับมาเพิ่มความชอบหรือ Wish List ได้ตลอดเวลา (หากอัปเดตหลังสุ่มจับคู่ ระบบจะส่งเมลแจ้งซานต้าให้อัตโนมัติ)
                   </li>
                   <li>
-                    <strong className="text-text-primary">3. รอเปิดกล่องของขวัญลับทางอีเมล</strong> เมื่อถึงเวลาจับคู่
+                    <strong className="text-text-primary">3. รอรับผลจับคู่และข้อมูล Buddy ทางอีเมล</strong> เมื่อถึงเวลาจับคู่
                   </li>
                 </ol>
               </div>
@@ -398,16 +430,9 @@ function JoinGroupContent() {
           ) : (
             <ChristmasCard tone="paper" className="relative">
               <div aria-hidden="true" className="paper-frame" />
-              <form onSubmit={handleSubmit} noValidate className="relative space-y-8 p-6 sm:p-10">
+              <form onSubmit={handleSubmit} noValidate className="relative space-y-6 p-6 sm:p-10">
                 <div className="text-center">
-                  <p className="font-script text-2xl text-christmas-red-light">R.S.V.P.</p>
-                  <h2 className="thai-keep mt-1 text-2xl text-text-primary sm:text-3xl">
-                    ตอบรับคำเชิญ &amp; เขียน Buddy Profile
-                  </h2>
-                  <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
-                    กรอกชื่อ อีเมล ความชอบ และ Wish List แล้วกดยืนยันในอีเมลเพื่อเข้าร่วมการจับคู่
-                  </p>
-                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success-bg px-3 py-1 text-xs font-semibold text-success">
+                  <p className="inline-flex items-center gap-1.5 rounded-full bg-success-bg px-3 py-1 text-xs font-semibold text-success">
                     <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     ไม่ต้องสมัครบัญชี · ข้อมูลแสดงเฉพาะ Buddy ที่จับได้คุณ
                   </p>
@@ -463,20 +488,79 @@ function JoinGroupContent() {
                 </section>
 
                 <div className="border-t border-border pt-6">
-                  <BuddyProfileFormFields value={profile} onChange={setProfile} disabled={submitting} />
+                  <BuddyProfileFormFields
+                    value={profile}
+                    onChange={setProfile}
+                    disabled={submitting}
+                    showOptionalFields={optionalStep === "expanded"}
+                    firstOptionalFieldRef={firstOptionalFieldRef}
+                    firstOptionalInputRef={firstOptionalInputRef}
+                  />
                 </div>
 
-                <ChristmasButton
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  loading={submitting}
-                  loadingText="กำลังส่งคำตอบรับ..."
-                  className="w-full"
-                >
-                  <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
-                  <span>ตอบรับคำเชิญ แล้วไปยืนที่ต้นคริสต์มาส</span>
-                </ChristmasButton>
+                {optionalStep === "prompt" ? (
+                  <div className="parcel-reveal rounded-2xl border border-primary/45 bg-surface/85 p-5 shadow-sm sm:p-6">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                        <Sparkles className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div className="space-y-1.5">
+                        <h4 className="thai-keep text-base font-bold text-text-primary sm:text-lg">
+                          สะดวกกรอกข้อมูลเกี่ยวกับตัวเองอีกนิดไหม?
+                        </h4>
+                        <p className="text-xs leading-relaxed text-text-secondary sm:text-sm">
+                          ปีที่แล้วมีหลายคนที่เลือกแค่หมวดหมู่สั้น ๆ ทำให้ซานต้าแอบเดาใจยากและไม่รู้จะเลือกซื้อของขวัญอะไรดี
+                          ถ้าระบุสีที่ชอบ ของที่แพ้ หรือ Wish List เพิ่มอีกนิด จะช่วยให้ซานต้าเลือกของขวัญได้ถูกใจคุณมากขึ้นเลย!
+                        </p>
+                        <p className="text-xs text-text-muted">
+                          (ถ้ายังไม่สะดวกตอนนี้ กดเข้าร่วมเลย แล้วค่อยกลับมาเพิ่มทีหลังผ่านลิงก์ในอีเมลได้ทุกเมื่อที่เว็บนี้)
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      <ChristmasButton
+                        type="button"
+                        variant="secondary"
+                        size="lg"
+                        disabled={submitting}
+                        onClick={handleRevealOptionalFields}
+                        className="w-full"
+                      >
+                        <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        <span>ระบุข้อมูลอีกนิด</span>
+                      </ChristmasButton>
+
+                      <ChristmasButton
+                        type="button"
+                        variant="primary"
+                        size="lg"
+                        loading={submitting}
+                        loadingText="กำลังส่งคำตอบรับ..."
+                        onClick={() => {
+                          triggerClickSound();
+                          void submitRegistration();
+                        }}
+                        className="w-full"
+                      >
+                        <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        <span>เข้าร่วมเลย</span>
+                      </ChristmasButton>
+                    </div>
+                  </div>
+                ) : (
+                  <ChristmasButton
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    loading={submitting}
+                    loadingText="กำลังส่งคำตอบรับ..."
+                    className="w-full"
+                  >
+                    <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
+                    <span>เข้าร่วมจับบัดดี้ !</span>
+                  </ChristmasButton>
+                )}
               </form>
             </ChristmasCard>
           )}

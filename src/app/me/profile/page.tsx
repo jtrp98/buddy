@@ -158,7 +158,11 @@ function ProfileEditorContent() {
         return;
       }
       triggerChimeSound();
-      setSaveMessage("บันทึก Buddy Profile & Wish List เรียบร้อยแล้ว!");
+      setSaveMessage(
+        data.notifiedSanta
+          ? "บันทึกข้อมูลเรียบร้อย และส่งอีเมลแจ้งข้อมูลล่าสุดให้ซานต้าของคุณแล้ว!"
+          : "บันทึก Buddy Profile & Wish List เรียบร้อยแล้ว!"
+      );
     } catch {
       setSaveError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     } finally {
@@ -223,6 +227,12 @@ function ProfileEditorContent() {
           {!canEdit && (
             <Alert tone="info">
               กิจกรรมนี้จบลงแล้ว จึงไม่สามารถแก้ไขข้อมูลได้
+            </Alert>
+          )}
+
+          {canEdit && !isPreDraw && (
+            <Alert tone="info">
+              คุณยังสามารถเพิ่มหรือแก้ไขข้อมูลความชอบและ Wish List ได้ตลอดกิจกรรม เมื่อกดบันทึก ระบบจะส่งอีเมลแจ้งข้อมูลล่าสุดให้ซานต้าของคุณทราบโดยอัตโนมัติ
             </Alert>
           )}
 

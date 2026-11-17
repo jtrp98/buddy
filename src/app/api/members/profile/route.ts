@@ -1,6 +1,14 @@
 import { prisma } from "@/lib/db";
 import { extractBearerToken, jsonNoStore } from "@/lib/api-response";
-import { hashToken } from "@/lib/crypto";
+import {
+  computeReceiverHmac,
+  generateRawToken,
+  hashToken,
+  sanitizeLogError,
+} from "@/lib/crypto";
+import { formatBudget } from "@/lib/budget";
+import { sendMail } from "@/lib/email/mailer";
+import { buildBuddyProfileUpdatedEmail } from "@/lib/email/templates";
 import { memberProfileUpdateSchema, normalizeNullableText } from "@/lib/validation";
 import { ensureGroupUpToDate } from "@/lib/cron";
 import { getAppBaseUrl } from "@/lib/url";
@@ -111,22 +119,48 @@ export async function PATCH(req: Request) {
     const data = parsed.data;
     const isPreDraw = member.group.status === "OPEN" || member.group.status === "DRAFT";
 
+    const nextInterestOther = data.interests.includes("other")
+      ? normalizeNullableText(data.interestOther)
+      : null;
+    const nextFavoriteColor = normalizeNullableText(data.favoriteColor);
+    const nextFavoriteFoodDrink = normalizeNullableText(data.favoriteFoodDrink);
+    const nextHobbies = normalizeNullableText(data.hobbies);
+    const nextGiftStyle = normalizeNullableText(data.giftStyle);
+    const nextDislikes = normalizeNullableText(data.dislikes);
+    const nextAllergies = normalizeNullableText(data.allergies);
+    const nextWishList = normalizeNullableText(data.wishList);
+    const nextNoteToBuddy = normalizeNullableText(data.noteToBuddy);
+
+    const sameInterests =
+      member.interests.length === data.interests.length &&
+      member.interests.every((val, idx) => val === data.interests[idx]);
+
+    const hasProfileChanged =
+      !sameInterests ||
+      member.interestOther !== nextInterestOther ||
+      member.favoriteColor !== nextFavoriteColor ||
+      member.favoriteFoodDrink !== nextFavoriteFoodDrink ||
+      member.hobbies !== nextHobbies ||
+      member.giftStyle !== nextGiftStyle ||
+      member.dislikes !== nextDislikes ||
+      member.allergies !== nextAllergies ||
+      member.wishList !== nextWishList ||
+      member.noteToBuddy !== nextNoteToBuddy;
+
     const updated = await prisma.member.update({
       where: { id: member.id },
       data: {
         ...(isPreDraw && data.displayName ? { displayName: data.displayName } : {}),
         interests: data.interests,
-        interestOther: data.interests.includes("other")
-          ? normalizeNullableText(data.interestOther)
-          : null,
-        favoriteColor: normalizeNullableText(data.favoriteColor),
-        favoriteFoodDrink: normalizeNullableText(data.favoriteFoodDrink),
-        hobbies: normalizeNullableText(data.hobbies),
-        giftStyle: normalizeNullableText(data.giftStyle),
-        dislikes: normalizeNullableText(data.dislikes),
-        allergies: normalizeNullableText(data.allergies),
-        wishList: normalizeNullableText(data.wishList),
-        noteToBuddy: normalizeNullableText(data.noteToBuddy),
+        interestOther: nextInterestOther,
+        favoriteColor: nextFavoriteColor,
+        favoriteFoodDrink: nextFavoriteFoodDrink,
+        hobbies: nextHobbies,
+        giftStyle: nextGiftStyle,
+        dislikes: nextDislikes,
+        allergies: nextAllergies,
+        wishList: nextWishList,
+        noteToBuddy: nextNoteToBuddy,
       },
       select: {
         displayName: true,
@@ -144,7 +178,77 @@ export async function PATCH(req: Request) {
       },
     });
 
-    return jsonNoStore({ ok: true, profile: updated });
+    let notifiedSanta = false;
+    if (member.group.status === "ACTIVE" && hasProfileChanged) {
+      try {
+        const receiverHmac = computeReceiverHmac(member.group.id, member.id);
+        const assignment = await prisma.assignment.findUnique({
+          where: {
+            groupId_receiverHmac: {
+              groupId: member.group.id,
+              receiverHmac,
+            },
+          },
+          include: {
+            giver: {
+              select: {
+                id: true,
+                displayName: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        if (assignment?.giver) {
+          const baseUrl = getAppBaseUrl(req).replace(/\/+$/, "");
+          const rawResultToken = generateRawToken();
+          await prisma.member.update({
+            where: { id: assignment.giver.id },
+            data: { resultTokenHash: hashToken(rawResultToken) },
+          });
+
+          const resultUrl = `${baseUrl}/buddy?token=${encodeURIComponent(rawResultToken)}`;
+          const budgetText = formatBudget(
+            member.group.budgetType,
+            member.group.budgetMin,
+            member.group.budgetMax
+          );
+
+          const mail = buildBuddyProfileUpdatedEmail({
+            memberName: assignment.giver.displayName,
+            groupTitle: member.group.title,
+            budgetText,
+            buddy: updated,
+            resultUrl,
+          });
+
+          await sendMail({
+            to: assignment.giver.email,
+            subject: mail.subject,
+            html: mail.html,
+            text: mail.text,
+          });
+
+          await prisma.emailLog.create({
+            data: {
+              groupId: member.group.id,
+              memberId: assignment.giver.id,
+              type: "RESULT_NOTIFICATION",
+              status: "SENT",
+              attempts: 1,
+              sentAt: new Date(),
+            },
+          });
+          notifiedSanta = true;
+        }
+      } catch (err) {
+        // Non-fatal: profile is already saved even if notification email fails
+        void sanitizeLogError(err);
+      }
+    }
+
+    return jsonNoStore({ ok: true, profile: updated, notifiedSanta });
   } catch {
     return jsonNoStore({ error: "ไม่สามารถบันทึกข้อมูลได้" }, 500);
   }
