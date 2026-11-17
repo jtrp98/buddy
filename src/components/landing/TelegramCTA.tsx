@@ -1,43 +1,51 @@
 import Link from "next/link";
-import { ArrowRight, Gift } from "lucide-react";
-import { Ornament } from "@/components/vintage/Ornament";
+import { ArrowRight, Gift, KeyRound } from "lucide-react";
+import { SnowGlobe3D } from "@/components/illustrations/ChristmasIllustrations";
+import { christmasButtonClass } from "@/components/ui/buttonStyles";
 
 /**
- * Closing North Pole Telegraph dispatch strip with primary CTA.
+ * Closing North Pole Workshop CTA inviting visitors to start their Christmas adventure.
  */
 export function TelegramCTA() {
   return (
-    <section className="mx-auto mt-14 max-w-5xl px-4">
-      <div className="paper-sheet paper-grain relative overflow-hidden rounded-md border border-ink/25 p-6 shadow-paper sm:p-9">
-        <div className="border-y border-xmas-red/35 py-5">
-          <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
-            <div className="flex flex-col items-center gap-4 sm:flex-row">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-pine/35 bg-pine-wash/60 text-pine">
-                <Ornament name="horn" className="h-7 w-9" />
-              </div>
-              <div>
-                <span className="font-type text-[10px] tracking-[0.2em] text-xmas-red uppercase">
-                  NORTH POLE TELEGRAPH · DISPATCH NO. 25
-                </span>
-                <h2 className="thai-keep letterpress mt-1 font-display text-xl leading-[1.4] text-ink sm:text-2xl">
-                  พร้อมส่งซองลับประจำเทศกาลแล้วหรือยัง?
-                </h2>
-                <p className="mt-1 font-serif text-sm text-ink-soft">
-                  ตั้งกลุ่มใน 1 นาที แชร์ลิงก์ให้เพื่อน และปล่อยให้ระบบดูแลความลับทั้งหมด
-                </p>
-              </div>
+    <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
+      <div className="christmas-card-elevated overflow-hidden rounded-3xl border border-primary/40 shadow-2xl">
+        <div className="candy-stripe-bar h-1.5 w-full" />
+        <div className="flex flex-col items-center justify-between gap-6 p-6 text-center sm:p-10 md:flex-row md:text-left">
+          <div className="flex flex-col items-center gap-5 sm:flex-row">
+            <div className="shrink-0">
+              <SnowGlobe3D className="h-28 w-28" />
             </div>
+            <div>
+              <span className="font-display-en text-sm font-semibold italic text-primary">
+                Ready to Begin Your Christmas Adventure?
+              </span>
+              <h2 className="thai-keep mt-1 text-2xl font-bold leading-snug text-text-primary sm:text-3xl">
+                พร้อมเริ่มต้นกิจกรรม Secret Buddy ของทีมคุณแล้วหรือยัง?
+              </h2>
+              <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-text-secondary sm:text-base">
+                สร้างกลุ่มฟรีใน 1 นาที แชร์ลิงก์ให้เพื่อนเขียน Wish List
+                และให้ซานต้าส่งซองลับถึงมือทุกคนโดยอัตโนมัติ
+              </p>
+            </div>
+          </div>
 
-            <div className="flex shrink-0 flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/admin/register"
-                className="analog-btn-lg thai-keep inline-flex min-h-[48px] items-center gap-2 rounded bg-xmas-red px-6 py-3 text-sm font-bold text-paper hover:bg-xmas-red-deep"
-              >
-                <Gift className="h-4 w-4 shrink-0" />
-                <span>เริ่มสร้างกลุ่ม Buddy</span>
-                <ArrowRight className="h-4 w-4 shrink-0" />
-              </Link>
-            </div>
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row">
+            <Link
+              href="/admin/register"
+              className={christmasButtonClass("primary", "lg", "w-full sm:w-auto")}
+            >
+              <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span>สร้างกิจกรรมฟรีเลย</span>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            </Link>
+            <Link
+              href="/recover"
+              className={christmasButtonClass("secondary", "lg", "w-full sm:w-auto")}
+            >
+              <KeyRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <span>ขอลิงก์ส่วนตัว</span>
+            </Link>
           </div>
         </div>
       </div>

@@ -3,12 +3,27 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Edit3, XCircle } from "lucide-react";
-import { CandyStripeBar, PostageStamp, WaxSeal } from "@/components/AnalogPrimitives";
+import { CheckCircle2, Edit3, KeyRound, Sparkles } from "lucide-react";
+import { PostageStamp } from "@/components/AnalogPrimitives";
+import { ChristmasJourney } from "@/components/ChristmasJourney";
+import {
+  ElfCharacter3D,
+  MagicalSparkleBurst,
+  SnowGlobe3D,
+} from "@/components/illustrations/ChristmasIllustrations";
+import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
+import {
+  ChristmasCard,
+  EmptyState,
+  LoadingState,
+  PageContainer,
+  christmasButtonClass,
+} from "@/components/ui/ChristmasUI";
 
 function VerifyContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { triggerChimeSound } = useFestiveAtmosphere();
 
   const [status, setStatus] = useState<"loading" | "success" | "error">(() =>
     token ? "loading" : "error"
@@ -22,6 +37,7 @@ function VerifyContent() {
     inviteCode: string;
     manageToken: string;
   } | null>(null);
+  const [burstActive, setBurstActive] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -43,6 +59,9 @@ function VerifyContent() {
         }
         setResult(data);
         setStatus("success");
+        setBurstActive(true);
+        triggerChimeSound();
+        window.setTimeout(() => setBurstActive(false), 2200);
       } catch {
         if (!cancelled) {
           setStatus("error");
@@ -54,93 +73,95 @@ function VerifyContent() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, triggerChimeSound]);
 
   if (status === "loading") {
     return (
-      <div className="analog-card rounded-md p-10 text-center">
-        <p className="text-sm font-bold text-ink-soft">กำลังตรวจสอบและประทับตรายืนยันอีเมลของคุณ...</p>
+      <div className="space-y-6">
+        <ChristmasJourney mode="participant" currentStep={3} />
+        <LoadingState label="เอลฟ์กำลังประทับตรา North Pole ยืนยันอีเมลของคุณ..." rows={3} />
       </div>
     );
   }
 
   if (status === "error" || !result) {
     return (
-      <div className="analog-card printed-double-rule rounded-md p-8 text-center">
-        <div className="relative z-10">
-          <XCircle className="mx-auto h-12 w-12 text-xmas-red" />
-          <h1 className="thai-keep letterpress mt-4 font-display text-xl text-ink">
-            ยืนยันอีเมลไม่สำเร็จ
-          </h1>
-          <p className="mt-2 font-serif text-sm font-medium text-xmas-red-deep">{error}</p>
-          <Link
-            href="/recover"
-            className="analog-btn-lg thai-keep mt-6 inline-flex min-h-[44px] items-center rounded bg-xmas-red px-5 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
-          >
-            ขอลิงก์ส่วนตัวใหม่
+      <EmptyState
+        icon={<SnowGlobe3D className="h-28 w-28" />}
+        title="ไม่สามารถยืนยันอีเมลได้"
+        description={error || "ลิงก์ยืนยันตัวตนอาจหมดอายุหรือถูกใช้งานไปแล้ว"}
+        action={
+          <Link href="/recover" className={christmasButtonClass("primary", "md")}>
+            <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>ขอลิงก์ส่วนตัวใหม่</span>
           </Link>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
   return (
-    <div className="analog-card-lg printed-double-rule overflow-hidden rounded-md">
-      <CandyStripeBar />
-      <div className="relative z-10 p-8 text-center">
-        <div className="flex justify-center">
-          <PostageStamp
-            topText="POST OFFICE"
-            mainText="VERIFIED"
-            bottomText="CHECKED"
-            tone="green"
-            vignette="star"
-          />
+    <div className="space-y-6">
+      <ChristmasJourney mode="participant" currentStep={3} />
+
+      <ChristmasCard elevated withStripe className="relative parcel-reveal">
+        <div className="p-7 text-center sm:p-10">
+          <MagicalSparkleBurst active={burstActive} />
+
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center gap-5">
+              <ElfCharacter3D className="h-24 w-24" />
+              <PostageStamp
+                topText="NORTH POLE"
+                mainText="VERIFIED"
+                bottomText="CONFIRMED"
+                tone="green"
+                vignette="star"
+              />
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-evergreen/85 px-3.5 py-1 text-xs font-bold text-emerald-100">
+              <CheckCircle2 className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+              <span>ลงทะเบียนเข้าร่วมสมบูรณ์</span>
+            </span>
+          </div>
+
+          <h1 className="thai-keep mt-4 text-2xl font-bold text-snow-white sm:text-3xl">
+            ยืนยันอีเมลเรียบร้อยแล้ว!
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-text-secondary sm:text-base">
+            ยินดีต้อนรับคุณ <strong className="text-snow-white">{result.displayName}</strong>{" "}
+            เข้าสู่ปาร์ตี้{" "}
+            <strong className="text-primary">{result.groupTitle}</strong>
+          </p>
+
+          <div className="mx-auto mt-5 max-w-md rounded-2xl border border-primary/25 bg-background/70 p-4 text-xs leading-relaxed text-text-secondary sm:text-sm">
+            <Sparkles className="mx-auto mb-1.5 h-4 w-4 text-primary" aria-hidden="true" />
+            เราได้ส่งลิงก์ส่วนตัวสำหรับแก้ไข Wish List ไปยังอีเมลของคุณแล้ว
+            และเมื่อถึงเวลาจับคู่ ระบบจะส่งกล่องของขวัญแจ้งชื่อ Secret Buddy ให้โดยอัตโนมัติ
+          </div>
+
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Link
+              href={`/me/profile?token=${encodeURIComponent(result.manageToken)}`}
+              className={christmasButtonClass("primary", "lg")}
+            >
+              <Edit3 className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>ดู / แก้ไข Buddy Profile &amp; Wish List</span>
+            </Link>
+          </div>
         </div>
-
-        <WaxSeal tone="green" size="lg" className="mx-auto mt-5">
-          <CheckCircle2 className="h-8 w-8" />
-        </WaxSeal>
-
-        <h1 className="thai-keep letterpress mt-4 font-display text-2xl text-ink">
-          ยืนยันอีเมลเรียบร้อยแล้ว
-        </h1>
-        <p className="mt-2 font-serif text-sm leading-[1.75] text-ink-soft">
-          ยินดีต้อนรับคุณ <span className="font-bold text-ink">{result.displayName}</span>{" "}
-          เข้าสู่กิจกรรม{" "}
-          <span className="font-bold text-xmas-red">{result.groupTitle}</span>
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-ink-soft">
-          เราได้ส่งลิงก์สำหรับแก้ไขข้อมูล Buddy Profile ไปให้ทางอีเมลของคุณด้วยแล้ว
-          และเมื่อถึงเวลาปิดรับสมัคร ระบบจะส่งอีเมลแจ้งผล Buddy ให้โดยอัตโนมัติ
-        </p>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link
-            href={`/me/profile?token=${encodeURIComponent(result.manageToken)}`}
-            className="analog-btn-lg thai-keep inline-flex min-h-[46px] items-center gap-2 rounded bg-xmas-red px-5 py-3 text-sm font-bold text-paper hover:bg-xmas-red-deep"
-          >
-            <Edit3 className="h-4 w-4" />
-            <span>ดู / แก้ไข Buddy Profile ของฉัน</span>
-          </Link>
-        </div>
-      </div>
+      </ChristmasCard>
     </div>
   );
 }
 
 export default function VerifyPage() {
   return (
-    <div className="mx-auto max-w-lg px-4 py-14">
-      <Suspense
-        fallback={
-          <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
-            กำลังโหลด...
-          </div>
-        }
-      >
+    <PageContainer size="md" className="max-w-2xl py-10 sm:py-14">
+      <Suspense fallback={<LoadingState label="กำลังโหลด..." rows={3} />}>
         <VerifyContent />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

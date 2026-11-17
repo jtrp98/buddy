@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
+  Gift,
   KeyRound,
   Mail,
   Menu,
   ShieldCheck,
-  Sparkles,
+  Snowflake,
   Volume2,
   VolumeX,
   X,
@@ -17,7 +19,63 @@ import {
   FestiveToggleSwitches,
 } from "@/components/AnalogPrimitives";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
-import { Ornament } from "@/components/vintage/Ornament";
+import { christmasButtonClass } from "@/components/ui/buttonStyles";
+
+function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
+  const pathname = usePathname();
+  const isRecover = pathname === "/recover" || pathname?.endsWith("/recover");
+  const isAdmin = pathname?.startsWith("/admin");
+  const isOutbox = pathname?.startsWith("/dev/outbox");
+
+  return (
+    <nav
+      aria-label="เมนูหลัก"
+      className="hidden shrink-0 items-center gap-2 text-sm font-semibold sm:flex"
+    >
+      <FestiveToggleSwitches />
+
+      {showDevOutbox && (
+        <Link
+          href="/dev/outbox"
+          title="กล่องอีเมลจำลอง"
+          aria-label="กล่องอีเมลจำลอง"
+          className={`analog-btn inline-flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+            isOutbox
+              ? "border-primary bg-primary/15 text-primary"
+              : "border-primary/35 bg-surface-elevated/90 text-primary hover:border-primary/65 hover:bg-[#1D3B57]"
+          }`}
+        >
+          <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span className="hidden lg:inline">กล่องเมลจำลอง</span>
+        </Link>
+      )}
+
+      <Link
+        href="/recover"
+        className={`analog-btn thai-keep inline-flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3.5 py-2 text-xs font-semibold sm:text-sm ${
+          isRecover
+            ? "border-primary bg-primary/15 text-primary"
+            : "border-border bg-surface-elevated/90 text-text-primary hover:border-primary/60 hover:bg-[#1D3B57]"
+        }`}
+      >
+        <KeyRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+        <span>ขอลิงก์ส่วนตัว</span>
+      </Link>
+
+      <Link
+        href="/admin"
+        className={christmasButtonClass(
+          isAdmin ? "gold" : "primary",
+          "sm",
+          "whitespace-nowrap"
+        )}
+      >
+        <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span>สำหรับ Admin</span>
+      </Link>
+    </nav>
+  );
+}
 
 export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,168 +85,141 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
   return (
     <>
       <header
-        className="sticky top-0 z-30 border-b border-ink/25 bg-paper/95 shadow-[0_2px_10px_-4px_rgba(70,53,44,0.18)] backdrop-blur-sm"
+        className="sticky top-0 z-30 border-b border-primary/20 bg-[#0A1626]/92 shadow-[0_6px_24px_rgba(4,10,20,0.55)] backdrop-blur-lg"
         onKeyDown={(e) => {
           if (e.key === "Escape" && mobileMenuOpen) {
             setMobileMenuOpen(false);
           }
         }}
       >
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-2 px-3 sm:px-4">
-        <Link
-          href="/"
-          onClick={() => setMobileMenuOpen(false)}
-          className="group flex min-w-0 shrink-0 items-center gap-2 text-ink transition sm:gap-2.5"
-        >
-          <span className="analog-btn flex h-9 w-9 shrink-0 items-center justify-center rounded bg-xmas-red text-paper sm:h-10 sm:w-10">
-            <Ornament name="horn" className="h-5 w-6 sm:h-5 sm:w-6" />
-          </span>
-          <div className="leading-tight">
-            <span className="block whitespace-nowrap font-display text-base leading-none tracking-tight text-ink group-hover:text-xmas-red sm:text-lg">
-              Secret Buddy
-            </span>
-            <span className="mt-0.5 block font-type text-[8.5px] tracking-[0.18em] text-pine uppercase sm:text-[9px]">
-              NORTH POLE POST
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop & Tablet Navigation */}
-        <nav className="hidden shrink-0 items-center gap-2 text-xs font-semibold sm:flex sm:text-sm">
-          <FestiveToggleSwitches />
-
-          {showDevOutbox && (
-            <Link
-              href="/dev/outbox"
-              title="กล่องอีเมลจำลอง"
-              aria-label="กล่องอีเมลจำลอง"
-              className="analog-btn inline-flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded bg-amber-wash px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-cream"
-            >
-              <Mail className="h-3.5 w-3.5 text-xmas-red" />
-              <span className="hidden lg:inline">กล่องเมลจำลอง</span>
-            </Link>
-          )}
-
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
           <Link
-            href="/recover"
-            title="ขอลิงก์ส่วนตัวใหม่"
-            aria-label="ขอลิงก์ส่วนตัวใหม่"
-            className="analog-btn thai-keep inline-flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded bg-paper px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-cream"
-          >
-            <KeyRound className="h-3.5 w-3.5 text-pine" />
-            <span>ขอลิงก์ส่วนตัว</span>
-          </Link>
-
-          <Link
-            href="/admin"
-            className="analog-btn thai-keep inline-flex min-h-[38px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded bg-pine px-3 py-1.5 text-xs font-bold text-paper hover:bg-pine-deep"
-          >
-            <ShieldCheck className="h-3.5 w-3.5 text-gold" />
-            <span>สำหรับ Admin</span>
-          </Link>
-        </nav>
-
-        {/* Mobile Compact Bar (44px+ tap targets, zero icon ambiguity) */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:hidden">
-          <Link
-            href="/admin"
+            href="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="analog-btn inline-flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded bg-pine px-3 text-xs font-bold text-paper hover:bg-pine-deep"
+            className="group flex min-w-0 shrink-0 items-center gap-2.5 text-text-primary transition sm:gap-3"
           >
-            <ShieldCheck className="h-4 w-4 text-gold" />
-            <span>Admin</span>
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/60 bg-gradient-to-br from-[#D63344] to-[#981826] text-snow-white shadow-[0_4px_12px_rgba(198,40,56,0.45),inset_0_1px_0_rgba(255,255,255,0.35)] transition group-hover:scale-105">
+              <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
+            </span>
+            <div className="leading-tight">
+              <span className="font-display-en block whitespace-nowrap text-base font-bold tracking-tight text-text-primary group-hover:text-primary sm:text-lg">
+                Secret Buddy
+              </span>
+              <span className="mt-0.5 block text-[10px] font-bold tracking-[0.16em] text-primary uppercase">
+                NORTH POLE WORKSHOP
+              </span>
+            </div>
           </Link>
 
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen((v) => !v)}
-            aria-expanded={mobileMenuOpen}
-            aria-controls="mobile-post-drawer"
-            aria-label={mobileMenuOpen ? "ปิดเมนู" : "เปิดเมนูและตั้งค่า"}
-            className="analog-btn inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded bg-cream text-ink hover:bg-paper"
+          {/* Desktop & Tablet Navigation */}
+          <Suspense
+            fallback={
+              <div className="hidden h-10 w-48 sm:block" aria-hidden="true" />
+            }
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-      </div>
+            <DesktopNavLinks showDevOutbox={showDevOutbox} />
+          </Suspense>
 
-      {/* Mobile Stationery Drawer */}
-      {mobileMenuOpen && (
-        <div
-          id="mobile-post-drawer"
-          className="border-t border-dashed border-rule bg-cream/95 px-4 py-3 sm:hidden"
-        >
-          <div className="mx-auto max-w-5xl space-y-2">
+          {/* Mobile Compact Bar (44px+ tap targets) */}
+          <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
-              href="/recover"
+              href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="analog-btn flex min-h-[44px] w-full items-center justify-between rounded bg-paper px-3.5 text-sm font-bold text-ink"
+              className={christmasButtonClass("primary", "sm", "min-h-[44px] px-3.5 text-xs")}
             >
-              <span className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-pine" />
-                <span>ขอลิงก์ส่วนตัวใหม่</span>
-              </span>
-              <span className="font-type text-[10px] tracking-wider text-ink-soft">
-                RECOVER
-              </span>
+              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Admin</span>
             </Link>
 
-            {showDevOutbox && (
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-post-drawer"
+              aria-label={mobileMenuOpen ? "ปิดเมนู" : "เปิดเมนูและตั้งค่า"}
+              className="analog-btn inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-border bg-surface-elevated text-text-primary hover:border-primary/60"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Drawer */}
+        {mobileMenuOpen && (
+          <div
+            id="mobile-post-drawer"
+            className="border-t border-border bg-[#0F2136] px-4 py-4 sm:hidden"
+          >
+            <div className="mx-auto max-w-6xl space-y-2.5">
               <Link
-                href="/dev/outbox"
+                href="/recover"
                 onClick={() => setMobileMenuOpen(false)}
-                className="analog-btn flex min-h-[44px] w-full items-center justify-between rounded bg-amber-wash px-3.5 text-sm font-bold text-ink"
+                className="analog-btn flex min-h-[46px] w-full items-center justify-between rounded-xl border border-border bg-surface-elevated px-4 text-sm font-semibold text-text-primary"
               >
-                <span className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-xmas-red" />
-                  <span>กล่องอีเมลจำลอง</span>
+                <span className="flex items-center gap-2.5">
+                  <KeyRound className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span>ขอลิงก์ส่วนตัวใหม่</span>
                 </span>
-                <span className="font-type text-[10px] tracking-wider text-ink-soft">
-                  DEV OUTBOX
+                <span className="text-xs font-medium text-text-secondary">
+                  กู้คืนลิงก์
                 </span>
               </Link>
-            )}
 
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={toggleFestiveFx}
-                aria-pressed={festiveFx}
-                className={`analog-btn flex min-h-[44px] items-center justify-center gap-1.5 rounded px-3 text-xs font-bold ${
-                  festiveFx
-                    ? "bg-amber-wash text-ink"
-                    : "bg-paper text-ink-soft"
-                }`}
-              >
-                <Sparkles className="h-4 w-4 text-gold-ink" />
-                <span>{festiveFx ? "หิมะ: เปิด" : "หิมะ: ปิด"}</span>
-              </button>
+              {showDevOutbox && (
+                <Link
+                  href="/dev/outbox"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="analog-btn flex min-h-[46px] w-full items-center justify-between rounded-xl border border-primary/40 bg-surface-elevated px-4 text-sm font-semibold text-primary"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Mail className="h-4 w-4" aria-hidden="true" />
+                    <span>กล่องอีเมลจำลอง</span>
+                  </span>
+                  <span className="text-xs font-medium text-text-secondary">
+                    DEV OUTBOX
+                  </span>
+                </Link>
+              )}
 
-              <button
-                type="button"
-                onClick={toggleSound}
-                aria-pressed={soundEnabled}
-                className={`analog-btn flex min-h-[44px] items-center justify-center gap-1.5 rounded px-3 text-xs font-bold ${
-                  soundEnabled
-                    ? "bg-pine-wash text-pine-deep"
-                    : "bg-paper text-ink-soft"
-                }`}
-              >
-                {soundEnabled ? (
-                  <Volume2 className="h-4 w-4 text-pine" />
-                ) : (
-                  <VolumeX className="h-4 w-4" />
-                )}
-                <span>{soundEnabled ? "เสียง: เปิด" : "เสียง: ปิด"}</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={toggleFestiveFx}
+                  aria-pressed={festiveFx}
+                  className={`analog-btn flex min-h-[46px] items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold ${
+                    festiveFx
+                      ? "border-primary/60 bg-surface-elevated text-primary"
+                      : "border-border bg-background text-text-secondary"
+                  }`}
+                >
+                  <Snowflake className="h-4 w-4 text-ice-blue" aria-hidden="true" />
+                  <span>{festiveFx ? "หิมะ: เปิด" : "หิมะ: ปิด"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleSound}
+                  aria-pressed={soundEnabled}
+                  className={`analog-btn flex min-h-[46px] items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold ${
+                    soundEnabled
+                      ? "border-emerald-400/60 bg-evergreen/80 text-emerald-200"
+                      : "border-border bg-background text-text-secondary"
+                  }`}
+                >
+                  {soundEnabled ? (
+                    <Volume2 className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <VolumeX className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  <span>{soundEnabled ? "เสียง: เปิด" : "เสียง: ปิด"}</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
+        )}
       </header>
 
-      {/* Vintage 1950s C9 Garland hanging transparently over the desk/hero top (non-sticky so it never obscures scrolled content) */}
+      {/* Festive Glowing Garland hanging cleanly below header */}
       <div className="pointer-events-none relative z-20 -mb-9">
         <FestiveStringLights />
       </div>

@@ -18,8 +18,8 @@ interface EnvelopeLetterProps {
 }
 
 /**
- * Folded 1950s North Pole postal letter rendered inside SecretEnvelope.
- * Top `.env-letter-crest` unfolds upward while `.env-letter-sheet` holds the reveal.
+ * High-contrast ivory postal letter rendered inside SecretEnvelope.
+ * Uses dark evergreen ink (#102119) and Christmas red (#B42332) on #FFFDF6 ivory paper.
  */
 export function EnvelopeLetter({
   letterhead = "NORTH POLE POST · SECRET BUDDY",
@@ -28,25 +28,25 @@ export function EnvelopeLetter({
   buddyName,
   rows,
   confidentialText = "ลับเฉพาะ · CONFIDENTIAL",
-  signature = "Head Postmaster",
+  signature = "North Pole Post",
   headingRef,
 }: EnvelopeLetterProps) {
   return (
-    <div className="relative h-full w-full text-left text-ink">
-      {/* Upper folded letterhead crest (unfolds open as letter rises) */}
+    <div className="relative h-full w-full text-left text-[#102119]">
+      {/* Upper folded letterhead crest */}
       <div className="env-letter-crest">
-        <div className="flex items-center justify-between gap-1.5">
-          <span className="truncate font-type text-[7.5px] tracking-[0.11em] text-xmas-red uppercase @[350px]:text-[9.5px] @[350px]:tracking-[0.15em]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[10px] font-bold tracking-[0.12em] text-[#B42332] uppercase @[350px]:text-xs">
             {letterhead}
           </span>
-          <Ornament name="star" className="h-3.5 w-3.5 shrink-0 text-gold-ink" />
+          <Ornament name="star" className="h-4 w-4 shrink-0 text-[#9c7210]" />
         </div>
         <div className="mt-1 flex items-baseline justify-between gap-2">
-          <span className="truncate font-script text-base font-bold leading-snug text-ink @[350px]:text-lg">
+          <span className="truncate font-script text-lg font-bold leading-snug text-[#102119] @[350px]:text-xl">
             {salutation}
           </span>
-          <span className="shrink-0 font-type text-[8px] tracking-[0.1em] text-ink-soft">
-            NO. 1955-DEC
+          <span className="shrink-0 text-[10px] font-semibold tracking-wider text-[#2e4a40]">
+            SECRET DISPATCH
           </span>
         </div>
       </div>
@@ -54,29 +54,29 @@ export function EnvelopeLetter({
       {/* Main letter sheet */}
       <div className="env-letter-sheet flex flex-col justify-between">
         <div>
-          <p className="text-[11px] leading-snug text-ink-soft @[350px]:text-xs">
+          <p className="text-xs leading-snug font-medium text-[#2e4a40] @[350px]:text-sm">
             {intro}
           </p>
 
           <h3
             ref={headingRef}
             tabIndex={-1}
-            className="thai-keep letterpress mt-1 font-display text-lg leading-[1.25] text-xmas-red focus:outline-none @[340px]:text-xl @[400px]:text-2xl"
+            className="thai-keep mt-1 text-lg font-bold leading-tight text-[#B42332] focus:outline-none @[340px]:text-xl @[400px]:text-2xl"
           >
             {buddyName}
           </h3>
 
-          <div className="mt-1.5 space-y-1 @[350px]:mt-2 @[350px]:space-y-1.5">
+          <div className="mt-2 space-y-1.5">
             {rows.map((row) => (
               <div
                 key={row.label}
-                className="flex items-baseline justify-between gap-1.5 text-[10.5px] leading-snug @[350px]:text-xs"
+                className="flex items-baseline justify-between gap-1.5 text-xs leading-snug @[350px]:text-[13px]"
               >
-                <span className="shrink-0 font-serif font-bold text-ink">
+                <span className="shrink-0 font-bold text-[#102119]">
                   {row.label}
                 </span>
                 <span aria-hidden="true" className="dotted-leader min-w-[0.75rem]" />
-                <span className="max-w-[70%] text-right font-medium text-ink-soft">
+                <span className="max-w-[72%] text-right font-semibold leading-snug text-[#1e3d32]">
                   {row.value}
                 </span>
               </div>
@@ -84,12 +84,12 @@ export function EnvelopeLetter({
           </div>
         </div>
 
-        {/* Bottom rubber stamp & script signature (stays clear of pocket notch) */}
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="inline-block -rotate-2 rounded-xs border border-xmas-red/65 px-1.5 py-0.5 font-type text-[7.5px] tracking-[0.12em] text-xmas-red uppercase @[350px]:text-[8px]">
+        {/* Bottom stamp & signature */}
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <span className="inline-block rounded border border-[#B42332]/70 bg-[#B42332]/10 px-2 py-0.5 text-[10px] font-bold tracking-[0.08em] text-[#8f1926] uppercase">
             {confidentialText}
           </span>
-          <span className="shrink-0 font-script text-sm font-bold text-pine @[350px]:text-base">
+          <span className="shrink-0 font-script text-base font-bold text-[#123229]">
             — {signature}
           </span>
         </div>

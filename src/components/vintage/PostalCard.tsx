@@ -8,35 +8,32 @@ interface PostalCardProps {
   title: ReactNode;
   description: string;
   tone?: "red" | "pine" | "gold";
-  rotationClass?: string;
   showPostmark?: boolean;
   className?: string;
 }
 
 /**
- * 1950s printed postal index card with inset double-rule frame, engraved medallion,
- * perforated right stub, and optional faint cancellation mark.
+ * High-contrast Christmas feature card with refined 3D medallion depth and gold foil accents.
  */
 export function PostalCard({
   cardNumber,
-  kicker = "POSTAL CARD",
+  kicker = "NORTH POLE",
   icon,
   title,
   description,
-  tone = "pine",
-  rotationClass = "",
+  tone = "gold",
   showPostmark = false,
   className = "",
 }: PostalCardProps) {
   const medallionTone = {
-    red: "border-xmas-red/45 bg-red-wash/70 text-xmas-red",
-    pine: "border-pine/45 bg-pine-wash/70 text-pine",
-    gold: "border-gold-ink/45 bg-amber-wash/75 text-gold-ink",
+    red: "border-christmas-red-light/45 bg-gradient-to-br from-christmas-red/35 to-christmas-red/15 text-christmas-red-light shadow-[0_6px_16px_rgba(198,40,56,0.25)]",
+    pine: "border-emerald-400/40 bg-gradient-to-br from-evergreen-light/70 to-evergreen/90 text-emerald-200 shadow-[0_6px_16px_rgba(18,61,50,0.35)]",
+    gold: "border-primary/45 bg-gradient-to-br from-primary/25 to-primary/10 text-primary shadow-[0_6px_16px_rgba(232,196,122,0.2)]",
   }[tone];
 
   return (
     <article
-      className={`analog-card printed-double-rule perforated-edge-right group relative rounded-sm p-6 pr-8 pt-6 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:rotate-0 hover:shadow-paper-lifted motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${rotationClass} ${className}`}
+      className={`christmas-card relative overflow-hidden rounded-2xl p-6 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_18px_36px_-12px_rgba(4,10,20,0.75)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${className}`}
     >
       {showPostmark && (
         <Postmark
@@ -44,40 +41,36 @@ export function PostalCard({
           date="25 DEC"
           subtext="REGISTERED"
           wavyLines={false}
-          tone="ink"
+          tone="gold"
           size="sm"
-          className="pointer-events-none absolute top-3 right-5 -rotate-12 opacity-20"
+          className="pointer-events-none absolute top-3 right-3 -rotate-12 opacity-15"
         />
       )}
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex h-full flex-col">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="block font-type text-[10px] tracking-[0.2em] text-ink-soft uppercase">
+            <span className="block text-[11px] font-bold tracking-[0.14em] text-primary uppercase">
               {kicker}
             </span>
-            <span className="mt-0.5 block font-serif text-2xl italic font-bold leading-none text-gold-ink">
+            <span className="font-display-en mt-1 block text-2xl font-bold leading-none text-text-secondary">
               {cardNumber}
             </span>
           </div>
 
           <div
-            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border shadow-inner ${medallionTone}`}
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${medallionTone}`}
           >
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-1 rounded-full border border-current opacity-35"
-            />
             {icon}
           </div>
         </div>
 
         <div className="gold-foil-rule my-4" />
 
-        <h2 className="thai-keep font-serif text-[17px] font-bold leading-[1.45] text-ink">
+        <h3 className="thai-keep text-lg font-bold leading-snug text-snow-white">
           {title}
-        </h2>
-        <p className="mt-2 text-[15px] leading-[1.75] text-ink-soft">
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
           {description}
         </p>
       </div>

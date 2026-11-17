@@ -5,20 +5,20 @@ interface PostmarkProps {
   date?: string;
   subtext?: string;
   wavyLines?: boolean;
-  tone?: "ink" | "red" | "pine";
+  tone?: "ink" | "red" | "pine" | "gold";
   size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 /**
- * Circular 1950s North Pole postal cancellation mark with optional wavy lines.
+ * Circular North Pole postal cancellation mark with optional wavy lines.
  */
 export function Postmark({
   city = "NORTH POLE POST",
   date = "25 DEC 1955",
   subtext = "SECRET SERVICE",
   wavyLines = true,
-  tone = "ink",
+  tone = "gold",
   size = "md",
   className = "",
 }: PostmarkProps) {
@@ -28,8 +28,9 @@ export function Postmark({
 
   const colorClass = {
     ink: "text-ink/70",
-    red: "text-xmas-red/75",
-    pine: "text-pine/75",
+    red: "text-christmas-red-light/75",
+    pine: "text-text-secondary/75",
+    gold: "text-primary/80",
   }[tone];
 
   const sizeClass = {
@@ -51,7 +52,6 @@ export function Postmark({
         <path id={botPathId} d="M 16,52 A 32,32 0 0,0 80,52" />
       </defs>
 
-      {/* Outer and inner inked rings */}
       <circle
         cx="48"
         cy="48"
@@ -63,48 +63,24 @@ export function Postmark({
       />
       <circle cx="48" cy="48" r="24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.85" />
 
-      {/* Curved upper & lower post office text */}
-      <text
-        fill="currentColor"
-        fontSize="7.4"
-        fontWeight="700"
-        letterSpacing="1.6"
-        className="font-type"
-      >
+      <text fill="currentColor" fontSize="7.4" fontWeight="700" letterSpacing="1.6">
         <textPath href={`#${topPathId}`} startOffset="50%" textAnchor="middle">
           {city}
         </textPath>
       </text>
 
-      <text
-        fill="currentColor"
-        fontSize="6.5"
-        fontWeight="700"
-        letterSpacing="1.3"
-        className="font-type"
-      >
+      <text fill="currentColor" fontSize="6.5" fontWeight="700" letterSpacing="1.3">
         <textPath href={`#${botPathId}`} startOffset="50%" textAnchor="middle">
           {subtext}
         </textPath>
       </text>
 
-      {/* Center date bars */}
       <line x1="25" y1="40.5" x2="71" y2="40.5" stroke="currentColor" strokeWidth="0.9" opacity="0.7" />
-      <text
-        x="48"
-        y="50.5"
-        textAnchor="middle"
-        fill="currentColor"
-        fontSize="8.6"
-        fontWeight="700"
-        letterSpacing="0.8"
-        className="font-type"
-      >
+      <text x="48" y="50.5" textAnchor="middle" fill="currentColor" fontSize="8.6" fontWeight="700" letterSpacing="0.8">
         {date}
       </text>
       <line x1="25" y1="55.5" x2="71" y2="55.5" stroke="currentColor" strokeWidth="0.9" opacity="0.7" />
 
-      {/* Classic 1950s wavy machine-cancellation bars */}
       {wavyLines && (
         <g stroke="currentColor" strokeWidth="1.35" fill="none" opacity="0.65">
           <path d="M 92,31 Q 104,24 116,31 T 140,31 T 164,31" />

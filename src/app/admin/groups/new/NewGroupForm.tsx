@@ -1,16 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarClock, Gift } from "lucide-react";
-import type { BudgetTypeValue } from "@/lib/budget";
-import { CandyStripeBar, WaxSeal } from "@/components/AnalogPrimitives";
+import { ArrowLeft, CalendarClock, Gift, Info, Sparkles } from "lucide-react";
+import { formatBudget, type BudgetTypeValue } from "@/lib/budget";
+import { ElfCharacter3D } from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
+import {
+  Alert,
+  ChristmasButton,
+  ChristmasCard,
+  FormField,
+  Input,
+  PageContainer,
+  Textarea,
+} from "@/components/ui/ChristmasUI";
+
+const BUDGET_OPTIONS: ReadonlyArray<{
+  id: BudgetTypeValue;
+  label: string;
+  hint: string;
+}> = [
+  { id: "FIXED", label: "งบตายตัว", hint: "กำหนดราคาเดียว เช่น 300 บาท" },
+  { id: "RANGE", label: "งบแบบช่วง", hint: "กำหนดขั้นต่ำ–สูงสุด เช่น 200–500 บาท" },
+  { id: "MIN", label: "งบขั้นต่ำ", hint: "กำหนดราคาเริ่มต้น เช่น 200 บาทขึ้นไป" },
+  { id: "UNLIMITED", label: "ไม่จำกัดงบ", hint: "เลือกของขวัญตามความเหมาะสม" },
+];
 
 export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
   const router = useRouter();
-  const { triggerClickSound } = useFestiveAtmosphere();
+  const { triggerClickSound, triggerChimeSound } = useFestiveAtmosphere();
+
+  const titleId = useId();
+  const descId = useId();
+  const budgetMinId = useId();
+  const budgetMaxId = useId();
+  const closeAtId = useId();
+  const revealAtId = useId();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [budgetType, setBudgetType] = useState<BudgetTypeValue>("RANGE");
@@ -22,16 +50,32 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const previewBudgetText = formatBudget(
+    budgetType,
+    budgetMin ? Number(budgetMin) : null,
+    budgetMax ? Number(budgetMax) : null
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     triggerClickSound();
     setError("");
+
+    if (title.trim().length < 2) {
+      setError("กรุณาตั้งชื่อกิจกรรมอย่างน้อย 2 ตัวอักษร");
+      return;
+    }
+    if (budgetType === "RANGE" && Number(budgetMax) < Number(budgetMin)) {
+      setError("งบสูงสุดต้องมากกว่าหรือเท่ากับงบต่ำสุด");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const payload = {
-        title,
-        description: description || null,
+        title: title.trim(),
+        description: description.trim() || null,
         budgetType,
         budgetMin:
           budgetType === "UNLIMITED" ? null : budgetMin ? Number(budgetMin) : null,
@@ -59,250 +103,284 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
         return;
       }
 
+      triggerChimeSound();
       router.push(`/admin/groups/${data.group.id}`);
     } catch {
-      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
+    <PageContainer size="md">
       <Link
         href="/admin"
-        className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-soft hover:text-xmas-red"
+        className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary"
       >
-        <ArrowLeft className="h-4 w-4" />
-        <span>กลับไปหน้าแดชบอร์ด</span>
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        <span>กลับไปหน้า Mission Control</span>
       </Link>
 
-      <div className="analog-card-lg printed-double-rule mt-4 overflow-hidden rounded-md">
-        <CandyStripeBar />
-        <div className="relative z-10 p-6 sm:p-8">
-          <div className="flex items-center gap-3">
-            <WaxSeal tone="red" size="md">
-              <Gift className="h-5 w-5" />
-            </WaxSeal>
+      <ChristmasCard elevated withStripe className="mt-3">
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center">
+            <div className="shrink-0 self-start rounded-2xl border border-primary/30 bg-background/70 p-2">
+              <ElfCharacter3D className="h-20 w-20" />
+            </div>
             <div>
-              <span className="font-type text-[10px] font-bold tracking-[0.16em] text-pine uppercase">
-                EVENT BLUEPRINT
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-primary uppercase">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>PREPARE YOUR CHRISTMAS PARTY</span>
               </span>
-              <h1 className="thai-keep letterpress font-display text-xl text-ink sm:text-2xl">
-                สร้างกลุ่ม Secret Buddy ใหม่
+              <h1 className="thai-keep mt-1 text-xl font-bold text-snow-white sm:text-2xl">
+                เตรียมจัดกิจกรรม Secret Buddy ใหม่
               </h1>
-              <p className="text-xs text-ink-soft">
-                ตั้งชื่องบของขวัญและเวลาปิดรับสมัคร (เวลาไทย UTC+7)
+              <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+                ตั้งชื่อปาร์ตี้ งบประมาณของขวัญ และกำหนดเวลาปิดรับสมัคร (อ้างอิงเวลาประเทศไทย UTC+7)
               </p>
             </div>
           </div>
 
           {error && (
-            <div className="mt-5 rounded border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-medium text-xmas-red-deep">
+            <Alert tone="error" className="mt-6">
               {error}
-            </div>
+            </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-            <div>
-              <label className="block font-serif text-sm font-bold text-ink">
-                ชื่อกิจกรรม <span className="text-xmas-red">*</span>
-              </label>
-              <input
-                type="text"
+          <form onSubmit={handleSubmit} className="mt-6 space-y-7">
+            {/* Section 1: Event Details */}
+            <fieldset className="space-y-4 rounded-2xl border border-white/12 bg-background/45 p-5">
+              <legend className="px-2 text-base font-bold text-primary">
+                1. ข้อมูลปาร์ตี้คริสต์มาส
+              </legend>
+
+              <FormField
+                label="ชื่อกิจกรรม"
+                htmlFor={titleId}
                 required
-                minLength={2}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="เช่น Buddy Christmas 2026"
-                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
-              />
-            </div>
+                helperText="ชื่อนี้จะแสดงบนบัตรเชิญและในซองลับของสมาชิกทุกคน"
+              >
+                <Input
+                  id={titleId}
+                  type="text"
+                  required
+                  minLength={2}
+                  disabled={submitting}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="เช่น แลกของขวัญคริสต์มาส ทีม Product 2026"
+                />
+              </FormField>
 
-            <div>
-              <label className="block font-serif text-sm font-bold text-ink">
-                รายละเอียดกิจกรรม (ไม่บังคับ)
-              </label>
-              <textarea
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="เช่น แลกของขวัญส่งท้ายปี นำของขวัญมาวางใต้ต้นคริสต์มาส เวลา 16:00 น."
-                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
-              />
-            </div>
+              <FormField
+                label="รายละเอียดหรือกติกาเพิ่มเติม (ไม่บังคับ)"
+                htmlFor={descId}
+                helperText="เช่น สถานที่วางของขวัญ หรือธีมแต่งกายวันแลกของขวัญ"
+              >
+                <Textarea
+                  id={descId}
+                  rows={3}
+                  disabled={submitting}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="เช่น นำของขวัญมาวางใต้ต้นคริสต์มาสโซน Pantry ก่อน 16:00 น."
+                />
+              </FormField>
+            </fieldset>
 
-            {/* Gift Budget */}
-            <div className="rounded-md border border-ink/25 bg-cream p-4 sm:p-5">
-              <label className="block font-serif text-sm font-bold text-ink">
-                งบประมาณของขวัญ <span className="text-xmas-red">*</span>
-              </label>
+            {/* Section 2: Gift Budget */}
+            <fieldset className="space-y-4 rounded-2xl border border-primary/25 bg-background/55 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <legend className="flex items-center gap-2 text-base font-bold text-primary">
+                  <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>2. งบประมาณของขวัญ *</span>
+                </legend>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/45 bg-surface-elevated px-3.5 py-1 text-xs font-bold text-primary">
+                  ตัวอย่างที่จะแสดง: {previewBudgetText}
+                </span>
+              </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                {(
-                  [
-                    { id: "FIXED", label: "งบตายตัว" },
-                    { id: "RANGE", label: "งบแบบช่วง" },
-                    { id: "MIN", label: "งบขั้นต่ำ" },
-                    { id: "UNLIMITED", label: "ไม่จำกัดงบ" },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      triggerClickSound();
-                      setBudgetType(opt.id);
-                    }}
-                    className={`analog-btn min-h-[42px] rounded px-3 py-2 text-xs font-bold ${
-                      budgetType === opt.id
-                        ? "bg-xmas-red text-paper"
-                        : "bg-paper text-ink hover:bg-cream"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {BUDGET_OPTIONS.map((opt) => {
+                  const selected = budgetType === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={submitting}
+                      aria-pressed={selected}
+                      onClick={() => {
+                        triggerClickSound();
+                        setBudgetType(opt.id);
+                      }}
+                      className={`analog-btn flex min-h-[60px] flex-col items-start justify-center rounded-xl border px-4 py-3 text-left transition ${
+                        selected
+                          ? "border-primary bg-primary/15 text-snow-white ring-1 ring-primary shadow-[0_0_16px_rgba(232,196,122,0.16)]"
+                          : "border-border bg-surface text-text-secondary hover:border-white/35 hover:text-snow-white"
+                      }`}
+                    >
+                      <span className="text-sm font-bold text-snow-white">
+                        {opt.label}
+                      </span>
+                      <span className="text-xs text-text-secondary">{opt.hint}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {budgetType === "FIXED" && (
-                <div className="mt-4">
-                  <label className="block text-xs font-bold text-ink-soft">
-                    จำนวนเงิน (บาท)
-                  </label>
-                  <input
+                <FormField label="จำนวนเงิน (บาท)" htmlFor={budgetMinId} required>
+                  <Input
+                    id={budgetMinId}
                     type="number"
                     min={1}
                     required
+                    disabled={submitting}
                     value={budgetMin}
                     onChange={(e) => setBudgetMin(e.target.value)}
                     placeholder="300"
-                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
-                </div>
+                </FormField>
               )}
 
               {budgetType === "RANGE" && (
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-ink-soft">
-                      งบต่ำสุด (บาท)
-                    </label>
-                    <input
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField label="งบต่ำสุด (บาท)" htmlFor={budgetMinId} required>
+                    <Input
+                      id={budgetMinId}
                       type="number"
                       min={1}
                       required
+                      disabled={submitting}
                       value={budgetMin}
                       onChange={(e) => setBudgetMin(e.target.value)}
                       placeholder="200"
-                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-ink-soft">
-                      งบสูงสุด (บาท)
-                    </label>
-                    <input
+                  </FormField>
+                  <FormField label="งบสูงสุด (บาท)" htmlFor={budgetMaxId} required>
+                    <Input
+                      id={budgetMaxId}
                       type="number"
                       min={1}
                       required
+                      disabled={submitting}
                       value={budgetMax}
                       onChange={(e) => setBudgetMax(e.target.value)}
                       placeholder="500"
-                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     />
-                  </div>
+                  </FormField>
                 </div>
               )}
 
               {budgetType === "MIN" && (
-                <div className="mt-4">
-                  <label className="block text-xs font-bold text-ink-soft">
-                    งบขั้นต่ำ (บาทขึ้นไป)
-                  </label>
-                  <input
+                <FormField label="งบขั้นต่ำ (บาทขึ้นไป)" htmlFor={budgetMinId} required>
+                  <Input
+                    id={budgetMinId}
                     type="number"
                     min={1}
                     required
+                    disabled={submitting}
                     value={budgetMin}
                     onChange={(e) => setBudgetMin(e.target.value)}
                     placeholder="200"
-                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
-                </div>
+                </FormField>
               )}
 
               {budgetType === "UNLIMITED" && (
-                <p className="mt-3 text-xs text-ink-soft">
-                  สมาชิกสามารถเลือกของขวัญได้อย่างอิสระตามความเหมาะสม
+                <p className="flex items-center gap-2 text-xs text-text-secondary">
+                  <Info className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                  <span>สมาชิกสามารถเลือกของขวัญได้อย่างอิสระตามความเหมาะสม</span>
                 </p>
               )}
-            </div>
+            </fieldset>
 
-            {/* Dates */}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="flex items-center gap-1.5 text-sm font-bold text-ink">
-                  <CalendarClock className="h-4 w-4 text-xmas-red" />
-                  <span>วันและเวลาปิดรับสมัคร (เวลาไทย) *</span>
-                </label>
-                <input
-                  type="datetime-local"
+            {/* Section 3: Schedule */}
+            <fieldset className="space-y-4 rounded-2xl border border-white/12 bg-background/45 p-5">
+              <legend className="px-2 text-base font-bold text-primary">
+                3. กำหนดวันและเวลา (เวลาไทย UTC+7)
+              </legend>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  label={
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarClock
+                        className="h-4 w-4 text-primary"
+                        aria-hidden="true"
+                      />
+                      <span>วันและเวลาปิดรับสมัคร</span>
+                    </span>
+                  }
+                  htmlFor={closeAtId}
                   required
-                  value={registrationClosesAt}
-                  onChange={(e) => setRegistrationClosesAt(e.target.value)}
-                  className="analog-input mt-1.5 w-full rounded px-3.5 py-2.5 text-sm"
-                />
-              </div>
+                  helperText="เมื่อถึงเวลานี้ ระบบจะปิดรับสมัครและพร้อมสุ่มจับคู่"
+                >
+                  <Input
+                    id={closeAtId}
+                    type="datetime-local"
+                    required
+                    disabled={submitting}
+                    value={registrationClosesAt}
+                    onChange={(e) => setRegistrationClosesAt(e.target.value)}
+                  />
+                </FormField>
 
-              <div>
-                <label className="block text-sm font-bold text-ink">
-                  วันเฉลย Buddy (ไม่บังคับ)
-                </label>
-                <input
-                  type="datetime-local"
-                  value={revealAt}
-                  onChange={(e) => setRevealAt(e.target.value)}
-                  className="analog-input mt-1.5 w-full rounded px-3.5 py-2.5 text-sm"
-                />
+                <FormField
+                  label="วันนัดแลก / เฉลย Buddy (ไม่บังคับ)"
+                  htmlFor={revealAtId}
+                  helperText="แสดงให้สมาชิกทราบในซองลับว่านัดเฉลยกันวันไหน"
+                >
+                  <Input
+                    id={revealAtId}
+                    type="datetime-local"
+                    disabled={submitting}
+                    value={revealAt}
+                    onChange={(e) => setRevealAt(e.target.value)}
+                  />
+                </FormField>
               </div>
-            </div>
+            </fieldset>
 
-            {/* Publish Option */}
-            <label className="flex cursor-pointer items-start gap-3 rounded-md border border-ink/25 bg-pine-wash p-4 hover:bg-pine-wash">
+            {/* Section 4: Publish Status */}
+            <label className="flex cursor-pointer items-start gap-3.5 rounded-2xl border border-emerald-400/35 bg-evergreen/50 p-4 transition hover:border-emerald-400/60">
               <input
                 type="checkbox"
                 checked={publishNow}
+                disabled={submitting}
                 onChange={(e) => {
                   triggerClickSound();
                   setPublishNow(e.target.checked);
                 }}
-                className="mt-1 h-4 w-4 accent-pine"
+                className="mt-1 h-5 w-5 shrink-0 accent-[#E8C47A]"
               />
               <div>
-                <div className="text-sm font-bold text-pine-deep">
-                  เปิดรับสมัครทันที (สถานะ Open)
+                <div className="text-sm font-bold text-snow-white">
+                  เปิดรับสมัครทันทีหลังสร้างกลุ่ม (สถานะ: เปิดรับสมัคร)
                 </div>
-                <div className="text-xs text-pine">
-                  หากไม่เลือก กลุ่มจะถูกบันทึกเป็น Draft เพื่อรอแก้ไขก่อนเปิดรับสมัครจริง
-                </div>
+                <p className="mt-0.5 text-xs leading-relaxed text-text-secondary">
+                  หากไม่เลือก กลุ่มจะถูกบันทึกเป็นฉบับร่าง (Draft) เพื่อให้คุณตรวจสอบก่อนเปิดรับสมัครจริง
+                </p>
               </div>
             </label>
 
-            <button
+            <ChristmasButton
               type="submit"
-              disabled={submitting}
-              className="analog-btn-lg min-h-[48px] w-full rounded bg-xmas-red py-3.5 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
+              variant="primary"
+              size="lg"
+              loading={submitting}
+              loadingText="กำลังสร้างปาร์ตี้คริสต์มาส..."
+              className="w-full"
             >
-              {submitting
-                ? "กำลังสร้างกลุ่ม..."
-                : publishNow
-                  ? "สร้างกลุ่มและเปิดรับสมัคร"
-                  : "บันทึกเป็น Draft"}
-            </button>
+              <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>
+                {publishNow ? "สร้างปาร์ตี้และเปิดรับสมัครทันที" : "บันทึกเป็นฉบับร่าง"}
+              </span>
+            </ChristmasButton>
           </form>
         </div>
-      </div>
-    </div>
+      </ChristmasCard>
+    </PageContainer>
   );
 }

@@ -1,26 +1,28 @@
 import type { Metadata } from "next";
-import {
-  Charm,
-  Chonburi,
-  Noto_Sans_Thai,
-  Special_Elite,
-  Trirong,
-} from "next/font/google";
+import Link from "next/link";
+import { Charm, Fraunces, IBM_Plex_Sans_Thai, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { FestiveAtmosphereProvider } from "@/components/FestiveAtmosphere";
 
-const chonburi = Chonburi({
-  variable: "--font-chonburi",
+const ibmPlexSansThai = IBM_Plex_Sans_Thai({
+  variable: "--font-thai",
   subsets: ["thai", "latin"],
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const trirong = Trirong({
-  variable: "--font-trirong",
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "700"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["600", "700"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -32,24 +34,10 @@ const charm = Charm({
   display: "swap",
 });
 
-const notoSansThai = Noto_Sans_Thai({
-  variable: "--font-thai",
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const specialElite = Special_Elite({
-  variable: "--font-special-elite",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Secret Buddy — North Pole Post & Holiday Gift Exchange",
+  title: "Secret Buddy — A Magical Christmas Adventure | แลกของขวัญแบบลับ ๆ",
   description:
-    "สร้างกิจกรรมจับคู่ Secret Buddy สไตล์ไปรษณีย์คริสต์มาสยุค 1950s กำหนดงบและเวลาปิดรับสมัคร สมาชิกเข้าร่วมได้โดยไม่ต้องสมัครบัญชี พร้อมระบบรักษาความลับ",
+    "เนรมิตกิจกรรม Secret Buddy และ Secret Santa ให้กลายเป็นความทรงจำคริสต์มาสสุดมหัศจรรย์ จับคู่ลับ 100% พร้อม Wish List และการเปิดกล่องของขวัญสุดพิเศษ",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -58,30 +46,64 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${chonburi.variable} ${trirong.variable} ${charm.variable} ${notoSansThai.variable} ${specialElite.variable} h-full antialiased`}
+      className={`${ibmPlexSansThai.variable} ${inter.variable} ${fraunces.variable} ${charm.variable} h-full antialiased`}
     >
-      <body className="linen-desk min-h-full flex flex-col text-ink selection:bg-gold/30 selection:text-ink">
+      <body className="evergreen-canvas min-h-full flex flex-col bg-background text-text-primary selection:bg-christmas-red selection:text-snow-white">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-xl focus:bg-primary focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-foreground focus:shadow-lg"
+        >
+          ข้ามไปยังเนื้อหาหลัก
+        </a>
+
         <FestiveAtmosphereProvider>
           <Navbar showDevOutbox={isDev} />
-          <main className="relative z-10 flex-1">{children}</main>
-          <footer className="relative z-10 mt-14 border-t border-ink/20 bg-cream/95">
-            <div className="candy-stripe-bar h-2 w-full" />
+          <main id="main-content" className="relative z-10 flex-1 focus:outline-none">
+            {children}
+          </main>
+          <footer className="relative z-10 mt-20 border-t border-border bg-[#091322]/95 backdrop-blur-md">
+            <div className="candy-stripe-bar h-1.5 w-full" />
             <div
-              className={`mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-4 pt-5 text-center text-xs text-ink-soft sm:flex-row sm:text-left ${
-                isDev ? "pb-16 xl:pb-6" : "pb-6"
+              className={`mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 pt-8 text-center text-sm text-text-secondary sm:flex-row sm:px-6 sm:text-left ${
+                isDev ? "pb-16 xl:pb-8" : "pb-8"
               }`}
             >
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-                <span className="inline-block whitespace-nowrap rounded-sm border border-xmas-red/40 bg-paper px-2.5 py-0.5 font-type text-[10px] tracking-[0.16em] text-xmas-red">
-                  NORTH POLE POST · 25 DEC
-                </span>
-                <span className="thai-keep font-serif text-sm font-medium text-ink">
-                  Secret Buddy · ระบบจับคู่ของขวัญแบบลับสุดยอด
-                </span>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/45 bg-surface-elevated px-3 py-1 text-[11px] font-bold tracking-wider text-primary uppercase">
+                    NORTH POLE WORKSHOP · SECRET BUDDY
+                  </span>
+                  <span className="thai-keep font-bold text-text-primary">
+                    A Magical Christmas Adventure
+                  </span>
+                </div>
+                <p className="text-xs text-text-muted">
+                  ผู้เข้าร่วมไม่ต้องสมัครบัญชี • เข้ารหัสผลจับคู่ AES-256-GCM • Admin ไม่เห็นผลจับคู่
+                </p>
               </div>
-              <span className="font-type text-[11px] tracking-[0.12em] text-ink-soft">
-                HANDCRAFTED STATIONERY · PRIVACY GUARANTEED
-              </span>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
+                <Link
+                  href="/admin/register"
+                  className="text-primary transition hover:text-primary-hover hover:underline underline-offset-4"
+                >
+                  สร้างกิจกรรมใหม่
+                </Link>
+                <span aria-hidden="true" className="text-border">•</span>
+                <Link
+                  href="/recover"
+                  className="text-text-secondary transition hover:text-text-primary hover:underline underline-offset-4"
+                >
+                  ขอลิงก์ส่วนตัว
+                </Link>
+                <span aria-hidden="true" className="text-border">•</span>
+                <Link
+                  href="/admin/login"
+                  className="text-text-secondary transition hover:text-text-primary hover:underline underline-offset-4"
+                >
+                  เข้าสู่ระบบ Admin
+                </Link>
+              </div>
             </div>
           </footer>
         </FestiveAtmosphereProvider>

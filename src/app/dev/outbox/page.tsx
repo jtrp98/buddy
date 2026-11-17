@@ -3,7 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { Mail, RefreshCw, Trash2 } from "lucide-react";
 import { PostageStamp } from "@/components/AnalogPrimitives";
+import { NorthPoleMailbox3D } from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
+import {
+  ChristmasButton,
+  ChristmasCard,
+  EmptyState,
+  LoadingState,
+  PageContainer,
+  PageHeader,
+} from "@/components/ui/ChristmasUI";
 
 interface OutboxItem {
   id: string;
@@ -22,7 +31,7 @@ function renderTextWithLinks(text: string) {
         <a
           key={i}
           href={part}
-          className="break-all font-bold text-xmas-red underline decoration-dashed underline-offset-2 hover:text-pine"
+          className="break-all font-semibold text-primary underline decoration-primary/60 underline-offset-2 hover:text-primary-hover"
         >
           {part}
         </a>
@@ -64,83 +73,82 @@ export default function DevOutboxPage() {
 
   if (notAvailable) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center text-sm font-bold text-ink-soft">
-        หน้านี้ใช้งานได้เฉพาะโหมดพัฒนา (Development) เท่านั้น
-      </div>
+      <PageContainer size="md" className="py-16">
+        <EmptyState
+          icon={<NorthPoleMailbox3D className="h-24 w-24" />}
+          title="หน้านี้ใช้งานได้เฉพาะโหมดพัฒนา (Development) เท่านั้น"
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-5 px-4 py-8">
-      <div className="analog-card printed-double-rule flex flex-wrap items-center justify-between gap-4 rounded-md p-5 sm:p-6">
-        <div className="relative z-10">
-          <span className="font-type text-[10px] font-bold tracking-[0.16em] text-pine uppercase">
-            POSTMAN&apos;S MAILBAG
-          </span>
-          <h1 className="thai-keep letterpress mt-1 flex items-start gap-2 font-display text-xl leading-[1.35] text-ink sm:items-center sm:text-2xl">
-            <Mail className="mt-1 h-5 w-5 shrink-0 text-xmas-red sm:mt-0 sm:h-6 sm:w-6" />
-            <span>กล่องอีเมลจำลอง (Dev Outbox)</span>
-          </h1>
-          <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-            ใช้สำหรับทดสอบการส่งอีเมลในเครื่อง Local เมื่อยังไม่ได้ตั้งค่า Gmail SMTP
-          </p>
+    <PageContainer className="max-w-4xl space-y-5">
+      <ChristmasCard elevated withStripe>
+        <div className="p-6">
+          <PageHeader
+            kicker="DEV OUTBOX"
+            title="กล่องอีเมลจำลอง"
+            description="ใช้สำหรับทดสอบการส่งอีเมลในเครื่อง Local เมื่อยังไม่ได้ตั้งค่า SMTP"
+            actions={
+              <>
+                <ChristmasButton
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    triggerClickSound();
+                    void load();
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                  <span>รีเฟรช</span>
+                </ChristmasButton>
+                <ChristmasButton variant="danger" size="sm" onClick={handleClear}>
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  <span>ล้างกล่อง</span>
+                </ChristmasButton>
+              </>
+            }
+          />
         </div>
-        <div className="relative z-10 flex gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              triggerClickSound();
-              void load();
-            }}
-            className="analog-btn inline-flex min-h-[44px] items-center gap-1.5 rounded bg-paper px-3.5 py-2 text-xs font-bold text-ink hover:bg-cream sm:min-h-[38px]"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            <span>รีเฟรช</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleClear}
-            className="analog-btn inline-flex min-h-[44px] items-center gap-1.5 rounded bg-red-wash px-3.5 py-2 text-xs font-bold text-xmas-red-deep hover:bg-red-wash/80 sm:min-h-[38px]"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            <span>ล้างกล่อง</span>
-          </button>
-        </div>
-      </div>
+      </ChristmasCard>
 
       {loading ? (
-        <div className="analog-card rounded-md p-8 text-center text-sm font-bold text-ink-soft">
-          กำลังโหลด...
-        </div>
+        <LoadingState label="กำลังโหลดอีเมลจำลอง..." rows={3} />
       ) : items.length === 0 ? (
-        <div className="analog-kraft rounded-md border-dashed p-10 text-center text-sm font-bold text-ink-soft">
-          ยังไม่มีอีเมลที่ถูกส่งในโหมดจำลอง
-        </div>
+        <EmptyState
+          icon={<NorthPoleMailbox3D className="h-24 w-24" />}
+          title="ยังไม่มีอีเมลที่ถูกส่งในโหมดจำลอง"
+          description="เมื่อมีการลงทะเบียนหรือสุ่มจับคู่ในโหมดพัฒนา อีเมลจะมาปรากฏที่นี่"
+        />
       ) : (
         <div className="space-y-4">
           {items.map((item) => (
-            <div key={item.id} className="analog-card rounded-md p-5">
-              <div className="flex flex-wrap items-start justify-between gap-2 border-b border-dashed border-rule pb-3">
+            <ChristmasCard key={item.id} className="p-5 sm:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
                 <div>
-                  <div className="text-sm font-bold text-ink">{item.subject}</div>
-                  <div className="mt-0.5 text-xs text-ink-soft">
-                    ถึง: <span className="font-bold text-ink">{item.to}</span>
+                  <div className="flex items-center gap-2 text-base font-bold text-snow-white">
+                    <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <span>{item.subject}</span>
+                  </div>
+                  <div className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+                    ถึง: <strong className="text-primary">{item.to}</strong>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] font-medium text-ink-soft">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-text-secondary">
                     {new Date(item.createdAt).toLocaleString("th-TH")}
                   </span>
                   <PostageStamp topText="LOCAL" mainText="MAIL" bottomText="SENT" tone="red" />
                 </div>
               </div>
-              <pre className="mt-3 whitespace-pre-wrap rounded border border-rule bg-cream p-3.5 font-sans text-xs leading-relaxed text-ink-soft">
+              <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background/75 p-4 font-sans text-xs leading-relaxed text-text-secondary sm:text-sm">
                 {renderTextWithLinks(item.text)}
               </pre>
-            </div>
+            </ChristmasCard>
           ))}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

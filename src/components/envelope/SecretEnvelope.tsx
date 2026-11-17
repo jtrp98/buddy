@@ -9,11 +9,12 @@ import {
   type AnimationEvent,
   type ReactNode,
 } from "react";
-import { RotateCcw } from "lucide-react";
+import { MailOpen, RotateCcw } from "lucide-react";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { ChristmasSeal } from "@/components/vintage/ChristmasSeal";
 import { Ornament } from "@/components/vintage/Ornament";
 import { Postmark } from "@/components/vintage/Postmark";
+import { christmasButtonClass } from "@/components/ui/buttonStyles";
 
 type EnvelopeState = "sealed" | "pressing" | "opening" | "open" | "closing";
 
@@ -53,9 +54,11 @@ function envelopeReducer(state: EnvelopeState, action: EnvelopeAction): Envelope
 interface SecretEnvelopeProps {
   recipientLabel: string;
   hintText?: string;
+  openButtonLabel?: string;
   openButtonAriaLabel?: string;
   closeLabel?: string;
   defaultOpen?: boolean;
+  openSignal?: number;
   onOpen?: () => void;
   onClose?: () => void;
   headingRef?: React.RefObject<HTMLHeadingElement | null>;
@@ -64,15 +67,17 @@ interface SecretEnvelopeProps {
 }
 
 /**
- * Interactive 1950s wax-sealed Christmas envelope.
+ * Accessible wax-sealed Christmas envelope.
  * Handles wax crack, 3D flap turn, letter extraction, and reduced-motion crossfade.
  */
 export function SecretEnvelope({
   recipientLabel,
-  hintText = "ลองกดที่ตราครั่งเพื่อแกะผนึก",
+  hintText = "กดที่ตราครั่งเพื่อแกะผนึก",
+  openButtonLabel = "เปิดซองจดหมายลับ",
   openButtonAriaLabel = "แกะผนึกขี้ผึ้งเพื่อเปิดอ่านจดหมาย",
   closeLabel = "พับซองกลับ",
   defaultOpen = false,
+  openSignal = 0,
   onOpen,
   onClose,
   headingRef,
@@ -89,6 +94,7 @@ export function SecretEnvelope({
   const sealBtnRef = useRef<HTMLButtonElement | null>(null);
   const timersRef = useRef<number[]>([]);
   const pendingFocusRef = useRef<"open" | "close" | null>(null);
+  const prevSignalRef = useRef(openSignal);
   const letterId = useId();
   const waxGradId = useId().replace(/:/g, "");
 
@@ -101,7 +107,6 @@ export function SecretEnvelope({
 
   useEffect(() => clearTimers, [clearTimers]);
 
-  // Restore / transfer focus AFTER React commits the enabled DOM state
   useEffect(() => {
     if (state === "open" && pendingFocusRef.current === "open") {
       pendingFocusRef.current = null;
@@ -154,6 +159,17 @@ export function SecretEnvelope({
     triggerChimeSound,
     triggerStampSound,
   ]);
+
+  useEffect(() => {
+    if (openSignal !== prevSignalRef.current) {
+      prevSignalRef.current = openSignal;
+      if (state === "sealed" || state === "pressing") {
+        handleOpen();
+      } else if (state === "open") {
+        headingRef?.current?.focus({ preventScroll: true });
+      }
+    }
+  }, [openSignal, state, handleOpen, headingRef]);
 
   const handleClose = useCallback(() => {
     if (state !== "open") return;
@@ -215,26 +231,26 @@ export function SecretEnvelope({
           style={{ height: "var(--env-headroom)" }}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="inline-block rounded-xs border border-pine/45 bg-pine-wash/75 px-2 py-0.5 font-type text-[9px] tracking-[0.16em] text-pine uppercase">
-              PAR AVION · AIR MAIL
+            <span className="inline-block rounded-md border border-primary/40 bg-surface px-2.5 py-0.5 text-[11px] font-semibold tracking-[0.12em] text-primary uppercase">
+              PAR AVION · NORTH POLE
             </span>
-            <Ornament name="holly" className="h-6 w-9 text-pine/65" />
+            <Ornament name="holly" className="h-6 w-9 text-primary/80" />
           </div>
 
           <div className="flex flex-col items-center pb-3 text-center">
-            <span className="font-script text-lg font-bold text-xmas-red @[360px]:text-xl">
+            <span className="font-script text-xl font-bold text-primary @[360px]:text-2xl">
               {hintText}
             </span>
             <svg
               viewBox="0 0 28 24"
               aria-hidden="true"
-              className="mt-0.5 h-5 w-6 text-xmas-red/80"
+              className="mt-0.5 h-5 w-6 text-primary"
             >
               <path
                 d="M14 2c-1 6 0 12 0 18m0 0-4-4m4 4 4-4"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.5"
+                strokeWidth="1.75"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -257,26 +273,26 @@ export function SecretEnvelope({
             {children}
           </div>
 
-          {/* Envelope Front Pocket (Left, Right, Bottom Flaps + Back Postal Details) */}
+          {/* Envelope Front Pocket */}
           <div className="env-pocket">
             <div className="env-pocket-left" />
             <div className="env-pocket-right" />
             <div className="env-pocket-bottom" />
             <div className="env-pocket-border" />
 
-            {/* Back-of-envelope 1950s postal stamps & addressee slip */}
+            {/* Envelope postal stamps & addressee slip (dark forest ink on warm parchment) */}
             <div className="absolute inset-x-3 bottom-2.5 flex items-end justify-between gap-2">
               <div className="flex items-center gap-2">
                 <ChristmasSeal
                   tone="pine"
-                  year="1955"
-                  className="-rotate-3 scale-[0.82] origin-bottom-left"
+                  year="2026"
+                  className="-rotate-2 scale-[0.8] origin-bottom-left"
                 />
-                <div className="rounded-xs border border-ink/20 bg-paper/90 px-2 py-1 shadow-xs">
-                  <span className="block font-type text-[7.5px] tracking-[0.14em] text-ink-soft uppercase">
+                <div className="rounded-md border border-[#102119]/25 bg-[#fffdf6]/95 px-2.5 py-1 shadow-xs">
+                  <span className="block text-[9px] font-bold tracking-[0.12em] text-[#2e4a40] uppercase">
                     TO / ถึง
                   </span>
-                  <span className="block max-w-[130px] truncate font-serif text-[11px] font-bold text-ink">
+                  <span className="block max-w-[140px] truncate text-xs font-bold text-[#102119]">
                     {recipientLabel}
                   </span>
                 </div>
@@ -284,12 +300,12 @@ export function SecretEnvelope({
 
               <Postmark
                 city="NORTH POLE"
-                date="24 DEC"
-                subtext="RECEIVED"
+                date="25 DEC"
+                subtext="SECRET"
                 wavyLines={false}
                 tone="ink"
                 size="sm"
-                className="rotate-6 opacity-55"
+                className="rotate-6 opacity-50"
               />
             </div>
           </div>
@@ -313,19 +329,18 @@ export function SecretEnvelope({
                 onPointerLeave={() => dispatch({ type: "PRESS_CANCEL" })}
                 onPointerCancel={() => dispatch({ type: "PRESS_CANCEL" })}
                 onClick={handleOpen}
-                className="env-seal-btn focus-visible:outline-2 focus-visible:outline-gold-ink focus-visible:outline-offset-4 disabled:cursor-default"
+                className="env-seal-btn focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 disabled:cursor-default"
               >
-                {/* Left & Right Wax Halves (separate cleanly when cracked) */}
                 <svg
                   viewBox="0 0 64 64"
                   aria-hidden="true"
-                  className="pointer-events-none h-full w-full drop-shadow-[0_3px_5px_rgba(40,22,18,0.42)]"
+                  className="pointer-events-none h-full w-full drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]"
                 >
                   <defs>
                     <radialGradient id={waxGradId} cx="35%" cy="30%" r="70%">
-                      <stop offset="0%" stopColor="#b83b3d" />
-                      <stop offset="55%" stopColor="#8e2527" />
-                      <stop offset="100%" stopColor="#581315" />
+                      <stop offset="0%" stopColor="#d63b4b" />
+                      <stop offset="55%" stopColor="#b42332" />
+                      <stop offset="100%" stopColor="#6b111b" />
                     </radialGradient>
                   </defs>
 
@@ -337,7 +352,7 @@ export function SecretEnvelope({
                       strokeWidth="1"
                     />
                     <circle cx="32" cy="32" r="20" fill="none" stroke="#581315" strokeWidth="1.4" opacity="0.65" />
-                    <circle cx="32" cy="32" r="18.5" fill="none" stroke="#c85c5e" strokeWidth="0.9" opacity="0.45" />
+                    <circle cx="32" cy="32" r="18.5" fill="none" stroke="#ff8c8c" strokeWidth="0.9" opacity="0.45" />
                   </g>
 
                   <g className="env-seal-half-right">
@@ -348,29 +363,25 @@ export function SecretEnvelope({
                       strokeWidth="1"
                     />
                     <circle cx="32" cy="32" r="20" fill="none" stroke="#581315" strokeWidth="1.4" opacity="0.65" />
-                    <circle cx="32" cy="32" r="18.5" fill="none" stroke="#c85c5e" strokeWidth="0.9" opacity="0.45" />
+                    <circle cx="32" cy="32" r="18.5" fill="none" stroke="#ff8c8c" strokeWidth="0.9" opacity="0.45" />
                   </g>
 
-                  {/* Embossed North Pole Star + SB Monogram */}
                   <text
                     x="32"
                     y="37"
                     textAnchor="middle"
-                    fill="#f3e7cf"
+                    fill="#FFFDF6"
                     fontSize="13"
                     fontWeight="700"
                     letterSpacing="1.2"
-                    opacity="0.9"
-                    className="font-serif"
                   >
                     SB
                   </text>
 
-                  {/* Jagged crack path animated on break */}
                   <path
                     d="M33 4 L29 19 L35 31 L28 45 L35 60"
                     fill="none"
-                    stroke="#330b0d"
+                    stroke="#2b070a"
                     strokeWidth="2.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -378,22 +389,21 @@ export function SecretEnvelope({
                   />
                 </svg>
 
-                {/* Single subtle wax highlight sweep on hover */}
                 <span aria-hidden="true" className="env-wax-sheen" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Fixed-height bottom control slot (zero layout shift between sealed & open) */}
-        <div className="mt-4 flex min-h-[44px] items-center justify-center">
+        {/* Accessible Primary Button Control below envelope */}
+        <div className="mt-6 flex min-h-[48px] items-center justify-center">
           {isOpen ? (
             <button
               type="button"
               onClick={handleClose}
-              className="analog-btn thai-keep inline-flex min-h-[44px] items-center gap-2 whitespace-nowrap rounded bg-cream px-4 py-2 text-xs font-bold text-ink hover:bg-paper"
+              className={christmasButtonClass("secondary", "md", "whitespace-nowrap")}
             >
-              <RotateCcw className="h-3.5 w-3.5 text-xmas-red" />
+              <RotateCcw className="h-4 w-4 text-primary" aria-hidden="true" />
               <span>{closeLabel}</span>
             </button>
           ) : (
@@ -401,14 +411,14 @@ export function SecretEnvelope({
               type="button"
               disabled={isBusy}
               onClick={handleOpen}
-              className="thai-keep inline-flex min-h-[44px] items-center gap-2 whitespace-nowrap rounded px-3 py-2 font-serif text-xs font-semibold text-ink-soft underline decoration-gold-ink/60 decoration-dashed underline-offset-4 transition hover:text-xmas-red disabled:opacity-60"
+              className={christmasButtonClass("gold", "md", "whitespace-nowrap")}
             >
-              <span>{isBusy ? "กำลังเปิดซอง..." : "หรือคลิกที่นี่เพื่อแกะผนึกจดหมาย"}</span>
+              <MailOpen className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{isBusy ? "กำลังเปิดซอง..." : openButtonLabel}</span>
             </button>
           )}
         </div>
 
-        {/* Screen-reader live state announcement */}
         <p className="sr-only" aria-live="polite">
           {state === "open"
             ? "เปิดซองจดหมาย Secret Buddy เรียบร้อยแล้ว"

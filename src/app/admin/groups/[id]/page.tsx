@@ -1,15 +1,16 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
-  AlertTriangle,
   ArrowLeft,
   CalendarClock,
   Check,
   CheckCircle2,
+  Clock,
   Copy,
+  Edit3,
   ExternalLink,
   Gift,
   Lock,
@@ -23,10 +24,25 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
-import { CandyStripeBar } from "@/components/AnalogPrimitives";
+import { ChristmasJourney } from "@/components/ChristmasJourney";
+import { ChristmasTree3D } from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { formatBudgetWithPrefix, type BudgetTypeValue } from "@/lib/budget";
 import { formatThaiDateTime, utcToBangkokLocalInput } from "@/lib/timezone";
+import {
+  Alert,
+  ChristmasButton,
+  ChristmasCard,
+  ConfirmationDialog,
+  EmptyState,
+  FormField,
+  Input,
+  LoadingState,
+  PageContainer,
+  Select,
+  Textarea,
+  christmasButtonClass,
+} from "@/components/ui/ChristmasUI";
 
 interface GroupDetail {
   id: string;
@@ -58,24 +74,42 @@ interface MemberRow {
   } | null;
 }
 
+function getAdminJourneyStep(status: GroupDetail["status"]): 1 | 2 | 3 | 4 {
+  if (status === "DRAFT") return 1;
+  if (status === "OPEN") return 2;
+  if (status === "DRAWING" || status === "ACTIVE") return 3;
+  return 4;
+}
+
 function AdminGroupDetailContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const groupId = params.id;
   const { triggerClickSound, triggerChimeSound } = useFestiveAtmosphere();
 
+  const editTitleId = useId();
+  const editRevealId = useId();
+  const editDescId = useId();
+  const editBudgetTypeId = useId();
+  const editCloseId = useId();
+  const editBudgetMinId = useId();
+  const editBudgetMaxId = useId();
+
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [copied, setCopied] = useState(false);
 
   const [drawing, setDrawing] = useState(false);
+  const [confirmDrawOpen, setConfirmDrawOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [resendingAll, setResendingAll] = useState(false);
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
 
-  // Edit settings state
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
@@ -86,7 +120,18 @@ function AdminGroupDetailContent() {
   const [editRevealAt, setEditRevealAt] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
+  const syncEditFields = (g: GroupDetail) => {
+    setEditTitle(g.title);
+    setEditDesc(g.description || "");
+    setEditBudgetType(g.budgetType);
+    setEditBudgetMin(g.budgetMin != null ? String(g.budgetMin) : "");
+    setEditBudgetMax(g.budgetMax != null ? String(g.budgetMax) : "");
+    setEditCloseAt(utcToBangkokLocalInput(g.registrationClosesAt));
+    setEditRevealAt(g.revealAt ? utcToBangkokLocalInput(g.revealAt) : "");
+  };
+
   const loadGroup = useCallback(async () => {
+    setRefreshing(true);
     try {
       const res = await fetch(`/api/admin/groups/${groupId}`, { cache: "no-store" });
       if (res.status === 401) {
@@ -102,17 +147,12 @@ function AdminGroupDetailContent() {
       const g: GroupDetail = data.group;
       setGroup(g);
       setMembers(data.members || []);
-      setEditTitle(g.title);
-      setEditDesc(g.description || "");
-      setEditBudgetType(g.budgetType);
-      setEditBudgetMin(g.budgetMin != null ? String(g.budgetMin) : "");
-      setEditBudgetMax(g.budgetMax != null ? String(g.budgetMax) : "");
-      setEditCloseAt(utcToBangkokLocalInput(g.registrationClosesAt));
-      setEditRevealAt(g.revealAt ? utcToBangkokLocalInput(g.revealAt) : "");
+      syncEditFields(g);
     } catch {
       setError("ไม่สามารถโหลดข้อมูลกลุ่มได้");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [groupId, router]);
 
@@ -135,13 +175,7 @@ function AdminGroupDetailContent() {
         const g: GroupDetail = data.group;
         setGroup(g);
         setMembers(data.members || []);
-        setEditTitle(g.title);
-        setEditDesc(g.description || "");
-        setEditBudgetType(g.budgetType);
-        setEditBudgetMin(g.budgetMin != null ? String(g.budgetMin) : "");
-        setEditBudgetMax(g.budgetMax != null ? String(g.budgetMax) : "");
-        setEditCloseAt(utcToBangkokLocalInput(g.registrationClosesAt));
-        setEditRevealAt(g.revealAt ? utcToBangkokLocalInput(g.revealAt) : "");
+        syncEditFields(g);
       } catch {
         if (!cancelled) setError("ไม่สามารถโหลดข้อมูลกลุ่มได้");
       } finally {
@@ -185,17 +219,9 @@ function AdminGroupDetailContent() {
     await loadGroup();
   };
 
-  const handleDrawNow = async () => {
+  const handleConfirmDraw = async () => {
     if (!group) return;
     triggerClickSound();
-    const verifiedCount = members.filter((m) => m.verified).length;
-    if (
-      !window.confirm(
-        `ยืนยันปิดรับสมัครและสุ่มจับคู่ Buddy ทันที?\n\nสมาชิกที่ยืนยันอีเมลแล้ว: ${verifiedCount} คน\n(หลังสุ่มแล้วจะไม่สามารถสุ่มใหม่ได้)`
-      )
-    ) {
-      return;
-    }
     setDrawing(true);
     setError("");
     setNotice("");
@@ -213,6 +239,7 @@ function AdminGroupDetailContent() {
             (data.result.failed > 0 ? ` (ล้มเหลว ${data.result.failed} ฉบับ)` : "")
         );
       }
+      setConfirmDrawOpen(false);
       await loadGroup();
     } catch {
       setError("เกิดข้อผิดพลาดในการสุ่มจับคู่");
@@ -287,7 +314,7 @@ function AdminGroupDetailContent() {
       return;
     }
     setNotice(
-      nextStatus === "COMPLETED" ? "บันทึกสถานะจบกิจกรรมเรียบร้อยแล้ว" : "เปิดสถานะ Active อีกครั้ง"
+      nextStatus === "COMPLETED" ? "บันทึกสถานะจบกิจกรรมเรียบร้อยแล้ว" : "เปิดสถานะดูผลต่อเรียบร้อยแล้ว"
     );
     await loadGroup();
   };
@@ -344,252 +371,280 @@ function AdminGroupDetailContent() {
     }
   };
 
-  const handleDeleteGroup = async () => {
+  const handleConfirmDeleteGroup = async () => {
     triggerClickSound();
-    if (
-      !window.confirm(
-        "ยืนยันลบกลุ่มกิจกรรมนี้? ข้อมูลสมาชิกและผลจับคู่ทั้งหมดในกลุ่มจะถูกลบถาวร"
-      )
-    ) {
-      return;
-    }
-    const res = await fetch(`/api/admin/groups/${groupId}`, { method: "DELETE" });
-    if (res.ok) {
-      router.push("/admin");
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/admin");
+      } else {
+        setError("ไม่สามารถลบกลุ่มได้");
+        setConfirmDeleteOpen(false);
+      }
+    } catch {
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      setConfirmDeleteOpen(false);
+    } finally {
+      setDeleting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-12">
-        <div className="analog-card h-48 animate-pulse rounded-md" />
-      </div>
+      <PageContainer>
+        <LoadingState label="กำลังโหลดข้อมูลกิจกรรม..." rows={5} />
+      </PageContainer>
     );
   }
 
   if (!group) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-12 text-center">
-        <p className="font-bold text-xmas-red">{error || "ไม่พบกลุ่มกิจกรรมนี้"}</p>
-        <Link href="/admin" className="mt-4 inline-block text-sm font-bold text-pine underline">
-          กลับไปหน้าแดชบอร์ด
-        </Link>
-      </div>
+      <PageContainer size="md">
+        <EmptyState
+          icon={<ChristmasTree3D className="h-24 w-24" />}
+          title="ไม่พบกลุ่มกิจกรรมนี้"
+          description={error || "กลุ่มนี้อาจถูกลบไปแล้วหรือคุณไม่มีสิทธิ์เข้าถึง"}
+          action={
+            <Link href="/admin" className={christmasButtonClass("primary", "md")}>
+              กลับไปหน้า Mission Control
+            </Link>
+          }
+        />
+      </PageContainer>
     );
   }
 
   const verifiedMembers = members.filter((m) => m.verified);
+  const verifyPct =
+    members.length > 0 ? Math.round((verifiedMembers.length / members.length) * 100) : 0;
   const failedEmailCount = members.filter(
     (m) => m.resultEmail?.status === "FAILED" || m.resultEmail?.status === "PENDING"
   ).length;
   const isDrawn = group.status === "ACTIVE" || group.status === "COMPLETED";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:py-10">
-      <div className="flex items-center justify-between gap-4">
+    <PageContainer className="space-y-6">
+      {/* Top Breadcrumb Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-soft hover:text-xmas-red"
+          className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>กลับไปหน้าแดชบอร์ด</span>
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          <span>กลับไปหน้า Mission Control</span>
         </Link>
 
-        <button
-          type="button"
+        <ChristmasButton
+          variant="secondary"
+          size="sm"
+          loading={refreshing}
+          loadingText="กำลังรีเฟรช..."
           onClick={() => {
             triggerClickSound();
             void loadGroup();
           }}
-          className="analog-btn inline-flex items-center gap-1.5 rounded bg-paper px-3.5 py-1.5 text-xs font-bold text-ink hover:bg-cream"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
-          <span>รีเฟรช</span>
-        </button>
+          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          <span>รีเฟรชข้อมูล</span>
+        </ChristmasButton>
       </div>
 
-      {notice && (
-        <div className="rounded-md border border-pine/45 bg-pine-wash px-4 py-3 text-sm font-bold text-pine-deep shadow-paper-pressed">
-          {notice}
-        </div>
-      )}
+      {/* Group Mission Journey Stepper */}
+      <ChristmasJourney mode="admin" currentStep={getAdminJourneyStep(group.status)} />
 
-      {error && (
-        <div className="rounded-md border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-bold text-xmas-red-deep">
-          {error}
-        </div>
-      )}
+      {notice && <Alert tone="success">{notice}</Alert>}
+      {error && <Alert tone="error">{error}</Alert>}
 
       {group.drawError && (
-        <div className="flex items-start gap-3 rounded-md border border-amber-ink/40 bg-amber-wash p-4 text-sm text-amber-ink">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-          <div>
-            <div className="font-bold">ยังไม่สามารถสุ่มจับคู่ได้</div>
-            <p className="mt-0.5">{group.drawError}</p>
-          </div>
-        </div>
+        <Alert tone="warning" title="ยังไม่สามารถสุ่มจับคู่ได้">
+          {group.drawError}
+        </Alert>
       )}
 
       {/* Header Control Card */}
-      <section className="analog-card-lg printed-double-rule overflow-hidden rounded-md">
-        <CandyStripeBar />
-        <div className="relative z-10 p-6 sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2.5">
-              <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge status={group.status} />
-                {group.status === "OPEN" && (
-                  <CountdownTimer
-                    targetIso={group.registrationClosesAt}
-                    onExpire={() => loadGroup()}
-                  />
+      <ChristmasCard elevated withStripe>
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="hidden shrink-0 rounded-2xl border border-primary/25 bg-background/65 p-2 sm:block">
+                <ChristmasTree3D className="h-20 w-20" />
+              </div>
+
+              <div className="min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusBadge status={group.status} />
+                  {group.status === "OPEN" && (
+                    <CountdownTimer
+                      targetIso={group.registrationClosesAt}
+                      onExpire={() => loadGroup()}
+                    />
+                  )}
+                </div>
+
+                <h1 className="thai-keep text-2xl font-bold leading-snug text-snow-white sm:text-3xl">
+                  {group.title}
+                </h1>
+
+                {group.description && (
+                  <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+                    {group.description}
+                  </p>
                 )}
               </div>
-              <h1 className="thai-keep letterpress font-display text-2xl leading-[1.35] text-ink sm:text-3xl">
-                {group.title}
-              </h1>
-              {group.description && (
-                <p className="max-w-2xl font-serif text-sm leading-[1.75] text-ink-soft">
-                  {group.description}
-                </p>
-              )}
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex shrink-0 flex-wrap gap-2.5">
               {group.status === "DRAFT" && (
-                <button
-                  type="button"
-                  onClick={handlePublishOpen}
-                  className="analog-btn rounded bg-pine px-4 py-2.5 text-sm font-bold text-paper hover:bg-pine-deep"
-                >
-                  เปิดรับสมัคร (Open)
-                </button>
+                <ChristmasButton variant="primary" onClick={handlePublishOpen}>
+                  เปิดรับสมัครทันที
+                </ChristmasButton>
               )}
 
               {group.status === "OPEN" && (
-                <button
-                  type="button"
-                  disabled={drawing}
-                  onClick={handleDrawNow}
-                  className="analog-btn inline-flex items-center gap-2 rounded bg-xmas-red px-4 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
+                <ChristmasButton
+                  variant="primary"
+                  loading={drawing}
+                  loadingText="กำลังสุ่ม..."
+                  onClick={() => {
+                    triggerClickSound();
+                    setConfirmDrawOpen(true);
+                  }}
                 >
-                  <Shuffle className="h-4 w-4" />
-                  <span>{drawing ? "กำลังสุ่ม..." : "ปิดรับสมัครและสุ่มจับคู่ทันที"}</span>
-                </button>
+                  <Shuffle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>ปิดรับสมัครและสุ่มจับคู่ทันที</span>
+                </ChristmasButton>
               )}
 
               {group.status === "ACTIVE" && (
-                <button
-                  type="button"
+                <ChristmasButton
+                  variant="secondary"
                   onClick={() => handleToggleCompleted("COMPLETED")}
-                  className="analog-btn rounded bg-plum px-4 py-2.5 text-sm font-bold text-paper hover:bg-plum"
                 >
-                  จบกิจกรรม (Completed)
-                </button>
+                  ปิดกิจกรรม (Completed)
+                </ChristmasButton>
               )}
 
               {group.status === "COMPLETED" && (
-                <button
-                  type="button"
+                <ChristmasButton
+                  variant="secondary"
                   onClick={() => handleToggleCompleted("ACTIVE")}
-                  className="analog-btn rounded bg-paper px-4 py-2.5 text-sm font-bold text-ink hover:bg-cream"
                 >
                   เปิดให้ดูผลต่อ (Active)
-                </button>
+                </ChristmasButton>
               )}
 
-              <button
-                type="button"
+              <ChristmasButton
+                variant="secondary"
                 onClick={() => {
                   triggerClickSound();
                   setEditing((v) => !v);
                 }}
-                className="analog-btn rounded bg-paper px-4 py-2.5 text-sm font-bold text-ink hover:bg-cream"
               >
-                {editing ? "ยกเลิกแก้ไข" : "แก้ไขรายละเอียด"}
-              </button>
+                <Edit3 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{editing ? "ยกเลิกแก้ไข" : "แก้ไขรายละเอียด"}</span>
+              </ChristmasButton>
             </div>
           </div>
 
-          {/* Info Grid */}
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md border border-ink/25 bg-red-wash p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-xmas-red-deep">
-                <Gift className="h-3.5 w-3.5" />
+          {/* Info Cards */}
+          <div className="mt-6 grid gap-3.5 sm:grid-cols-3">
+            <div className="rounded-xl border border-primary/35 bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+                <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>งบประมาณของขวัญ</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-ink">
+              <div className="mt-1.5 text-base font-bold text-snow-white">
                 {formatBudgetWithPrefix(group.budgetType, group.budgetMin, group.budgetMax)}
               </div>
             </div>
 
-            <div className="rounded-md border border-ink/25 bg-cream p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
-                <CalendarClock className="h-3.5 w-3.5 text-xmas-red" />
+            <div className="rounded-xl border border-white/15 bg-background/60 p-4">
+              <div className="flex items-center gap-2 text-xs font-semibold text-christmas-red-light">
+                <CalendarClock className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>วันเวลาปิดรับสมัคร</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-ink">
+              <div className="mt-1.5 text-sm font-bold text-snow-white">
                 {formatThaiDateTime(group.registrationClosesAt)}
               </div>
             </div>
 
-            <div className="rounded-md border border-ink/25 bg-pine-wash p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-pine-deep">
-                <Users className="h-3.5 w-3.5" />
-                <span>ผู้ลงทะเบียนที่ยืนยันแล้ว</span>
+            <div className="rounded-xl border border-emerald-400/35 bg-evergreen/55 p-4">
+              <div className="flex items-center justify-between gap-2 text-xs font-semibold text-emerald-200">
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>ผู้ยืนยันอีเมลแล้ว</span>
+                </span>
+                <span>{verifyPct}%</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-pine-deep">
-                {verifiedMembers.length} คน (ทั้งหมด {members.length} คน)
+              <div className="mt-1.5 text-base font-bold text-emerald-100">
+                {verifiedMembers.length} คน{" "}
+                <span className="text-xs font-normal text-text-secondary">
+                  (ทั้งหมด {members.length} คน)
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-background/65">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#E8C47A] to-[#4ADE80] transition-all duration-500"
+                  style={{ width: `${verifyPct}%` }}
+                />
               </div>
             </div>
           </div>
 
           {group.revealAt && (
-            <p className="mt-3 text-xs font-medium text-ink-soft">
-              วันเฉลย Buddy: <span className="font-bold text-ink">{formatThaiDateTime(group.revealAt)}</span>
+            <p className="mt-3 text-xs font-medium text-text-secondary sm:text-sm">
+              วันนัดเฉลย Buddy:{" "}
+              <strong className="text-snow-white">
+                {formatThaiDateTime(group.revealAt)}
+              </strong>
             </p>
           )}
 
-          {/* Perforated Invite Ticket Stub */}
-          <div className="perforated-edge-right mt-6 rounded-md border border-dashed border-xmas-red/65 bg-cream p-4 pr-7 shadow-paper-pressed sm:p-5 sm:pr-8">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Invite Link Sharing Box */}
+          <div className="mt-6 rounded-2xl border border-dashed border-primary/50 bg-[#0B1728]/85 p-4 sm:p-5">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <div className="font-type text-xs font-bold uppercase tracking-wider text-xmas-red-deep">
-                  INVITE TICKET STUB — ลิงก์เชิญสมาชิกเข้าร่วม
+                <div className="text-xs font-bold tracking-wider text-primary uppercase">
+                  INVITATION LINK — ลิงก์เชิญสมาชิกเข้าร่วม
                 </div>
-                <p className="mt-0.5 text-xs text-ink-soft">
-                  แชร์ลิงก์นี้ให้สมาชิกทุกคนกรอกชื่อ อีเมล และ Buddy Profile (ไม่ต้องสมัครบัญชี)
+                <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+                  แชร์ลิงก์นี้ให้เพื่อนกรอกชื่อ อีเมล และ Wish List (ผู้เข้าร่วมไม่ต้องสมัครบัญชี)
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
+                <ChristmasButton
+                  variant="gold"
+                  size="sm"
                   onClick={copyInviteLink}
-                  className="analog-btn inline-flex min-h-[40px] items-center gap-1.5 rounded bg-paper px-3.5 py-2 text-xs font-bold text-ink hover:bg-cream"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-pine" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copied ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</span>
-                </button>
+                  {copied ? (
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Copy className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  <span>{copied ? "คัดลอกแล้ว!" : "คัดลอกลิงก์เชิญ"}</span>
+                </ChristmasButton>
                 <Link
                   href={`/join/${group.inviteCode}`}
                   target="_blank"
-                  className="analog-btn inline-flex min-h-[40px] items-center gap-1 rounded bg-xmas-red px-3.5 py-2 text-xs font-bold text-paper hover:bg-xmas-red-deep"
+                  className={christmasButtonClass("secondary", "sm")}
                 >
-                  <span>เปิดหน้าลงทะเบียน</span>
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  <span>เปิดหน้าบัตรเชิญ</span>
+                  <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </Link>
               </div>
             </div>
-            <div className="mt-3 truncate rounded border border-ink/25 bg-paper px-3.5 py-2 font-mono text-xs font-medium text-ink">
+
+            <div className="mt-3 truncate rounded-xl border border-border bg-surface px-3.5 py-2.5 font-mono text-xs text-snow-white select-all sm:text-sm">
               {inviteUrl}
             </div>
           </div>
 
-          {/* Secrecy Note */}
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-ink-soft">
-            <Lock className="h-3.5 w-3.5 text-pine" />
+          <div className="mt-4 flex items-center gap-2 text-xs text-text-secondary">
+            <Lock className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
             <span>
-              ระบบรักษาความลับ: หน้าจัดการ Admin จะแสดงเฉพาะรายชื่อและสถานะส่งอีเมล โดยไม่มีผลจับคู่แสดงในหน้าเว็บ
+              ระบบรักษาความลับ: หน้าจัดการ Admin จะแสดงเฉพาะรายชื่อและสถานะส่งอีเมล โดยไม่แสดงผลการจับคู่
             </span>
           </div>
 
@@ -597,253 +652,355 @@ function AdminGroupDetailContent() {
           {editing && (
             <form
               onSubmit={handleSaveEdit}
-              className="mt-6 space-y-4 rounded-md border border-ink/25 bg-cream p-5"
+              className="mt-6 space-y-5 rounded-2xl border border-primary/35 bg-background/80 p-5 sm:p-6"
             >
-              <h2 className="text-base font-bold text-ink">แก้ไขรายละเอียดกลุ่ม</h2>
+              <h2 className="text-base font-bold text-primary">แก้ไขรายละเอียดกิจกรรม</h2>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-bold text-ink">ชื่อกิจกรรม</label>
-                  <input
+                <FormField label="ชื่อกิจกรรม" htmlFor={editTitleId} required>
+                  <Input
+                    id={editTitleId}
                     type="text"
                     required
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-ink">
-                    วันเฉลย Buddy (ไม่บังคับ)
-                  </label>
-                  <input
+                </FormField>
+
+                <FormField label="วันเฉลย Buddy (ไม่บังคับ)" htmlFor={editRevealId}>
+                  <Input
+                    id={editRevealId}
                     type="datetime-local"
                     value={editRevealAt}
                     onChange={(e) => setEditRevealAt(e.target.value)}
-                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
-                </div>
+                </FormField>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-ink">รายละเอียด</label>
-                <textarea
+              <FormField label="รายละเอียดกิจกรรม" htmlFor={editDescId}>
+                <Textarea
+                  id={editDescId}
                   rows={2}
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                 />
-              </div>
+              </FormField>
 
               {!isDrawn && (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold text-ink">
-                      ประเภทงบประมาณ
-                    </label>
-                    <select
+                  <FormField label="ประเภทงบประมาณ" htmlFor={editBudgetTypeId}>
+                    <Select
+                      id={editBudgetTypeId}
                       value={editBudgetType}
                       onChange={(e) => setEditBudgetType(e.target.value as BudgetTypeValue)}
-                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     >
                       <option value="FIXED">งบตายตัว</option>
                       <option value="RANGE">งบแบบช่วง</option>
                       <option value="MIN">งบขั้นต่ำ</option>
                       <option value="UNLIMITED">ไม่จำกัดงบ</option>
-                    </select>
-                  </div>
+                    </Select>
+                  </FormField>
 
-                  <div>
-                    <label className="block text-xs font-bold text-ink">
-                      วันเวลาปิดรับสมัคร (เวลาไทย)
-                    </label>
-                    <input
+                  <FormField label="วันเวลาปิดรับสมัคร (เวลาไทย)" htmlFor={editCloseId} required>
+                    <Input
+                      id={editCloseId}
                       type="datetime-local"
                       required
                       value={editCloseAt}
                       onChange={(e) => setEditCloseAt(e.target.value)}
-                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     />
-                  </div>
+                  </FormField>
 
                   {editBudgetType !== "UNLIMITED" && (
-                    <div>
-                      <label className="block text-xs font-bold text-ink">
-                        {editBudgetType === "RANGE" ? "งบต่ำสุด (บาท)" : "จำนวนเงิน (บาท)"}
-                      </label>
-                      <input
+                    <FormField
+                      label={editBudgetType === "RANGE" ? "งบต่ำสุด (บาท)" : "จำนวนเงิน (บาท)"}
+                      htmlFor={editBudgetMinId}
+                      required
+                    >
+                      <Input
+                        id={editBudgetMinId}
                         type="number"
                         min={1}
                         required
                         value={editBudgetMin}
                         onChange={(e) => setEditBudgetMin(e.target.value)}
-                        className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                       />
-                    </div>
+                    </FormField>
                   )}
 
                   {editBudgetType === "RANGE" && (
-                    <div>
-                      <label className="block text-xs font-bold text-ink">
-                        งบสูงสุด (บาท)
-                      </label>
-                      <input
+                    <FormField label="งบสูงสุด (บาท)" htmlFor={editBudgetMaxId} required>
+                      <Input
+                        id={editBudgetMaxId}
                         type="number"
                         min={1}
                         required
                         value={editBudgetMax}
                         onChange={(e) => setEditBudgetMax(e.target.value)}
-                        className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                       />
-                    </div>
+                    </FormField>
                   )}
                 </div>
               )}
 
-              <div className="flex justify-end gap-2">
-                <button
-                  type="submit"
-                  disabled={savingEdit}
-                  className="analog-btn rounded bg-xmas-red px-5 py-2 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
+              <div className="flex justify-end gap-2.5">
+                <ChristmasButton
+                  variant="secondary"
+                  onClick={() => setEditing(false)}
                 >
-                  {savingEdit ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
-                </button>
+                  ยกเลิก
+                </ChristmasButton>
+                <ChristmasButton
+                  type="submit"
+                  variant="primary"
+                  loading={savingEdit}
+                  loadingText="กำลังบันทึก..."
+                >
+                  บันทึกการเปลี่ยนแปลง
+                </ChristmasButton>
               </div>
             </form>
           )}
         </div>
-      </section>
+      </ChristmasCard>
 
-      {/* Members & Email Status Ledger */}
-      <section className="analog-card printed-double-rule rounded-md p-6 sm:p-8">
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-rule pb-4">
+      {/* Members & Email Delivery Status */}
+      <ChristmasCard className="p-6 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
           <div>
-            <span className="font-type text-[10px] font-bold tracking-[0.16em] text-pine uppercase">
-              WORKSHOP LEDGER
+            <span className="text-xs font-bold tracking-wider text-primary uppercase">
+              PARTICIPANTS ROSTER
             </span>
-            <h2 className="thai-keep letterpress font-display text-lg text-ink sm:text-xl">
+            <h2 className="thai-keep mt-0.5 text-xl font-bold text-snow-white">
               รายชื่อผู้ลงทะเบียน ({members.length} คน)
             </h2>
-            <p className="text-xs text-ink-soft">
-              เฉพาะสมาชิกที่ยืนยันอีเมลแล้ว ({verifiedMembers.length} คน) จึงจะถูกนำมารวมในการสุ่ม
+            <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+              เฉพาะสมาชิกที่ยืนยันอีเมลแล้ว ({verifiedMembers.length} คน) จึงจะถูกนำมารวมในการสุ่มจับคู่
             </p>
           </div>
 
           {isDrawn && failedEmailCount > 0 && (
-            <button
-              type="button"
-              disabled={resendingAll}
+            <ChristmasButton
+              variant="primary"
+              size="sm"
+              loading={resendingAll}
+              loadingText="กำลังส่งซ้ำ..."
               onClick={handleResendFailed}
-              className="analog-btn inline-flex min-h-[40px] items-center gap-1.5 rounded bg-gold px-4 py-2 text-xs font-bold text-ink hover:bg-gold disabled:opacity-60"
             >
-              <Send className="h-3.5 w-3.5" />
-              <span>
-                {resendingAll
-                  ? "กำลังส่งซ้ำ..."
-                  : `ส่งอีเมลที่ล้มเหลวซ้ำ (${failedEmailCount})`}
-              </span>
-            </button>
+              <Send className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>ส่งอีเมลที่ล้มเหลวซ้ำ ({failedEmailCount})</span>
+            </ChristmasButton>
           )}
         </div>
 
         {members.length === 0 ? (
-          <div className="relative z-10 mt-6 rounded-md border border-dashed border-rule bg-cream py-10 text-center text-sm font-medium text-ink-soft">
-            ยังไม่มีผู้ลงทะเบียน แชร์ลิงก์เชิญด้านบนให้สมาชิกได้เลย!
+          <div className="mt-6 rounded-2xl border border-dashed border-primary/35 bg-background/50 p-10 text-center">
+            <Users className="mx-auto h-9 w-9 text-primary/75" aria-hidden="true" />
+            <p className="mt-3 text-sm font-semibold text-snow-white">
+              ยังไม่มีผู้ลงทะเบียนในกลุ่มนี้
+            </p>
+            <p className="mt-1 text-xs text-text-secondary">
+              คัดลอกลิงก์เชิญด้านบนแล้วส่งให้เพื่อน ๆ เพื่อเริ่มลงทะเบียนได้เลย
+            </p>
           </div>
         ) : (
-          <div className="relative z-10 mt-5 overflow-x-auto rounded border border-rule/70 bg-paper/75 p-3">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-ink/35 font-serif text-xs font-bold text-ink-soft">
-                  <th className="pb-3 pr-4">ชื่อ / ชื่อเล่น</th>
-                  <th className="pb-3 pr-4">อีเมล</th>
-                  <th className="pb-3 pr-4">การยืนยันอีเมล</th>
-                  {isDrawn && <th className="pb-3 pr-4">สถานะส่งผลจับคู่</th>}
-                  {isDrawn && <th className="pb-3 text-right">จัดการ</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-dashed divide-rule">
-                {members.map((m) => (
-                  <tr key={m.id} className="align-middle">
-                    <td className="py-3.5 pr-4 font-bold text-ink">{m.displayName}</td>
-                    <td className="py-3.5 pr-4 font-mono text-xs text-ink-soft">{m.email}</td>
-                    <td className="py-3.5 pr-4">
-                      {m.verified ? (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-pine bg-pine-wash px-2.5 py-0.5 text-xs font-bold text-pine-deep">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          ยืนยันแล้ว
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-amber-ink/50 bg-amber-wash px-2.5 py-0.5 text-xs font-bold text-amber-ink">
-                          รอยืนยันอีเมล
-                        </span>
+          <>
+            {/* Mobile Stacked Cards */}
+            <div className="mt-5 space-y-3 md:hidden">
+              {members.map((m) => (
+                <div
+                  key={m.id}
+                  className="rounded-xl border border-border bg-background/60 p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-bold text-snow-white">
+                        {m.displayName}
+                      </div>
+                      <div className="truncate font-mono text-xs text-text-secondary">
+                        {m.email}
+                      </div>
+                    </div>
+                    <VerificationPill verified={m.verified} />
+                  </div>
+
+                  {isDrawn && (
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                      <EmailResultStatus member={m} />
+                      {m.verified && (
+                        <ChristmasButton
+                          variant="secondary"
+                          size="sm"
+                          loading={resendingMemberId === m.id}
+                          loadingText="กำลังส่ง..."
+                          onClick={() => handleResendOne(m.id, m.displayName)}
+                        >
+                          <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>ส่งอีเมลซ้ำ</span>
+                        </ChristmasButton>
                       )}
-                    </td>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-                    {isDrawn && (
-                      <td className="py-3.5 pr-4">
-                        {!m.verified ? (
-                          <span className="text-xs text-ink-soft">ไม่ได้ร่วมสุ่ม</span>
-                        ) : m.resultEmail?.status === "SENT" ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-pine-deep">
-                            <MailCheck className="h-3.5 w-3.5" />
-                            ส่งแล้ว ({m.resultEmail.attempts} ครั้ง)
-                          </span>
-                        ) : m.resultEmail?.status === "FAILED" ? (
-                          <div>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-xmas-red">
-                              <XCircle className="h-3.5 w-3.5" />
-                              ส่งไม่สำเร็จ
-                            </span>
-                            {m.resultEmail.lastError && (
-                              <div className="mt-0.5 max-w-xs truncate text-[11px] text-xmas-red-deep">
-                                {m.resultEmail.lastError}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-xs font-bold text-amber-ink">รอส่ง</span>
-                        )}
-                      </td>
-                    )}
-
-                    {isDrawn && (
-                      <td className="py-3.5 text-right">
-                        {m.verified && (
-                          <button
-                            type="button"
-                            disabled={resendingMemberId === m.id}
-                            onClick={() => handleResendOne(m.id, m.displayName)}
-                            className="analog-btn inline-flex items-center gap-1 rounded-lg bg-paper px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-red-wash hover:text-xmas-red-deep disabled:opacity-50"
-                          >
-                            <Send className="h-3 w-3" />
-                            <span>
-                              {resendingMemberId === m.id ? "กำลังส่ง..." : "ส่งอีเมลซ้ำ"}
-                            </span>
-                          </button>
-                        )}
-                      </td>
-                    )}
+            {/* Desktop & Tablet Table */}
+            <div className="mt-5 hidden overflow-x-auto rounded-2xl border border-border bg-background/55 md:block">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-elevated/75 text-xs font-bold tracking-wide text-text-secondary uppercase">
+                    <th className="px-4 py-3.5">ชื่อ / ชื่อเล่น</th>
+                    <th className="px-4 py-3.5">อีเมล</th>
+                    <th className="px-4 py-3.5">การยืนยันอีเมล</th>
+                    {isDrawn && <th className="px-4 py-3.5">สถานะส่งซองลับ</th>}
+                    {isDrawn && <th className="px-4 py-3.5 text-right">จัดการ</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {members.map((m) => (
+                    <tr key={m.id} className="hover:bg-surface-elevated/40">
+                      <td className="px-4 py-3.5 font-semibold text-snow-white">
+                        {m.displayName}
+                      </td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-text-secondary">
+                        {m.email}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <VerificationPill verified={m.verified} />
+                      </td>
+                      {isDrawn && (
+                        <td className="px-4 py-3.5">
+                          <EmailResultStatus member={m} />
+                        </td>
+                      )}
+                      {isDrawn && (
+                        <td className="px-4 py-3.5 text-right">
+                          {m.verified && (
+                            <ChristmasButton
+                              variant="secondary"
+                              size="sm"
+                              loading={resendingMemberId === m.id}
+                              loadingText="กำลังส่ง..."
+                              onClick={() => handleResendOne(m.id, m.displayName)}
+                            >
+                              <Send className="h-3.5 w-3.5" aria-hidden="true" />
+                              <span>ส่งอีเมลซ้ำ</span>
+                            </ChristmasButton>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-      </section>
+      </ChristmasCard>
 
       {/* Danger Zone */}
       <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleDeleteGroup}
-          className="analog-btn inline-flex items-center gap-1.5 rounded bg-red-wash px-4 py-2 text-xs font-bold text-xmas-red-deep hover:bg-red-wash"
+        <ChristmasButton
+          variant="danger"
+          size="sm"
+          onClick={() => {
+            triggerClickSound();
+            setConfirmDeleteOpen(true);
+          }}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>ลบกลุ่มกิจกรรมนี้</span>
-        </button>
+        </ChristmasButton>
       </div>
-    </div>
+
+      {/* Accessible Confirmation Dialogs */}
+      <ConfirmationDialog
+        open={confirmDrawOpen}
+        title="ยืนยันปิดรับสมัครและสุ่มจับคู่ทันที?"
+        description={
+          <div className="space-y-2">
+            <p>
+              ระบบจะทำการสุ่มจับคู่แบบเป็นความลับและส่งอีเมลซองลับให้สมาชิกที่ยืนยันอีเมลแล้วทั้งหมด{" "}
+              <strong className="text-primary">{verifiedMembers.length} คน</strong>
+            </p>
+            <p className="text-xs text-christmas-red-light">
+              * หลังสุ่มแล้วจะไม่สามารถเพิ่มผู้เข้าร่วมหรือสุ่มใหม่ได้
+            </p>
+          </div>
+        }
+        confirmLabel="ยืนยันสุ่มจับคู่ทันที"
+        cancelLabel="ยกเลิก"
+        tone="primary"
+        loading={drawing}
+        onConfirm={handleConfirmDraw}
+        onCancel={() => setConfirmDrawOpen(false)}
+      />
+
+      <ConfirmationDialog
+        open={confirmDeleteOpen}
+        title="ยืนยันลบกลุ่มกิจกรรมนี้?"
+        description="ข้อมูลสมาชิกและผลจับคู่ทั้งหมดในกลุ่มนี้จะถูกลบอย่างถาวรและไม่สามารถกู้คืนได้"
+        confirmLabel="ลบกลุ่มถาวร"
+        cancelLabel="ยกเลิก"
+        tone="danger"
+        loading={deleting}
+        onConfirm={handleConfirmDeleteGroup}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
+    </PageContainer>
+  );
+}
+
+function VerificationPill({ verified }: { verified: boolean }) {
+  if (verified) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/45 bg-evergreen/80 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">
+        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span>ยืนยันแล้ว</span>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/45 bg-amber-950/65 px-2.5 py-0.5 text-xs font-semibold text-amber-200">
+      <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      <span>รอยืนยันอีเมล</span>
+    </span>
+  );
+}
+
+function EmailResultStatus({ member }: { member: MemberRow }) {
+  if (!member.verified) {
+    return <span className="text-xs text-text-secondary">ไม่ได้ร่วมสุ่ม (ยังไม่ยืนยันอีเมล)</span>;
+  }
+  if (member.resultEmail?.status === "SENT") {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+        <MailCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+        <span>ส่งอีเมลสำเร็จ ({member.resultEmail.attempts} ครั้ง)</span>
+      </span>
+    );
+  }
+  if (member.resultEmail?.status === "FAILED") {
+    return (
+      <div>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-christmas-red-light">
+          <XCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>เกิดข้อผิดพลาดในการส่ง</span>
+        </span>
+        {member.resultEmail.lastError && (
+          <div className="mt-0.5 max-w-xs truncate text-xs text-christmas-red-light/85">
+            {member.resultEmail.lastError}
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+      <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+      <span>รอดำเนินการส่ง</span>
+    </span>
   );
 }
 
@@ -851,9 +1008,9 @@ export default function AdminGroupDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-5xl px-4 py-12">
-          <div className="analog-card h-48 animate-pulse rounded-md" />
-        </div>
+        <PageContainer>
+          <LoadingState label="กำลังโหลดข้อมูลกิจกรรม..." rows={5} />
+        </PageContainer>
       }
     >
       <AdminGroupDetailContent />

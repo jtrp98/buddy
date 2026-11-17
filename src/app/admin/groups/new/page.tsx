@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDefaultCloseInput } from "@/lib/timezone";
 import { NewGroupForm } from "./NewGroupForm";
+import { LoadingState, PageContainer } from "@/components/ui/ChristmasUI";
 
 async function NewGroupFormWithDefaultTime() {
   await connection();
@@ -13,9 +14,9 @@ export default function NewGroupPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-2xl px-4 py-12">
-          <div className="analog-card h-64 animate-pulse rounded-md" />
-        </div>
+        <PageContainer size="md">
+          <LoadingState label="กำลังเตรียมแบบฟอร์มสร้างกิจกรรม..." rows={4} />
+        </PageContainer>
       }
     >
       <NewGroupFormWithDefaultTime />

@@ -1,147 +1,114 @@
-import { PostageStamp } from "@/components/AnalogPrimitives";
-import { Ornament, type OrnamentName } from "@/components/vintage/Ornament";
+import {
+  SantaCharacter3D,
+  SnowGlobe3D,
+  WishListGiftStack3D,
+} from "@/components/illustrations/ChristmasIllustrations";
 
-const JOURNEY_STOPS: ReadonlyArray<{
-  step: string;
-  title: string;
-  description: string;
-  vignette: Extract<OrnamentName, "quill" | "letters" | "mailbox">;
-  toneClass: string;
-  stampRingClass: string;
-}> = [
+const JOURNEY_STOPS = [
   {
-    step: "01",
-    title: "ตั้งกลุ่มและงบของขวัญ",
+    step: "STEP 01",
+    enTitle: "Create Your Christmas Group",
+    title: "สร้างปาร์ตี้และกำหนดงบของขวัญ",
     description:
-      "เลือกงบตายตัว งบแบบช่วง งบขั้นต่ำ หรือไม่จำกัดงบ พร้อมตั้งเวลาปิดรับสมัครเวลาไทย",
-    vignette: "quill",
-    toneClass: "text-xmas-red border-xmas-red/45",
-    stampRingClass: "border-xmas-red text-xmas-red bg-paper",
+      "ผู้จัดตั้งชื่อกลุ่ม เลือกงบได้ 4 แบบ (ตายตัว ช่วง ขั้นต่ำ หรือไม่จำกัด) พร้อมกำหนดเวลาปิดรับสมัครเวลาไทย",
+    illustration: <SantaCharacter3D className="h-24 w-24" />,
+    accentClass: "border-christmas-red-light/40 bg-christmas-red/15 text-christmas-red-light",
   },
   {
-    step: "02",
-    title: "แชร์ลิงก์ให้เพื่อนลงทะเบียน",
+    step: "STEP 02",
+    enTitle: "Invite Friends & Wish Lists",
+    title: "แชร์ลิงก์ให้เพื่อนเขียน Wish List",
     description:
-      "เพื่อนกรอก Buddy Profile เลือกความชอบ สี อาหาร สิ่งที่แพ้ และ Wish List แล้วกดยืนยันอีเมล",
-    vignette: "letters",
-    toneClass: "text-gold-ink border-gold-ink/45",
-    stampRingClass: "border-gold-ink text-gold-ink bg-paper",
+      "เพื่อน ๆ เปิดลิงก์เชิญ กรอกความชอบ สิ่งที่ไม่ชอบ อาการแพ้ และ Wish List โดยไม่ต้องสมัครบัญชี แล้วกดยืนยันอีเมล",
+    illustration: <WishListGiftStack3D className="h-24 w-24" />,
+    accentClass: "border-primary/45 bg-primary/15 text-primary",
   },
   {
-    step: "03",
-    title: "สุ่มและส่งซองลับทางอีเมล",
+    step: "STEP 03",
+    enTitle: "Unwrap Your Secret Buddy",
+    title: "สุ่มจับคู่ลับและแกะกล่องเปิดผล",
     description:
-      "สมาชิกกดลิงก์ส่วนตัวจากอีเมลเพื่อแกะผนึกดู Buddy ของตัวเองได้ทันทีแบบเป็นความลับ",
-    vignette: "mailbox",
-    toneClass: "text-pine border-pine/45",
-    stampRingClass: "border-pine text-pine bg-paper",
+      "เมื่อถึงเวลาหรือกดสุ่ม ระบบจะส่งลิงก์ส่วนตัวให้ทุกคนทางอีเมล เพื่อเข้ามาแกะกล่องของขวัญดูชื่อ Secret Buddy",
+    illustration: <SnowGlobe3D className="h-24 w-24" />,
+    accentClass: "border-emerald-400/45 bg-evergreen/75 text-emerald-200",
   },
-];
+] as const;
 
 /**
- * Three-stop North Pole postal journey explaining the workflow.
- * Horizontal airmail route on desktop/tablet; clean left-rail timeline on mobile.
+ * Illustrated 3-step Christmas adventure workflow on the landing page.
  */
 export function LetterJourney() {
   return (
-    <section className="mx-auto mt-14 max-w-5xl px-4">
-      <div className="analog-card printed-double-rule rounded-md p-6 sm:p-10">
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-dashed border-rule pb-6">
+    <section className="mx-auto mt-16 max-w-6xl px-4 sm:px-6">
+      <div className="christmas-card-elevated overflow-hidden rounded-3xl p-6 sm:p-10">
+        <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
           <div>
-            <span className="font-type text-[11px] tracking-[0.18em] text-pine uppercase">
-              HOW IT WORKS · 3 STOPS
+            <span className="text-xs font-bold tracking-[0.16em] text-primary uppercase">
+              HOW THE MAGIC WORKS · 3 STEPS
             </span>
-            <h2 className="thai-keep letterpress mt-1 font-display text-2xl leading-[1.35] text-ink sm:text-3xl">
-              เส้นทางของจดหมายจากขั้วโลกเหนือ
+            <h2 className="thai-keep mt-1.5 text-2xl font-bold leading-snug text-text-primary sm:text-3xl">
+              เริ่มต้นการผจญภัยคริสต์มาสใน 3 ขั้นตอนง่าย ๆ
             </h2>
+            <p className="mt-1 text-sm text-text-secondary sm:text-base">
+              ตั้งแต่งานปาร์ตี้เริ่มวางแผน จนถึงวินาทีที่ทุกคนแกะกล่องรู้ชื่อ Secret Buddy
+            </p>
           </div>
-          <PostageStamp
-            topText="SANTA"
-            mainText="3 STEPS"
-            bottomText="READY"
-            tone="green"
-            vignette="horn"
-          />
+          <span className="font-display-en text-sm font-semibold italic text-primary">
+            From Santa&apos;s Workshop to Your Team
+          </span>
         </div>
 
-        {/* Desktop & Tablet Horizontal Route */}
-        <div className="relative z-10 mt-9 hidden md:block">
-          {/* Dashed airmail connector line linking the 3 stamp stations */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute top-11 right-[16%] left-[16%] border-t-2 border-dashed border-xmas-red/35"
-          />
-
-          <div className="grid grid-cols-3 gap-7">
-            {JOURNEY_STOPS.map((stop) => (
-              <div key={stop.step} className="relative flex flex-col items-center text-center">
-                {/* Perforated Station Stamp */}
-                <div className="relative">
-                  <div className="stamp-shadow">
-                    <div className="stamp-perforated bg-paper p-[6px]">
-                      <div
-                        className={`flex h-20 w-24 items-center justify-center border ${stop.toneClass}`}
-                      >
-                        <Ornament name={stop.vignette} className="h-12 w-12" />
-                      </div>
-                    </div>
-                  </div>
-                  {/* Circular Stop Postmark */}
-                  <span
-                    className={`absolute -top-2.5 -right-3 flex h-10 w-10 rotate-6 items-center justify-center rounded-full border-2 border-dashed font-type text-[11px] font-bold shadow-xs ${stop.stampRingClass}`}
-                  >
-                    {stop.step}
-                  </span>
-                </div>
-
-                <h3 className="thai-keep mt-5 font-serif text-lg font-bold leading-[1.45] text-ink">
-                  {stop.title}
-                </h3>
-                <p className="mt-2 text-sm leading-[1.75] text-ink-soft">
-                  {stop.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mobile Vertical Left-Rail Postal Route */}
-        <div className="relative z-10 mt-7 space-y-6 md:hidden">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute top-8 bottom-10 left-[41px] border-l-2 border-dashed border-xmas-red/35"
-          />
-
-          {JOURNEY_STOPS.map((stop) => (
-            <div key={stop.step} className="relative flex items-start gap-4">
-              <div className="relative shrink-0">
-                <div className="stamp-shadow">
-                  <div className="stamp-perforated bg-paper p-[5px]">
-                    <div
-                      className={`flex h-16 w-[74px] items-center justify-center border ${stop.toneClass}`}
+        <ol className="relative mt-8 grid gap-6 md:grid-cols-3 md:gap-7">
+          {JOURNEY_STOPS.map((stop, index) => (
+            <li
+              key={stop.step}
+              className="group relative flex flex-col justify-between rounded-2xl border border-white/15 bg-[#0D1E31]/85 p-6 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_16px_36px_-12px_rgba(4,10,20,0.75)]"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold tracking-wider uppercase ${stop.accentClass}`}
                     >
-                      <Ornament name={stop.vignette} className="h-9 w-9" />
-                    </div>
+                      {stop.step}
+                    </span>
+                    <p className="font-display-en mt-2.5 text-sm font-semibold italic text-primary/90">
+                      {stop.enTitle}
+                    </p>
+                  </div>
+                  <div className="shrink-0 transition-transform duration-300 group-hover:scale-105">
+                    {stop.illustration}
                   </div>
                 </div>
-                <span
-                  className={`absolute -top-2 -right-2 flex h-7 w-7 rotate-6 items-center justify-center rounded-full border border-dashed font-type text-[10px] font-bold ${stop.stampRingClass}`}
-                >
-                  {stop.step}
-                </span>
-              </div>
 
-              <div className="pt-0.5">
-                <h3 className="thai-keep font-serif text-base font-bold leading-[1.45] text-ink">
+                <h3 className="thai-keep mt-3 text-lg font-bold leading-snug text-snow-white">
                   {stop.title}
                 </h3>
-                <p className="mt-1 text-sm leading-[1.7] text-ink-soft">
+                <p className="mt-2 text-sm leading-relaxed text-text-secondary">
                   {stop.description}
                 </p>
               </div>
-            </div>
+
+              {index < JOURNEY_STOPS.length - 1 && (
+                <div
+                  aria-hidden="true"
+                  className="mt-5 flex items-center gap-2 border-t border-white/10 pt-3 text-xs font-semibold text-primary/80"
+                >
+                  <span>ขั้นตอนถัดไป</span>
+                  <span>→</span>
+                </div>
+              )}
+              {index === JOURNEY_STOPS.length - 1 && (
+                <div
+                  aria-hidden="true"
+                  className="mt-5 flex items-center gap-2 border-t border-white/10 pt-3 text-xs font-semibold text-emerald-300"
+                >
+                  <span>✨ พร้อมลุ้นความเซอร์ไพรส์!</span>
+                </div>
+              )}
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

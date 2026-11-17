@@ -3,182 +3,216 @@
 @import "../styles/envelope.css";
 
 @theme {
-  /* Brand inks — North Pole Post 1950s */
-  --color-xmas-red: #8e2527;
-  --color-xmas-red-deep: #6b1a1c;
-  --color-pine: #193c34;
-  --color-pine-deep: #0f2621;
-  --color-cream: #f3e7cf;
-  --color-gold: #b59659;
-  --color-ink: #46352c;
+  /* International Christmas Design System Palette */
+  --color-background: #0b1728;
+  --color-surface: #122338;
+  --color-surface-elevated: #173049;
+  --color-midnight: #14243a;
+  --color-evergreen: #123d32;
+  --color-evergreen-light: #1b5445;
 
-  /* Derived paper, ink, & semantic status tokens */
-  --color-paper: #faf4e6;
-  --color-linen: #e9dcc2;
-  --color-kraft: #d9c29a;
-  --color-ink-soft: #6b5646;
-  --color-gold-ink: #7a5f2a;
-  --color-rule: #cdb894;
-  --color-red-wash: #f4dcd3;
-  --color-pine-wash: #dce5d9;
-  --color-amber-ink: #7c5410;
-  --color-amber-wash: #f5e6c4;
-  --color-plum: #4c3a5e;
-  --color-plum-wash: #e6dfea;
+  --color-text-primary: #fff9f0;
+  --color-text-secondary: #dceff5;
+  --color-text-muted: #9eb9c9;
 
-  /* Layered physical paper shadows */
+  --color-primary: #e8c47a;
+  --color-primary-hover: #f5d896;
+  --color-primary-foreground: #101e2e;
+
+  --color-christmas-red: #c62838;
+  --color-christmas-red-hover: #d93546;
+  --color-christmas-red-deep: #971a27;
+  --color-christmas-red-light: #ff99a3;
+
+  --color-snow-white: #fff9f0;
+  --color-warm-cream: #fff3df;
+  --color-ice-blue: #dceff5;
+
+  --color-border: rgba(220, 239, 245, 0.16);
+  --color-border-strong: rgba(232, 196, 122, 0.48);
+  --color-input-bg: #0c1b2d;
+
+  /* Semantic Status & Legacy Compatibility Aliases */
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #ff99a3;
+  --color-pine: #123d32;
+  --color-pine-deep: #0b241d;
+  --color-cream: #fff3df;
+  --color-paper: #fff9f0;
+  --color-gold: #e8c47a;
+  --color-ink: #132234;
+  --color-ink-soft: #2e4a5e;
+
+  /* Refined Tactile 3D-Inspired Shadows */
+  --shadow-card:
+    0 2px 4px rgba(4, 10, 20, 0.35),
+    0 14px 34px -10px rgba(4, 10, 20, 0.6),
+    inset 0 1px 0 rgba(255, 249, 240, 0.08);
+  --shadow-card-lifted:
+    0 6px 14px rgba(4, 10, 20, 0.42),
+    0 24px 52px -14px rgba(4, 10, 20, 0.72),
+    inset 0 1px 0 rgba(255, 249, 240, 0.14);
   --shadow-paper:
-    0 1px 1px rgb(70 53 44 / 0.08),
-    0 2px 4px rgb(70 53 44 / 0.08),
-    0 10px 22px -8px rgb(70 53 44 / 0.28);
+    0 4px 12px rgba(4, 10, 20, 0.25),
+    0 18px 36px -12px rgba(4, 10, 20, 0.45);
   --shadow-paper-lifted:
-    0 2px 2px rgb(70 53 44 / 0.08),
-    0 8px 14px rgb(70 53 44 / 0.1),
-    0 22px 40px -12px rgb(70 53 44 / 0.35);
-  --shadow-paper-pressed:
-    0 1px 1px rgb(70 53 44 / 0.12),
-    0 2px 4px -2px rgb(70 53 44 / 0.2);
+    0 8px 20px rgba(4, 10, 20, 0.35),
+    0 26px 50px -14px rgba(4, 10, 20, 0.58);
+  --shadow-paper-pressed: inset 0 2px 6px rgba(4, 10, 20, 0.4);
 }
 
 @theme inline {
-  --color-background: var(--color-linen);
-  --color-foreground: var(--color-ink);
-  --font-display: var(--font-chonburi), var(--font-trirong), Georgia, serif;
-  --font-serif: var(--font-trirong), Georgia, "Palatino Linotype", serif;
-  --font-script: var(--font-charm), var(--font-trirong), cursive;
-  --font-sans: var(--font-thai), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-type: var(--font-special-elite), var(--font-thai), "Courier New", monospace;
+  --color-foreground: var(--color-text-primary);
+  --font-display-en: var(--font-fraunces), var(--font-thai), Georgia, serif;
+  --font-display: var(--font-thai), var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: var(--font-fraunces), var(--font-thai), Georgia, serif;
+  --font-sans: var(--font-thai), var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-script: var(--font-charm), var(--font-thai), cursive;
+  --font-type: var(--font-inter), var(--font-thai), ui-monospace, monospace;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 :root {
-  --background: #e9dcc2;
-  --foreground: #46352c;
-  --paper-card: #f3e7cf;
-  --paper-kraft: #d9c29a;
-  --ink: #46352c;
-  --ink-muted: #6b5646;
-  --santa-red: #8e2527;
-  --santa-red-dark: #6b1a1c;
-  --pine-green: #193c34;
-  --pine-green-dark: #0f2621;
-  --brass-gold: #b59659;
+  --color-background: #0b1728;
+  --color-surface: #122338;
+  --color-surface-elevated: #173049;
+  --color-midnight: #14243a;
+  --color-evergreen: #123d32;
+  --color-input-bg: #0c1b2d;
+
+  --color-text-primary: #fff9f0;
+  --color-text-secondary: #dceff5;
+  --color-text-muted: #9eb9c9;
+
+  --color-primary: #e8c47a;
+  --color-primary-foreground: #101e2e;
+
+  --color-christmas-red: #c62838;
+  --color-christmas-red-light: #ff99a3;
+
+  --color-border: rgba(220, 239, 245, 0.16);
+  --color-focus-ring: #e8c47a;
+
+  /* Spacing scale tokens */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
 }
 
 body {
-  background-color: var(--color-linen);
-  color: var(--color-ink);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   font-family: var(--font-sans);
-  line-height: 1.7;
+  line-height: 1.65;
   text-rendering: optimizeLegibility;
+}
+
+.font-display-en {
+  font-family: var(--font-display-en);
 }
 
 /* Global accessible focus ring */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-gold-ink);
-  outline-offset: 3px;
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 
-/* Tactile Paper Surfaces */
+/* Premium Frosted Midnight & Evergreen Christmas Surfaces */
+.christmas-card,
 .analog-card {
   position: relative;
-  background-color: var(--color-cream);
-  background-image: radial-gradient(
-    ellipse at center,
-    rgba(250, 244, 230, 0.48) 45%,
-    rgba(169, 139, 96, 0.14) 100%
+  background: linear-gradient(
+    165deg,
+    rgba(22, 42, 66, 0.94) 0%,
+    rgba(16, 33, 52, 0.96) 58%,
+    rgba(16, 46, 40, 0.94) 100%
   );
-  border: 1px solid rgba(70, 53, 44, 0.22);
-  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
 }
 
-.analog-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.7'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
-}
-
+.christmas-card-elevated,
 .analog-card-lg {
   position: relative;
-  background-color: var(--color-paper);
-  background-image: radial-gradient(
-    ellipse at center,
-    rgba(255, 253, 248, 0.52) 50%,
-    rgba(181, 150, 89, 0.14) 100%
+  background: linear-gradient(
+    160deg,
+    rgba(26, 51, 78, 0.96) 0%,
+    rgba(18, 40, 62, 0.97) 52%,
+    rgba(18, 55, 45, 0.96) 100%
   );
-  border: 1px solid rgba(70, 53, 44, 0.25);
-  box-shadow: var(--shadow-paper-lifted);
+  border: 1px solid rgba(232, 196, 122, 0.28);
+  box-shadow: var(--shadow-card-lifted);
+  backdrop-filter: blur(14px);
 }
 
-.analog-card-lg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.7'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
+/* Warm Snow White & Cream Stationery Surface */
+.workshop-cream-card {
+  position: relative;
+  background: linear-gradient(175deg, #fff9f0 0%, #fff3df 100%);
+  color: #132234;
+  border: 1px solid rgba(232, 196, 122, 0.65);
+  box-shadow:
+    0 10px 30px -10px rgba(4, 10, 20, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.frost-pill {
+  background: rgba(220, 239, 245, 0.08);
+  border: 1px solid rgba(220, 239, 245, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 .analog-kraft {
   position: relative;
-  background-color: color-mix(in srgb, var(--color-kraft) 48%, var(--color-cream));
-  border: 1px dashed rgba(70, 53, 44, 0.34);
+  background-color: rgba(18, 61, 50, 0.55);
+  border: 1px dashed var(--color-border);
   box-shadow: var(--shadow-paper-pressed);
 }
 
-/* Tactile Letterpress Buttons */
+/* Tactile Microinteractive Buttons */
 .analog-btn,
 .analog-btn-lg {
-  border: 1px solid rgba(70, 53, 44, 0.34);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.26),
-    0 2px 0 rgba(70, 53, 44, 0.42),
-    0 4px 10px -4px rgba(70, 53, 44, 0.24);
   transition:
-    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 130ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 150ms ease,
-    border-color 150ms ease;
+    transform 170ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    filter 180ms ease,
+    opacity 150ms ease;
 }
 
 .analog-btn:hover:not(:disabled),
 .analog-btn-lg:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    0 3px 0 rgba(70, 53, 44, 0.46),
-    0 8px 16px -6px rgba(70, 53, 44, 0.3);
+  transform: translateY(-2px);
 }
 
 .analog-btn:active:not(:disabled),
 .analog-btn-lg:active:not(:disabled) {
-  transform: translateY(1.5px);
-  box-shadow:
-    inset 0 1px 2px rgba(70, 53, 44, 0.22),
-    0 1px 0 rgba(70, 53, 44, 0.34),
-    0 2px 4px -2px rgba(70, 53, 44, 0.2);
+  transform: translateY(1px) scale(0.99);
 }
 
-/* Stationery Inputs (Debossed Paper Impression) */
+/* Accessible High-Contrast Form Inputs */
 .analog-input {
-  background-color: var(--color-paper);
-  border: 1px solid rgba(70, 53, 44, 0.28);
-  color: var(--color-ink);
+  background-color: var(--color-input-bg);
+  border: 1px solid rgba(220, 239, 245, 0.22);
+  color: var(--color-text-primary);
   min-height: 44px;
-  box-shadow: inset 0 1px 2px rgba(70, 53, 44, 0.08);
+  box-shadow: inset 0 1px 2px rgba(4, 10, 20, 0.35);
   transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    background-color 150ms ease;
+    border-color 160ms ease,
+    box-shadow 180ms ease,
+    background-color 160ms ease;
+}
+
+.analog-input::placeholder {
+  color: rgba(220, 239, 245, 0.45);
 }
 
 @media (max-width: 639px) {
@@ -189,79 +223,160 @@ body {
 
 .analog-input:focus {
   outline: none;
-  background-color: #fffdf8;
-  border-color: var(--color-pine);
+  background-color: #091625;
+  border-color: var(--color-primary);
   box-shadow:
-    inset 0 1px 2px rgba(25, 60, 52, 0.08),
-    0 0 0 2px rgba(25, 60, 52, 0.22),
-    0 0 0 4px rgba(181, 150, 89, 0.26);
+    0 0 0 3px rgba(232, 196, 122, 0.24),
+    0 4px 14px -4px rgba(232, 196, 122, 0.28);
 }
 
 .analog-input:disabled {
-  background-color: #ebe0ca;
-  color: var(--color-ink-soft);
+  background-color: rgba(18, 35, 56, 0.65);
+  color: #8ba5b8;
+  border-color: rgba(220, 239, 245, 0.12);
   cursor: not-allowed;
 }
 
-/* Muted 1950s Airmail / Holiday Ribbon */
+/* Dark theme native datetime picker indicator contrast */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.92) sepia(0.25) saturate(1.8) hue-rotate(10deg);
+  cursor: pointer;
+}
+
+/* Festive Candy Cane & Evergreen Garland Ribbon */
 .candy-stripe-bar {
   background-image: repeating-linear-gradient(
     -45deg,
-    var(--color-xmas-red) 0 11px,
-    var(--color-paper) 11px 20px,
-    var(--color-pine) 20px 31px,
-    var(--color-paper) 31px 40px
+    #c62838 0 11px,
+    #fff9f0 11px 20px,
+    #123d32 20px 31px,
+    #fff9f0 31px 40px
   );
-  border-bottom: 1px solid rgba(70, 53, 44, 0.28);
+  border-bottom: 1px solid rgba(255, 249, 240, 0.18);
 }
 
 .candy-stripe-frame {
   background-image: repeating-linear-gradient(
     -45deg,
-    var(--color-xmas-red) 0 10px,
-    var(--color-cream) 10px 18px,
-    var(--color-pine) 18px 28px,
-    var(--color-cream) 28px 36px
+    #c62838 0 10px,
+    #fff9f0 10px 18px,
+    #123d32 18px 28px,
+    #fff9f0 28px 36px
   );
 }
 
-/* Perforated Ticket Divider */
 .perforated-divider {
   position: relative;
-  border-top: 1.5px dashed var(--color-rule);
+  border-top: 1px dashed rgba(232, 196, 122, 0.28);
 }
 
-/* Gentle Festive Snow & 1950s C9 Warm Filament Twinkle */
-@keyframes snowfall {
+/* ==========================================================================
+   3-LAYER SNOWFALL & AMBIENT CHRISTMAS ANIMATION SYSTEM
+   GPU-composited transform & opacity animations with visibility pause support
+   ========================================================================== */
+
+@keyframes snowfallBack {
   0% {
-    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    transform: translate3d(0, -10vh, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--snow-opacity, 0.55);
+  }
+  50% {
+    transform: translate3d(var(--snow-sway, 16px), 52vh, 0);
+  }
+  90% {
+    opacity: var(--snow-opacity, 0.55);
+  }
+  100% {
+    transform: translate3d(var(--snow-drift, -12px), 108vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes snowfallMid {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--snow-opacity, 0.8);
+  }
+  33% {
+    transform: translate3d(var(--snow-sway, 24px), 30vh, 0) rotate(75deg);
+  }
+  66% {
+    transform: translate3d(calc(var(--snow-sway, 24px) * -0.6), 68vh, 0) rotate(165deg);
+  }
+  90% {
+    opacity: var(--snow-opacity, 0.8);
+  }
+  100% {
+    transform: translate3d(var(--snow-drift, 18px), 110vh, 0) rotate(240deg);
+    opacity: 0;
+  }
+}
+
+@keyframes snowfallFore {
+  0% {
+    transform: translate3d(0, -14vh, 0) rotate(0deg) scale(0.95);
     opacity: 0;
   }
   12% {
-    opacity: 0.65;
+    opacity: var(--snow-opacity, 0.92);
   }
-  88% {
-    opacity: 0.65;
+  40% {
+    transform: translate3d(var(--snow-sway, -28px), 38vh, 0) rotate(110deg) scale(1.04);
+  }
+  75% {
+    transform: translate3d(calc(var(--snow-sway, -28px) * -0.75), 76vh, 0) rotate(210deg) scale(0.98);
+  }
+  90% {
+    opacity: var(--snow-opacity, 0.92);
   }
   100% {
-    transform: translate3d(var(--snow-drift, 14px), 108vh, 0) rotate(180deg);
+    transform: translate3d(var(--snow-drift, 22px), 112vh, 0) rotate(320deg) scale(1);
     opacity: 0;
   }
 }
 
-.snow-flake {
-  animation-name: snowfall;
+.snow-layer-back {
+  animation-name: snowfallBack;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+.snow-layer-mid {
+  animation-name: snowfallMid;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.snow-layer-fore {
+  animation-name: snowfallFore;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.snow-paused .snow-layer-back,
+.snow-paused .snow-layer-mid,
+.snow-paused .snow-layer-fore,
+.snow-paused .fairy-bulb,
+.snow-paused .xmas-float,
+.snow-paused .xmas-twinkle {
+  animation-play-state: paused !important;
 }
 
 @keyframes fairyTwinkle {
   0%,
   100% {
     opacity: 1;
+    filter: brightness(1.08);
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.68;
+    filter: brightness(0.88);
   }
 }
 
@@ -269,10 +384,161 @@ body {
   animation: fairyTwinkle 3.2s ease-in-out infinite;
 }
 
+@keyframes xmasFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.xmas-float {
+  animation: xmasFloat 4.6s ease-in-out infinite;
+}
+
+@keyframes xmasTwinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.88);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+.xmas-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xmasTwinkle 2.8s ease-in-out infinite;
+}
+
+@keyframes xmasGiftWobble {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-3deg) scale(1.03);
+  }
+  45% {
+    transform: rotate(3deg) scale(1.04);
+  }
+  70% {
+    transform: rotate(-1.5deg) scale(1.02);
+  }
+}
+
+.xmas-gift-hover:hover {
+  animation: xmasGiftWobble 0.65s ease-in-out;
+}
+
+@keyframes santaWave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(8deg);
+  }
+}
+
+.santa-wave-arm {
+  transform-box: fill-box;
+  transform-origin: 18% 84%;
+  animation: santaWave 3.2s ease-in-out infinite;
+}
+
+@keyframes giftLidPop {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(-42px) rotate(-11deg) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-64px) rotate(-16deg) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.gift-lid-opening {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: giftLidPop 850ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes ribbonUntie {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.22) translateY(-10px);
+    opacity: 0;
+  }
+}
+
+.ribbon-untying {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ribbonUntie 520ms ease-out forwards;
+}
+
+@keyframes magicalLightBeam {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  45% {
+    opacity: 0.95;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+.magical-beam {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: magicalLightBeam 1100ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes confettiBurst {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: translate3d(calc(var(--cx, 0px) * 0.6), calc(var(--cy, -80px) * 0.8), 0)
+      scale(1.1) rotate(120deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--cx, 0px), calc(var(--cy, -80px) + 120px), 0)
+      scale(0.8) rotate(320deg);
+  }
+}
+
+.confetti-particle {
+  animation: confettiBurst 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 @keyframes parcelReveal {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.985);
+    transform: translateY(14px) scale(0.975);
   }
   100% {
     opacity: 1;
@@ -281,18 +547,32 @@ body {
 }
 
 .parcel-reveal {
-  animation: parcelReveal 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: parcelReveal 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .snow-flake,
+  .snow-layer-back,
+  .snow-layer-mid,
+  .snow-layer-fore,
   .fairy-bulb,
+  .xmas-float,
+  .xmas-twinkle,
+  .santa-wave-arm,
+  .gift-lid-opening,
+  .ribbon-untying,
+  .magical-beam,
+  .confetti-particle,
   .parcel-reveal {
+    animation: none !important;
+  }
+
+  .xmas-gift-hover:hover {
     animation: none !important;
   }
 
   .analog-btn,
   .analog-btn-lg {
     transition: background-color 150ms ease, border-color 150ms ease !important;
+    transform: none !important;
   }
 }

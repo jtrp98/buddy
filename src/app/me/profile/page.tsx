@@ -1,19 +1,34 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CalendarClock, CheckCircle2, Gift, Save, XCircle } from "lucide-react";
+import { CalendarClock, Gift, KeyRound, Save, Sparkles } from "lucide-react";
 import {
   BuddyProfileFormFields,
   EMPTY_BUDDY_PROFILE,
   type BuddyProfileValues,
 } from "@/components/BuddyProfileFormFields";
+import { ChristmasJourney } from "@/components/ChristmasJourney";
 import { StatusBadge } from "@/components/StatusBadge";
-import { CandyStripeBar, WashiTape } from "@/components/AnalogPrimitives";
+import {
+  SnowGlobe3D,
+  WishListGiftStack3D,
+} from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { formatBudget } from "@/lib/budget";
 import { formatThaiDateTime } from "@/lib/timezone";
+import {
+  Alert,
+  ChristmasButton,
+  ChristmasCard,
+  EmptyState,
+  FormField,
+  Input,
+  LoadingState,
+  PageContainer,
+  christmasButtonClass,
+} from "@/components/ui/ChristmasUI";
 
 interface ProfileResponse {
   profile: {
@@ -47,6 +62,9 @@ function ProfileEditorContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const { triggerClickSound, triggerChimeSound } = useFestiveAtmosphere();
+
+  const nameId = useId();
+  const emailId = useId();
 
   const [loading, setLoading] = useState(Boolean(token));
   const [error, setError] = useState(token ? "" : "ไม่พบลิงก์ส่วนตัวของคุณ");
@@ -117,7 +135,7 @@ function ProfileEditorContent() {
     setSaveMessage("");
 
     if (profile.interests.length === 0) {
-      setSaveError("กรุณาเลือกความชอบอย่างน้อย 1 หมวดหมู่");
+      setSaveError("กรุณาเลือกหมวดหมู่ความชอบอย่างน้อย 1 ข้อ");
       return;
     }
 
@@ -140,7 +158,7 @@ function ProfileEditorContent() {
         return;
       }
       triggerChimeSound();
-      setSaveMessage("บันทึกข้อมูล Buddy Profile เรียบร้อยแล้ว!");
+      setSaveMessage("บันทึก Buddy Profile & Wish List เรียบร้อยแล้ว!");
     } catch {
       setSaveError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     } finally {
@@ -149,152 +167,137 @@ function ProfileEditorContent() {
   };
 
   if (loading) {
-    return (
-      <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
-        กำลังโหลดข้อมูลของคุณ...
-      </div>
-    );
+    return <LoadingState label="กำลังโหลดข้อมูล Buddy Profile ของคุณ..." rows={4} />;
   }
 
   if (error || !group) {
     return (
-      <div className="analog-card rounded-md p-8 text-center">
-        <XCircle className="mx-auto h-12 w-12 text-xmas-red" />
-        <h1 className="mt-4 text-xl font-bold text-ink">ไม่สามารถเข้าถึงข้อมูลได้</h1>
-        <p className="mt-2 text-sm font-medium text-xmas-red-deep">{error}</p>
-        <Link
-          href="/recover"
-          className="analog-btn-lg mt-6 inline-flex rounded bg-xmas-red px-5 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
-        >
-          ขอลิงก์ส่วนตัวใหม่
-        </Link>
-      </div>
+      <EmptyState
+        icon={<SnowGlobe3D className="h-28 w-28" />}
+        title="ไม่สามารถเข้าถึงหน้าแก้ไขโปรไฟล์ได้"
+        description={error || "ลิงก์ส่วนตัวนี้อาจไม่ถูกต้องหรือถูกยกเลิกแล้ว"}
+        action={
+          <Link href="/recover" className={christmasButtonClass("primary", "md")}>
+            <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>ขอลิงก์ส่วนตัวใหม่</span>
+          </Link>
+        }
+      />
     );
   }
 
   const isPreDraw = group.status === "OPEN" || group.status === "DRAFT";
+  const journeyStep = group.status === "ACTIVE" || group.status === "COMPLETED" ? 4 : 3;
 
   return (
     <div className="space-y-6">
-      <section className="analog-card printed-double-rule overflow-hidden rounded-md">
-        <CandyStripeBar />
-        <div className="relative z-10 p-6 sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <StatusBadge status={group.status} />
-            <span className="inline-flex items-center gap-1.5 rounded border border-ink/20 bg-paper px-3 py-1 text-xs font-bold text-ink-soft">
-              <CalendarClock className="h-3.5 w-3.5 text-xmas-red" />
-              ปิดรับสมัคร: {formatThaiDateTime(group.registrationClosesAt)}
-            </span>
+      <ChristmasJourney mode="participant" currentStep={journeyStep} />
+
+      <ChristmasCard withStripe>
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusBadge status={group.status} />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold text-text-secondary">
+                  <CalendarClock className="h-3.5 w-3.5 text-christmas-red-light" aria-hidden="true" />
+                  ปิดรับสมัคร: {formatThaiDateTime(group.registrationClosesAt)}
+                </span>
+              </div>
+
+              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-primary uppercase">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>PERSONAL WISH LIST &amp; PROFILE</span>
+              </span>
+              <h1 className="thai-keep mt-1 text-2xl font-bold leading-snug text-snow-white sm:text-3xl">
+                Buddy Profile ของคุณ — {group.title}
+              </h1>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-background/60 px-3.5 py-1.5 text-sm font-bold text-primary">
+                <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>
+                  งบประมาณของขวัญ:{" "}
+                  {formatBudget(group.budgetType, group.budgetMin, group.budgetMax)}
+                </span>
+              </div>
+            </div>
+
+            <div className="hidden shrink-0 sm:block">
+              <WishListGiftStack3D className="h-24 w-24" />
+            </div>
           </div>
-
-          <h1 className="thai-keep letterpress mt-4 font-display text-2xl leading-[1.35] text-ink">
-            Buddy Profile ของคุณ — {group.title}
-          </h1>
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded border border-xmas-red/30 bg-red-wash px-3 py-1 font-serif text-sm font-bold text-xmas-red-deep">
-            <Gift className="h-4 w-4" />
-            <span>
-              งบประมาณของขวัญ:{" "}
-              {formatBudget(group.budgetType, group.budgetMin, group.budgetMax)}
-            </span>
-          </p>
         </div>
-      </section>
+      </ChristmasCard>
 
-      <form
-        onSubmit={handleSave}
-        className="analog-card-lg printed-double-rule relative space-y-6 rounded-md p-6 sm:p-8"
-      >
-        <WashiTape tone="red" className="absolute -top-2 left-8 z-20 -rotate-3" />
-
-        <div className="relative z-10 space-y-6">
-          {saveMessage && (
-            <div className="flex items-center gap-2 rounded border border-pine/45 bg-pine-wash px-4 py-3 text-sm font-bold text-pine-deep">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span>{saveMessage}</span>
-            </div>
-          )}
-
-          {saveError && (
-            <div className="rounded border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-medium text-xmas-red-deep">
-              {saveError}
-            </div>
-          )}
+      <ChristmasCard elevated className="p-6 sm:p-8">
+        <form onSubmit={handleSave} className="space-y-6">
+          {saveMessage && <Alert tone="success">{saveMessage}</Alert>}
+          {saveError && <Alert tone="error">{saveError}</Alert>}
 
           {!canEdit && (
-            <div className="rounded border border-ink/25 bg-cream px-4 py-3 text-sm font-bold text-ink-soft">
+            <Alert tone="info">
               กิจกรรมนี้จบลงแล้ว จึงไม่สามารถแก้ไขข้อมูลได้
-            </div>
+            </Alert>
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block font-serif text-sm font-bold text-ink">
-                ชื่อ / ชื่อเล่น
-              </label>
-              <input
+            <FormField
+              label="ชื่อ / ชื่อเล่น"
+              htmlFor={nameId}
+              required
+              helperText={
+                !isPreDraw
+                  ? "หลังสุ่มจับคู่แล้วจะไม่สามารถเปลี่ยนชื่อได้ (แต่ยังแก้ไขความชอบและ Wish List ได้)"
+                  : undefined
+              }
+            >
+              <Input
+                id={nameId}
                 type="text"
                 required
-                disabled={!canEdit || !isPreDraw}
+                disabled={!canEdit || !isPreDraw || saving}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
               />
-              {!isPreDraw && (
-                <p className="mt-1 text-[11px] text-ink-soft">
-                  หลังสุ่มจับคู่แล้วจะไม่สามารถเปลี่ยนชื่อได้ (แต่ยังแก้ไขความชอบและ Wish List ได้)
-                </p>
-              )}
-            </div>
+            </FormField>
 
-            <div>
-              <label className="block font-serif text-sm font-bold text-ink">
-                อีเมลที่ลงทะเบียน
-              </label>
-              <input
-                type="email"
-                disabled
-                value={email}
-                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
-              />
-            </div>
+            <FormField label="อีเมลที่ลงทะเบียน" htmlFor={emailId}>
+              <Input id={emailId} type="email" disabled value={email} />
+            </FormField>
           </div>
 
-          <hr className="border-t border-dashed border-rule" />
-
-          <BuddyProfileFormFields
-            value={profile}
-            onChange={setProfile}
-            disabled={!canEdit}
-          />
+          <div className="border-t border-border pt-6">
+            <BuddyProfileFormFields
+              value={profile}
+              onChange={setProfile}
+              disabled={!canEdit || saving}
+            />
+          </div>
 
           {canEdit && (
-            <button
+            <ChristmasButton
               type="submit"
-              disabled={saving}
-              className="analog-btn-lg inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded bg-pine py-3.5 text-sm font-bold text-paper hover:bg-pine-deep disabled:opacity-60"
+              variant="primary"
+              size="lg"
+              loading={saving}
+              loadingText="กำลังบันทึก..."
+              className="w-full"
             >
-              <Save className="h-4 w-4" />
-              <span>{saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
-            </button>
+              <Save className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>บันทึก Buddy Profile &amp; Wish List</span>
+            </ChristmasButton>
           )}
-        </div>
-      </form>
+        </form>
+      </ChristmasCard>
     </div>
   );
 }
 
 export default function MyProfilePage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-      <Suspense
-        fallback={
-          <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
-            กำลังโหลด...
-          </div>
-        }
-      >
+    <PageContainer size="md">
+      <Suspense fallback={<LoadingState label="กำลังโหลด..." rows={4} />}>
         <ProfileEditorContent />
       </Suspense>
-    </div>
+    </PageContainer>
   );
 }

@@ -7,7 +7,7 @@ interface OrnamentDividerProps {
 }
 
 /**
- * Editorial rule with centered engraved ornament or short typewriter stamp text.
+ * High-contrast editorial divider with subtle gold line and ornament or readable label.
  */
 export function OrnamentDivider({
   ornament = "flourish",
@@ -17,11 +17,11 @@ export function OrnamentDivider({
   return (
     <div
       aria-hidden={!label}
-      className={`flex items-center gap-3 text-gold-ink ${className}`}
+      className={`flex items-center gap-3 text-primary ${className}`}
     >
       <span className="gold-foil-rule flex-1" />
       {label ? (
-        <span className="whitespace-nowrap font-type text-[10px] tracking-[0.22em] text-ink-soft uppercase">
+        <span className="whitespace-nowrap text-xs font-semibold tracking-[0.16em] text-text-secondary uppercase">
           {label}
         </span>
       ) : (

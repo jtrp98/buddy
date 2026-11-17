@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { RecoverForm } from "@/components/RecoverForm";
+import { LoadingState, PageContainer } from "@/components/ui/ChristmasUI";
 
 async function RecoverWithParams({
   params,
@@ -18,9 +19,9 @@ export default function GroupRecoverPage({
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-md px-4 py-12">
-          <div className="analog-card h-48 animate-pulse rounded-md" />
-        </div>
+        <PageContainer size="sm">
+          <LoadingState label="กำลังโหลดแบบฟอร์มขอลิงก์..." rows={3} />
+        </PageContainer>
       }
     >
       <RecoverWithParams params={params} />

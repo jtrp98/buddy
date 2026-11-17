@@ -7,8 +7,8 @@ export default function HomePage() {
   return (
     <div className="pb-6">
       <HeroPostcard />
-      <PostalFeatureCards />
       <LetterJourney />
+      <PostalFeatureCards />
       <TelegramCTA />
     </div>
   );
