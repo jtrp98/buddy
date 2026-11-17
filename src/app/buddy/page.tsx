@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { KeyRound } from "lucide-react";
-import { SnowGlobe3D } from "@/components/illustrations/ChristmasIllustrations";
+import { SnowGlobeKey } from "@/components/scenery/Vignettes";
 import {
   MagicalGiftReveal,
   type BuddyRevealData,
@@ -56,13 +56,13 @@ function BuddyRevealContent() {
   }, [token]);
 
   if (loading) {
-    return <LoadingState label="กำลังจัดเตรียมกล่องของขวัญลับจาก North Pole..." rows={4} />;
+    return <LoadingState label="กำลังเตรียมกล่องของขวัญลับของคุณ..." rows={4} />;
   }
 
   if (error || !data) {
     return (
       <EmptyState
-        icon={<SnowGlobe3D className="h-28 w-28" />}
+        icon={<SnowGlobeKey className="h-32 w-auto" />}
         title="ไม่สามารถเปิดดูผล Secret Buddy ได้"
         description={error || "ลิงก์นี้อาจไม่ถูกต้อง ถูกยกเลิก หรือหมดอายุแล้ว"}
         action={

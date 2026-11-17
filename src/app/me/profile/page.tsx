@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CalendarClock, Gift, KeyRound, Save, Sparkles } from "lucide-react";
+import { CalendarClock, Gift, KeyRound, Save } from "lucide-react";
 import {
   BuddyProfileFormFields,
   EMPTY_BUDDY_PROFILE,
@@ -12,7 +12,6 @@ import {
 import { ChristmasJourney } from "@/components/ChristmasJourney";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
-  SnowGlobe3D,
   WishListGiftStack3D,
 } from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
@@ -29,6 +28,7 @@ import {
   PageContainer,
   christmasButtonClass,
 } from "@/components/ui/ChristmasUI";
+import { SnowGlobeKey } from "@/components/scenery/Vignettes";
 
 interface ProfileResponse {
   profile: {
@@ -173,7 +173,7 @@ function ProfileEditorContent() {
   if (error || !group) {
     return (
       <EmptyState
-        icon={<SnowGlobe3D className="h-28 w-28" />}
+        icon={<SnowGlobeKey className="h-32 w-auto" />}
         title="ไม่สามารถเข้าถึงหน้าแก้ไขโปรไฟล์ได้"
         description={error || "ลิงก์ส่วนตัวนี้อาจไม่ถูกต้องหรือถูกยกเลิกแล้ว"}
         action={
@@ -193,43 +193,30 @@ function ProfileEditorContent() {
     <div className="space-y-6">
       <ChristmasJourney mode="participant" currentStep={journeyStep} />
 
-      <ChristmasCard withStripe>
-        <div className="p-6 sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge status={group.status} />
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold text-text-secondary">
-                  <CalendarClock className="h-3.5 w-3.5 text-christmas-red-light" aria-hidden="true" />
-                  ปิดรับสมัคร: {formatThaiDateTime(group.registrationClosesAt)}
-                </span>
-              </div>
-
-              <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-primary uppercase">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>PERSONAL WISH LIST &amp; PROFILE</span>
-              </span>
-              <h1 className="thai-keep mt-1 text-2xl font-bold leading-snug text-snow-white sm:text-3xl">
-                Buddy Profile ของคุณ — {group.title}
-              </h1>
-              <div className="mt-3 inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-background/60 px-3.5 py-1.5 text-sm font-bold text-primary">
-                <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>
-                  งบประมาณของขวัญ:{" "}
-                  {formatBudget(group.budgetType, group.budgetMin, group.budgetMax)}
-                </span>
-              </div>
-            </div>
-
-            <div className="hidden shrink-0 sm:block">
-              <WishListGiftStack3D className="h-24 w-24" />
-            </div>
+      <header className="rise-in flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge status={group.status} />
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary">
+              <CalendarClock className="h-3.5 w-3.5 text-christmas-red-light" aria-hidden="true" />
+              ปิดรับสมัคร {formatThaiDateTime(group.registrationClosesAt)}
+            </span>
           </div>
+          <p className="mt-4 font-script text-2xl text-primary">จดหมายถึงซานต้าของคุณ</p>
+          <h1 className="thai-keep mt-1 text-3xl leading-tight text-text-primary sm:text-4xl">
+            Buddy Profile · {group.title}
+          </h1>
+          <p className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+            <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
+            งบประมาณของขวัญ {formatBudget(group.budgetType, group.budgetMin, group.budgetMax)}
+          </p>
         </div>
-      </ChristmasCard>
+        <WishListGiftStack3D className="hidden h-24 w-24 shrink-0 sm:block" />
+      </header>
 
-      <ChristmasCard elevated className="p-6 sm:p-8">
-        <form onSubmit={handleSave} className="space-y-6">
+      <ChristmasCard tone="paper" className="relative">
+        <div aria-hidden="true" className="paper-frame" />
+        <form onSubmit={handleSave} className="relative space-y-6 p-6 sm:p-10">
           {saveMessage && <Alert tone="success">{saveMessage}</Alert>}
           {saveError && <Alert tone="error">{saveError}</Alert>}
 

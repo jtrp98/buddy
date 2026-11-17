@@ -7,6 +7,7 @@ import { sendMail } from "@/lib/email/mailer";
 import { buildVerifyEmail } from "@/lib/email/templates";
 import { getAppBaseUrl } from "@/lib/url";
 import { memberRegisterSchema, normalizeNullableText } from "@/lib/validation";
+import { participantSeed } from "@/lib/participant-seed";
 
 type RouteContext = { params: Promise<{ inviteCode: string }> };
 
@@ -155,6 +156,7 @@ export async function POST(req: Request, context: RouteContext) {
     return jsonNoStore(
       {
         ok: true,
+        participantSeed: participantSeed(member.id),
         message:
           "ลงทะเบียนเบื้องต้นเรียบร้อยแล้ว! กรุณาเปิดอีเมลของคุณเพื่อกดยืนยันตัวตนก่อนเวลาปิดรับสมัคร",
       },

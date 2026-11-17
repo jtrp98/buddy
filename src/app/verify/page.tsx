@@ -4,13 +4,12 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Edit3, KeyRound, Sparkles } from "lucide-react";
-import { PostageStamp } from "@/components/AnalogPrimitives";
 import { ChristmasJourney } from "@/components/ChristmasJourney";
 import {
-  ElfCharacter3D,
+  InteractiveGiftBox3D,
   MagicalSparkleBurst,
-  SnowGlobe3D,
 } from "@/components/illustrations/ChristmasIllustrations";
+import { SnowGlobeKey } from "@/components/scenery/Vignettes";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import {
   ChristmasCard,
@@ -79,7 +78,7 @@ function VerifyContent() {
     return (
       <div className="space-y-6">
         <ChristmasJourney mode="participant" currentStep={3} />
-        <LoadingState label="เอลฟ์กำลังประทับตรา North Pole ยืนยันอีเมลของคุณ..." rows={3} />
+        <LoadingState label="กำลังยืนยันอีเมลของคุณ..." rows={3} />
       </div>
     );
   }
@@ -87,7 +86,7 @@ function VerifyContent() {
   if (status === "error" || !result) {
     return (
       <EmptyState
-        icon={<SnowGlobe3D className="h-28 w-28" />}
+        icon={<SnowGlobeKey className="h-32 w-auto" />}
         title="ไม่สามารถยืนยันอีเมลได้"
         description={error || "ลิงก์ยืนยันตัวตนอาจหมดอายุหรือถูกใช้งานไปแล้ว"}
         action={
@@ -104,41 +103,31 @@ function VerifyContent() {
     <div className="space-y-6">
       <ChristmasJourney mode="participant" currentStep={3} />
 
-      <ChristmasCard elevated withStripe className="relative parcel-reveal">
-        <div className="p-7 text-center sm:p-10">
+      <ChristmasCard tone="paper" className="parcel-reveal relative">
+        <div aria-hidden="true" className="paper-frame" />
+        <div className="relative p-7 text-center sm:p-12">
           <MagicalSparkleBurst active={burstActive} />
 
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center justify-center gap-5">
-              <ElfCharacter3D className="h-24 w-24" />
-              <PostageStamp
-                topText="NORTH POLE"
-                mainText="VERIFIED"
-                bottomText="CONFIRMED"
-                tone="green"
-                vignette="star"
-              />
-            </div>
-
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/50 bg-evergreen/85 px-3.5 py-1 text-xs font-bold text-emerald-100">
-              <CheckCircle2 className="h-4 w-4 text-emerald-300" aria-hidden="true" />
-              <span>ลงทะเบียนเข้าร่วมสมบูรณ์</span>
-            </span>
+          <div className="mx-auto w-fit">
+            <InteractiveGiftBox3D tone="evergreen" stage="idle" className="h-32 w-32" />
           </div>
 
-          <h1 className="thai-keep mt-4 text-2xl font-bold text-snow-white sm:text-3xl">
-            ยืนยันอีเมลเรียบร้อยแล้ว!
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-text-secondary sm:text-base">
-            ยินดีต้อนรับคุณ <strong className="text-snow-white">{result.displayName}</strong>{" "}
-            เข้าสู่ปาร์ตี้{" "}
-            <strong className="text-primary">{result.groupTitle}</strong>
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-success-bg px-3.5 py-1 text-xs font-bold text-success">
+            <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+            ลงทะเบียนเข้าร่วมสมบูรณ์
           </p>
 
-          <div className="mx-auto mt-5 max-w-md rounded-2xl border border-primary/25 bg-background/70 p-4 text-xs leading-relaxed text-text-secondary sm:text-sm">
+          <h1 className="thai-keep mt-4 text-3xl text-text-primary sm:text-4xl">ยืนยันอีเมลเรียบร้อยแล้ว!</h1>
+          <p className="mt-3 text-sm leading-relaxed text-text-secondary sm:text-base">
+            ยินดีต้อนรับคุณ <strong className="text-text-primary">{result.displayName}</strong> สู่ปาร์ตี้{" "}
+            <strong className="text-primary">{result.groupTitle}</strong>
+          </p>
+          <p className="mt-1 font-script text-xl text-christmas-red-light">ตัวละครของคุณยืนอยู่ที่ต้นคริสต์มาสแล้ว</p>
+
+          <div className="mx-auto mt-6 max-w-md rounded-2xl border border-border bg-surface/60 p-4 text-sm leading-relaxed text-text-secondary">
             <Sparkles className="mx-auto mb-1.5 h-4 w-4 text-primary" aria-hidden="true" />
-            เราได้ส่งลิงก์ส่วนตัวสำหรับแก้ไข Wish List ไปยังอีเมลของคุณแล้ว
-            และเมื่อถึงเวลาจับคู่ ระบบจะส่งกล่องของขวัญแจ้งชื่อ Secret Buddy ให้โดยอัตโนมัติ
+            เราส่งลิงก์ส่วนตัวสำหรับแก้ไข Wish List ไปที่อีเมลของคุณแล้ว เมื่อถึงเวลาจับคู่
+            ระบบจะส่งลิงก์เปิดกล่องของขวัญให้โดยอัตโนมัติ
           </div>
 
           <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -149,6 +138,9 @@ function VerifyContent() {
               <Edit3 className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>ดู / แก้ไข Buddy Profile &amp; Wish List</span>
             </Link>
+            <Link href={`/join/${encodeURIComponent(result.inviteCode)}`} className={christmasButtonClass("secondary", "lg")}>
+              ไปดูต้นคริสต์มาสของกลุ่ม
+            </Link>
           </div>
         </div>
       </ChristmasCard>
@@ -158,7 +150,7 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <PageContainer size="md" className="max-w-2xl py-10 sm:py-14">
+    <PageContainer size="md" className="max-w-2xl pt-12 pb-10 sm:pt-16 sm:pb-14">
       <Suspense fallback={<LoadingState label="กำลังโหลด..." rows={3} />}>
         <VerifyContent />
       </Suspense>

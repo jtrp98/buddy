@@ -133,13 +133,13 @@ export function BuddyProfileFormFields({
               เลือกหมวดหมู่ที่สนใจอย่างน้อย 1 ข้อ เพื่อเป็นเบาะแสให้ Buddy เลือกของขวัญได้ตรงใจ
             </p>
           </div>
-          <span className="inline-flex items-center rounded-full border border-primary/40 bg-background/70 px-3 py-1 text-xs font-bold text-primary">
+          <span className="inline-flex items-center rounded-full border border-primary/40 bg-surface/60 px-3 py-1 text-xs font-bold text-primary">
             เลือกแล้ว {value.interests.length} หมวดหมู่
           </span>
         </div>
 
         <div>
-          <div className="text-sm font-semibold text-snow-white">
+          <div className="text-sm font-semibold text-text-primary">
             หมวดหมู่ของขวัญที่สนใจ <span className="text-christmas-red-light">*</span>
           </div>
 
@@ -158,12 +158,12 @@ export function BuddyProfileFormFields({
                   onClick={() => toggleInterest(opt.key)}
                   className={`analog-btn thai-keep flex min-h-[48px] items-center justify-between gap-2 rounded-xl border px-3.5 py-2.5 text-left text-sm font-semibold transition ${
                     selected
-                      ? "border-primary bg-gradient-to-br from-primary/20 to-christmas-red/15 text-snow-white ring-1 ring-primary shadow-[0_0_16px_rgba(232,196,122,0.16)]"
-                      : "border-border bg-background/60 text-text-secondary hover:border-white/35 hover:text-snow-white"
+                      ? "border-primary bg-primary/12 text-text-primary ring-1 ring-primary shadow-[0_6px_18px_-10px_var(--color-primary)]"
+                      : "border-border bg-surface/50 text-text-secondary hover:border-border-strong hover:text-text-primary"
                   } disabled:cursor-not-allowed disabled:opacity-55`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className={selected ? "text-primary" : "text-emerald-300"}>
+                    <span className={selected ? "text-primary" : "text-ice-blue"}>
                       {icon}
                     </span>
                     <span>{opt.label}</span>
@@ -173,7 +173,7 @@ export function BuddyProfileFormFields({
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition ${
                       selected
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "border-white/30 bg-surface text-transparent"
+                        : "border-border-strong bg-input-bg text-transparent"
                     }`}
                   >
                     <Check className="h-3.5 w-3.5 stroke-[3]" />
@@ -184,7 +184,7 @@ export function BuddyProfileFormFields({
           </div>
 
           {hasOther && (
-            <div className="mt-3 rounded-xl border border-primary/40 bg-background/70 p-4">
+            <div className="mt-3 rounded-xl border border-border-strong bg-surface/50 p-4">
               <FormField
                 label="ระบุความชอบอื่น ๆ เพิ่มเติม"
                 htmlFor={otherId}
@@ -264,7 +264,7 @@ export function BuddyProfileFormFields({
           <FormField
             label={
               <span className="inline-flex items-center gap-1.5">
-                <Gift className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+                <Gift className="h-4 w-4 text-ice-blue" aria-hidden="true" />
                 <span>สไตล์ของขวัญที่ชอบ</span>
               </span>
             }
@@ -294,10 +294,10 @@ export function BuddyProfileFormFields({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-amber-400/35 bg-amber-950/35 p-4">
+          <div className="rounded-2xl border border-warning/35 bg-warning-bg/70 p-4">
             <FormField
               label={
-                <span className="inline-flex items-center gap-1.5 text-amber-200">
+                <span className="inline-flex items-center gap-1.5 text-warning">
                   <ThumbsDown className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>สิ่งที่ไม่ชอบ</span>
                 </span>
@@ -315,10 +315,10 @@ export function BuddyProfileFormFields({
             </FormField>
           </div>
 
-          <div className="rounded-2xl border border-christmas-red-light/45 bg-[#45111C]/55 p-4">
+          <div className="rounded-2xl border border-error/35 bg-error-bg/70 p-4">
             <FormField
               label={
-                <span className="inline-flex items-center gap-1.5 text-[#FFE8EC]">
+                <span className="inline-flex items-center gap-1.5 text-text-primary">
                   <AlertOctagon className="h-4 w-4 shrink-0 text-christmas-red-light" aria-hidden="true" />
                   <span>สิ่งที่แพ้หรือควรหลีกเลี่ยง (ไม่บังคับ)</span>
                 </span>
@@ -340,17 +340,17 @@ export function BuddyProfileFormFields({
 
       {/* Group 3: Christmas Wish List Showcase & Personal Note */}
       <section className="space-y-5 border-t border-border pt-6">
-        <div className="rounded-2xl border border-primary/40 bg-[radial-gradient(circle_at_90%_15%,rgba(232,196,122,0.14),transparent_55%),linear-gradient(160deg,rgba(18,61,50,0.85)_0%,rgba(12,30,49,0.92)_100%)] p-5 sm:p-6 shadow-md">
+        <div className="rounded-2xl border border-border-strong bg-surface/60 p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="font-display-en text-sm font-semibold italic text-primary">
                 What&apos;s on Your Christmas Wish List?
               </span>
-              <h3 className="mt-0.5 text-lg font-bold text-snow-white">
+              <h3 className="mt-0.5 text-lg font-bold text-text-primary">
                 ใบขอพร Christmas Wish List ของคุณ
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-text-secondary sm:text-sm">
-                บอกใบ้ของขวัญที่อยากได้ในใจให้ซานต้าประจำทีม หรือกดเลือกไอเดียแนะนำด้านล่างได้เลย
+                บอกใบ้ของขวัญที่อยากได้ในใจให้ซานต้าลับของคุณ หรือกดเลือกไอเดียแนะนำด้านล่างได้เลย
               </p>
             </div>
             <div className="hidden shrink-0 sm:block">
@@ -361,7 +361,7 @@ export function BuddyProfileFormFields({
           <div className="mt-4">
             <FormField
               label={
-                <span className="inline-flex items-center gap-1.5 text-emerald-200">
+                <span className="inline-flex items-center gap-1.5 text-text-primary">
                   <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                   <span>Wish List ของที่อยากได้</span>
                 </span>
@@ -390,7 +390,7 @@ export function BuddyProfileFormFields({
                       key={idea}
                       type="button"
                       onClick={() => addWishIdea(idea)}
-                      className="analog-btn inline-flex min-h-[34px] items-center gap-1 rounded-full border border-primary/35 bg-background/70 px-3 py-1 text-xs font-semibold text-snow-white transition hover:border-primary hover:bg-primary/20"
+                      className="analog-btn inline-flex min-h-[34px] items-center gap-1 rounded-full border border-primary/35 bg-surface/60 px-3 py-1 text-xs font-semibold text-text-primary transition hover:border-primary hover:bg-primary/15"
                     >
                       <Plus className="h-3 w-3 text-primary" aria-hidden="true" />
                       <span>{idea}</span>

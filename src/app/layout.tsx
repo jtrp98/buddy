@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Charm, Fraunces, IBM_Plex_Sans_Thai, Inter } from "next/font/google";
+import { Charm, Fraunces, IBM_Plex_Sans_Thai, Inter, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { FestiveAtmosphereProvider } from "@/components/FestiveAtmosphere";
+import { ForestEdge } from "@/components/scenery/WinterScene";
 
 const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-thai",
@@ -22,8 +23,15 @@ const inter = Inter({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["500", "600", "700"],
   style: ["normal", "italic"],
+  display: "swap",
+});
+
+const notoSerifThai = Noto_Serif_Thai({
+  variable: "--font-serif-thai",
+  subsets: ["thai"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -46,7 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${ibmPlexSansThai.variable} ${inter.variable} ${fraunces.variable} ${charm.variable} h-full antialiased`}
+      className={`${ibmPlexSansThai.variable} ${inter.variable} ${fraunces.variable} ${notoSerifThai.variable} ${charm.variable} h-full antialiased`}
     >
       <body className="evergreen-canvas min-h-full flex flex-col bg-background text-text-primary selection:bg-christmas-red selection:text-snow-white">
         <a
@@ -61,49 +69,36 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <main id="main-content" className="relative z-10 flex-1 focus:outline-none">
             {children}
           </main>
-          <footer className="relative z-10 mt-20 border-t border-border bg-[#091322]/95 backdrop-blur-md">
-            <div className="candy-stripe-bar h-1.5 w-full" />
+          <div className="relative z-10 mt-16">
+            <ForestEdge />
+          </div>
+          <footer className="relative z-10 bg-evergreen-deep">
             <div
-              className={`mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 pt-8 text-center text-sm text-text-secondary sm:flex-row sm:px-6 sm:text-left ${
+              className={`mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 px-4 pt-6 text-center text-sm text-text-secondary sm:flex-row sm:px-6 sm:text-left ${
                 isDev ? "pb-16 xl:pb-8" : "pb-8"
               }`}
             >
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center justify-center gap-2.5 sm:justify-start">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/45 bg-surface-elevated px-3 py-1 text-[11px] font-bold tracking-wider text-primary uppercase">
-                    NORTH POLE WORKSHOP · SECRET BUDDY
-                  </span>
-                  <span className="thai-keep font-bold text-text-primary">
-                    A Magical Christmas Adventure
-                  </span>
-                </div>
+              <div className="space-y-1">
+                <p className="font-display text-lg text-text-primary">
+                  Secret Buddy
+                  <span className="ml-2 font-script text-base text-primary">คริสต์มาสนี้ ส่งความลับดี ๆ ให้กัน</span>
+                </p>
                 <p className="text-xs text-text-muted">
-                  ผู้เข้าร่วมไม่ต้องสมัครบัญชี • เข้ารหัสผลจับคู่ AES-256-GCM • Admin ไม่เห็นผลจับคู่
+                  ผู้เข้าร่วมไม่ต้องสมัครบัญชี · ผลจับคู่เข้ารหัส AES-256-GCM · Admin ไม่เห็นผลจับคู่
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
-                <Link
-                  href="/admin/register"
-                  className="text-primary transition hover:text-primary-hover hover:underline underline-offset-4"
-                >
+              <nav aria-label="ลิงก์ส่วนท้าย" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs font-semibold">
+                <Link href="/admin/register" className="text-primary underline-offset-4 transition hover:text-primary-hover hover:underline">
                   สร้างกิจกรรมใหม่
                 </Link>
-                <span aria-hidden="true" className="text-border">•</span>
-                <Link
-                  href="/recover"
-                  className="text-text-secondary transition hover:text-text-primary hover:underline underline-offset-4"
-                >
+                <Link href="/recover" className="text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline">
                   ขอลิงก์ส่วนตัว
                 </Link>
-                <span aria-hidden="true" className="text-border">•</span>
-                <Link
-                  href="/admin/login"
-                  className="text-text-secondary transition hover:text-text-primary hover:underline underline-offset-4"
-                >
+                <Link href="/admin/login" className="text-text-secondary underline-offset-4 transition hover:text-text-primary hover:underline">
                   เข้าสู่ระบบ Admin
                 </Link>
-              </div>
+              </nav>
             </div>
           </footer>
         </FestiveAtmosphereProvider>

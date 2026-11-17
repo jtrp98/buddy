@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Mail, RefreshCw, Trash2 } from "lucide-react";
-import { PostageStamp } from "@/components/AnalogPrimitives";
-import { NorthPoleMailbox3D } from "@/components/illustrations/ChristmasIllustrations";
+import { InteractiveGiftBox3D } from "@/components/illustrations/ChristmasIllustrations";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import {
   ChristmasButton,
@@ -75,7 +74,7 @@ export default function DevOutboxPage() {
     return (
       <PageContainer size="md" className="py-16">
         <EmptyState
-          icon={<NorthPoleMailbox3D className="h-24 w-24" />}
+          icon={<InteractiveGiftBox3D tone="gold" className="h-28 w-28" />}
           title="หน้านี้ใช้งานได้เฉพาะโหมดพัฒนา (Development) เท่านั้น"
         />
       </PageContainer>
@@ -84,10 +83,10 @@ export default function DevOutboxPage() {
 
   return (
     <PageContainer className="max-w-4xl space-y-5">
-      <ChristmasCard elevated withStripe>
-        <div className="p-6">
+      <div>
+        <div>
           <PageHeader
-            kicker="DEV OUTBOX"
+            kicker="เฉพาะโหมดพัฒนา"
             title="กล่องอีเมลจำลอง"
             description="ใช้สำหรับทดสอบการส่งอีเมลในเครื่อง Local เมื่อยังไม่ได้ตั้งค่า SMTP"
             actions={
@@ -111,13 +110,13 @@ export default function DevOutboxPage() {
             }
           />
         </div>
-      </ChristmasCard>
+      </div>
 
       {loading ? (
         <LoadingState label="กำลังโหลดอีเมลจำลอง..." rows={3} />
       ) : items.length === 0 ? (
         <EmptyState
-          icon={<NorthPoleMailbox3D className="h-24 w-24" />}
+          icon={<InteractiveGiftBox3D tone="gold" className="h-28 w-28" />}
           title="ยังไม่มีอีเมลที่ถูกส่งในโหมดจำลอง"
           description="เมื่อมีการลงทะเบียนหรือสุ่มจับคู่ในโหมดพัฒนา อีเมลจะมาปรากฏที่นี่"
         />
@@ -127,7 +126,7 @@ export default function DevOutboxPage() {
             <ChristmasCard key={item.id} className="p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border pb-3">
                 <div>
-                  <div className="flex items-center gap-2 text-base font-bold text-snow-white">
+                  <div className="flex items-center gap-2 text-base font-bold text-text-primary">
                     <Mail className="h-4 w-4 text-primary" aria-hidden="true" />
                     <span>{item.subject}</span>
                   </div>
@@ -139,10 +138,9 @@ export default function DevOutboxPage() {
                   <span className="font-mono text-xs text-text-secondary">
                     {new Date(item.createdAt).toLocaleString("th-TH")}
                   </span>
-                  <PostageStamp topText="LOCAL" mainText="MAIL" bottomText="SENT" tone="red" />
                 </div>
               </div>
-              <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background/75 p-4 font-sans text-xs leading-relaxed text-text-secondary sm:text-sm">
+              <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-input-bg/80 p-4 font-sans text-xs leading-relaxed text-text-secondary sm:text-sm">
                 {renderTextWithLinks(item.text)}
               </pre>
             </ChristmasCard>

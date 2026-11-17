@@ -1,0 +1,325 @@
+/* ==========================================================================
+   Secret Buddy motion language
+   Ambient motion is slow and quiet (3–9s loops, small amplitude).
+   Strong motion is reserved for moments: registration, arrivals, milestones,
+   the five-person celebration and the Buddy reveal.
+   ========================================================================== */
+
+.snow-paused .fairy-bulb,
+.snow-paused .xmas-float,
+.snow-paused .xmas-twinkle,
+.snow-paused .ambient-motion {
+  animation-play-state: paused !important;
+}
+
+@keyframes fairyTwinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.fairy-bulb {
+  animation: fairyTwinkle 3.4s ease-in-out infinite;
+}
+
+@keyframes xmasFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.xmas-float {
+  animation: xmasFloat 5.2s ease-in-out infinite;
+}
+
+@keyframes xmasTwinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.xmas-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: xmasTwinkle 3s ease-in-out infinite;
+}
+
+@keyframes gentleSway {
+  0%,
+  100% {
+    transform: rotate(-2.5deg);
+  }
+  50% {
+    transform: rotate(2.5deg);
+  }
+}
+
+.gentle-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: gentleSway 4.8s ease-in-out infinite;
+}
+
+@keyframes xmasGiftWobble {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  20% {
+    transform: rotate(-3deg) scale(1.03);
+  }
+  45% {
+    transform: rotate(3deg) scale(1.04);
+  }
+  70% {
+    transform: rotate(-1.5deg) scale(1.02);
+  }
+}
+
+.xmas-gift-hover:hover {
+  animation: xmasGiftWobble 0.65s ease-in-out;
+}
+
+@keyframes santaWave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-10deg);
+  }
+  65% {
+    transform: rotate(8deg);
+  }
+}
+
+.santa-wave-arm {
+  transform-box: fill-box;
+  transform-origin: 18% 84%;
+  animation: santaWave 3.2s ease-in-out infinite;
+}
+
+@keyframes giftLidPop {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(-42px) rotate(-11deg) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-64px) rotate(-16deg) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.gift-lid-opening {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: giftLidPop 850ms var(--ease-soft) forwards;
+}
+
+@keyframes ribbonUntie {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.22) translateY(-10px);
+    opacity: 0;
+  }
+}
+
+.ribbon-untying {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ribbonUntie 520ms ease-out forwards;
+}
+
+@keyframes magicalLightBeam {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  45% {
+    opacity: 0.95;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+.magical-beam {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: magicalLightBeam 1100ms var(--ease-soft) forwards;
+}
+
+@keyframes confettiBurst {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
+  }
+  25% {
+    opacity: 1;
+    transform: translate3d(calc(var(--cx, 0px) * 0.6), calc(var(--cy, -80px) * 0.8), 0)
+      scale(1.1) rotate(120deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--cx, 0px), calc(var(--cy, -80px) + 120px), 0)
+      scale(0.8) rotate(320deg);
+  }
+}
+
+.confetti-particle {
+  animation: confettiBurst 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes parcelReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.975);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.parcel-reveal {
+  animation: parcelReveal 460ms var(--ease-soft) both;
+}
+
+/* Staggered entrance for page sections */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: riseIn 700ms var(--ease-soft) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.pop-in {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: popIn 620ms var(--ease-bounce) both;
+  animation-delay: var(--pop-delay, 0ms);
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.glow-pulse {
+  animation: glowPulse 3.6s ease-in-out infinite;
+}
+
+/* A soft sparkle (four-point star) that blooms and fades */
+@keyframes sparkleBloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(45deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(120deg);
+  }
+}
+
+.sparkle-bloom {
+  animation: sparkleBloom 1.4s var(--ease-soft) both;
+  animation-delay: var(--sparkle-delay, 0ms);
+}
+
+/* Lantern lights along a string — used by the landing "how it works" path */
+@keyframes lanternLight {
+  from {
+    opacity: 0.25;
+    filter: saturate(0.2);
+  }
+  to {
+    opacity: 1;
+    filter: saturate(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fairy-bulb,
+  .xmas-float,
+  .xmas-twinkle,
+  .gentle-sway,
+  .santa-wave-arm,
+  .gift-lid-opening,
+  .ribbon-untying,
+  .magical-beam,
+  .confetti-particle,
+  .parcel-reveal,
+  .rise-in,
+  .pop-in,
+  .glow-pulse,
+  .sparkle-bloom,
+  .ambient-motion {
+    animation: none !important;
+  }
+
+  .xmas-gift-hover:hover {
+    animation: none !important;
+  }
+
+  .analog-btn,
+  .analog-btn-lg {
+    transition: background-color 150ms ease, border-color 150ms ease !important;
+    transform: none !important;
+  }
+}

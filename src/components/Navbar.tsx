@@ -14,10 +14,8 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import {
-  FestiveStringLights,
-  FestiveToggleSwitches,
-} from "@/components/AnalogPrimitives";
+import { FestiveToggleSwitches } from "@/components/AnalogPrimitives";
+import { ChristmasLights } from "@/components/atmosphere/ChristmasLights";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { christmasButtonClass } from "@/components/ui/buttonStyles";
 
@@ -42,7 +40,7 @@ function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
           className={`analog-btn inline-flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3 py-2 text-xs font-semibold transition ${
             isOutbox
               ? "border-primary bg-primary/15 text-primary"
-              : "border-primary/35 bg-surface-elevated/90 text-primary hover:border-primary/65 hover:bg-[#1D3B57]"
+              : "border-primary/35 bg-surface-elevated/90 text-primary hover:border-primary/65 hover:bg-evergreen-light"
           }`}
         >
           <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -55,7 +53,7 @@ function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
         className={`analog-btn thai-keep inline-flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border px-3.5 py-2 text-xs font-semibold sm:text-sm ${
           isRecover
             ? "border-primary bg-primary/15 text-primary"
-            : "border-border bg-surface-elevated/90 text-text-primary hover:border-primary/60 hover:bg-[#1D3B57]"
+            : "border-border bg-surface-elevated/90 text-text-primary hover:border-primary/60 hover:bg-evergreen-light"
         }`}
       >
         <KeyRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
@@ -85,7 +83,7 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
   return (
     <>
       <header
-        className="sticky top-0 z-30 border-b border-primary/20 bg-[#0A1626]/92 shadow-[0_6px_24px_rgba(4,10,20,0.55)] backdrop-blur-lg"
+        className="sticky top-0 z-30 border-b border-white/8 bg-background/88 shadow-[0_8px_30px_-12px_rgba(3,10,12,0.8)] backdrop-blur-md"
         onKeyDown={(e) => {
           if (e.key === "Escape" && mobileMenuOpen) {
             setMobileMenuOpen(false);
@@ -98,15 +96,15 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
             onClick={() => setMobileMenuOpen(false)}
             className="group flex min-w-0 shrink-0 items-center gap-2.5 text-text-primary transition sm:gap-3"
           >
-            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/60 bg-gradient-to-br from-[#D63344] to-[#981826] text-snow-white shadow-[0_4px_12px_rgba(198,40,56,0.45),inset_0_1px_0_rgba(255,255,255,0.35)] transition group-hover:scale-105">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-[linear-gradient(180deg,var(--color-christmas-red-hover),var(--color-christmas-red-deep))] text-ivory shadow-[0_4px_14px_-4px_rgba(179,38,46,0.7),inset_0_1px_0_rgba(255,255,255,0.3)] transition group-hover:scale-105">
               <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
             </span>
             <div className="leading-tight">
               <span className="font-display-en block whitespace-nowrap text-base font-bold tracking-tight text-text-primary group-hover:text-primary sm:text-lg">
                 Secret Buddy
               </span>
-              <span className="mt-0.5 block text-[10px] font-bold tracking-[0.16em] text-primary uppercase">
-                NORTH POLE WORKSHOP
+              <span className="mt-0.5 block text-[11px] font-medium text-primary/90">
+                แลกของขวัญแบบลับ ๆ
               </span>
             </div>
           </Link>
@@ -148,7 +146,7 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
         {mobileMenuOpen && (
           <div
             id="mobile-post-drawer"
-            className="border-t border-border bg-[#0F2136] px-4 py-4 sm:hidden"
+            className="border-t border-border bg-surface px-4 py-4 sm:hidden"
           >
             <div className="mx-auto max-w-6xl space-y-2.5">
               <Link
@@ -202,7 +200,7 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
                   aria-pressed={soundEnabled}
                   className={`analog-btn flex min-h-[46px] items-center justify-center gap-2 rounded-xl border px-3 text-xs font-semibold ${
                     soundEnabled
-                      ? "border-emerald-400/60 bg-evergreen/80 text-emerald-200"
+                      ? "border-success/50 bg-success-bg text-success"
                       : "border-border bg-background text-text-secondary"
                   }`}
                 >
@@ -217,12 +215,12 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
             </div>
           </div>
         )}
+        {/* A real string of Christmas lights, hanging from the navbar and floating over the page */}
+        <div className="pointer-events-none absolute inset-x-0 top-full">
+          <ChristmasLights />
+        </div>
       </header>
 
-      {/* Festive Glowing Garland hanging cleanly below header */}
-      <div className="pointer-events-none relative z-20 -mb-9">
-        <FestiveStringLights />
-      </div>
     </>
   );
 }

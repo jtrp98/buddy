@@ -5,6 +5,7 @@ import { bangkokLocalInputToUtc } from "@/lib/timezone";
 import { budgetSchema, normalizeNullableText, updateGroupSchema } from "@/lib/validation";
 import { ensureGroupUpToDate } from "@/lib/cron";
 import { getAppBaseUrl } from "@/lib/url";
+import { participantSeed } from "@/lib/participant-seed";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -65,6 +66,8 @@ export async function GET(req: Request, context: RouteContext) {
     emailVerifiedAt: m.emailVerifiedAt,
     createdAt: m.createdAt,
     resultEmail: m.emailLogs[0] ?? null,
+    // Same anonymous seed as the Join page, so each member's 8-bit character matches.
+    participantSeed: participantSeed(m.id),
   }));
 
   return jsonNoStore({

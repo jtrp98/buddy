@@ -56,7 +56,7 @@ export function WaxSeal({
   const stops = {
     red: { hi: "#E44A58", mid: "#C62838", rim: "#72111C", text: "text-snow-white" },
     green: { hi: "#266D5A", mid: "#123D32", rim: "#09211B", text: "text-snow-white" },
-    gold: { hi: "#FAE09D", mid: "#E8C47A", rim: "#9D752A", text: "text-primary-foreground" },
+    gold: { hi: "#FAE09D", mid: "#dcb75e", rim: "#9D752A", text: "text-primary-foreground" },
   }[tone];
 
   const sizeClass = {
@@ -161,88 +161,6 @@ export function PostageStamp({
 }
 
 /**
- * Draped SVG garland of warm glowing Christmas lights seated cleanly below the navbar.
- */
-export function FestiveStringLights() {
-  const { festiveFx } = useFestiveAtmosphere();
-  const bulbs = [
-    { left: "4.5%", y: 8.5, color: "#E8C47A", core: "#FFF9E6", glow: "rgba(232, 196, 122, 0.72)", delay: "0s" },
-    { left: "12.5%", y: 12.5, color: "#D93546", core: "#FFD6DA", glow: "rgba(217, 53, 70, 0.65)", delay: "0.4s" },
-    { left: "20.5%", y: 8.5, color: "#34D399", core: "#D8F6E8", glow: "rgba(52, 211, 153, 0.58)", delay: "0.9s" },
-    { left: "29.5%", y: 8.5, color: "#DCEFF5", core: "#FFFFFF", glow: "rgba(220, 239, 245, 0.7)", delay: "1.4s" },
-    { left: "37.5%", y: 12.5, color: "#E8C47A", core: "#FFF9E6", glow: "rgba(232, 196, 122, 0.72)", delay: "0.2s" },
-    { left: "45.5%", y: 8.5, color: "#D93546", core: "#FFD6DA", glow: "rgba(217, 53, 70, 0.65)", delay: "0.8s" },
-    { left: "54.5%", y: 8.5, color: "#34D399", core: "#D8F6E8", glow: "rgba(52, 211, 153, 0.58)", delay: "1.3s" },
-    { left: "62.5%", y: 12.5, color: "#E8C47A", core: "#FFF9E6", glow: "rgba(232, 196, 122, 0.72)", delay: "0.5s" },
-    { left: "70.5%", y: 8.5, color: "#DCEFF5", core: "#FFFFFF", glow: "rgba(220, 239, 245, 0.7)", delay: "1.0s" },
-    { left: "79.5%", y: 8.5, color: "#D93546", core: "#FFD6DA", glow: "rgba(217, 53, 70, 0.65)", delay: "0.3s" },
-    { left: "87.5%", y: 12.5, color: "#34D399", core: "#D8F6E8", glow: "rgba(52, 211, 153, 0.58)", delay: "0.7s" },
-    { left: "95.5%", y: 8.5, color: "#E8C47A", core: "#FFF9E6", glow: "rgba(232, 196, 122, 0.72)", delay: "1.2s" },
-  ];
-
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none relative h-10 w-full overflow-hidden bg-transparent leading-none"
-    >
-      <svg
-        viewBox="0 0 1000 32"
-        preserveAspectRatio="none"
-        className="block h-8 w-full"
-      >
-        <path
-          d="M0,3 Q125,21 250,3 Q375,21 500,3 Q625,21 750,3 Q875,21 1000,3"
-          fill="none"
-          stroke="rgba(232, 196, 122, 0.32)"
-          strokeWidth="1.5"
-        />
-      </svg>
-
-      {bulbs.map((b, i) => (
-        <svg
-          key={i}
-          viewBox="0 0 18 24"
-          className={`absolute -translate-x-1/2 ${festiveFx ? "fairy-bulb" : ""}`}
-          style={{
-            left: b.left,
-            top: `${b.y - 1}px`,
-            width: "16px",
-            height: "21px",
-            animationDelay: b.delay,
-            filter: festiveFx ? `drop-shadow(0 0 8px ${b.glow})` : undefined,
-          }}
-        >
-          <rect
-            x="5.5"
-            y="0"
-            width="7"
-            height="4.4"
-            rx="1"
-            fill="#E8C47A"
-            stroke="#101E2E"
-            strokeWidth="0.8"
-          />
-          <path
-            d="M9,4 C13.5,4 15,10 13.2,14.5 C11.8,18.2 10.2,21 9,21.5 C7.8,21 6.2,18.2 4.8,14.5 C3,10 4.5,4 9,4 Z"
-            fill={b.color}
-            stroke="rgba(255,249,240,0.75)"
-            strokeWidth="0.85"
-          />
-          <ellipse
-            cx="8.2"
-            cy="11"
-            rx="2.1"
-            ry="3.8"
-            fill={b.core}
-            opacity="0.78"
-          />
-        </svg>
-      ))}
-    </div>
-  );
-}
-
-/**
  * Accessible switches for toggling snowfall/lights and sound effects.
  */
 export function FestiveToggleSwitches() {
@@ -277,7 +195,7 @@ export function FestiveToggleSwitches() {
         aria-pressed={soundEnabled}
         className={`analog-btn inline-flex min-h-[40px] min-w-[40px] shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-2.5 text-xs font-semibold sm:px-3 ${
           soundEnabled
-            ? "border-emerald-400/50 bg-evergreen/80 text-emerald-200"
+            ? "border-success/50 bg-success-bg text-success"
             : "border-border bg-surface text-text-secondary"
         }`}
       >

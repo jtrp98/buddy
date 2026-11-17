@@ -6,6 +6,7 @@ import { bangkokLocalInputToUtc } from "@/lib/timezone";
 import { createGroupSchema, normalizeNullableText } from "@/lib/validation";
 import { ensureGroupUpToDate } from "@/lib/cron";
 import { getAppBaseUrl } from "@/lib/url";
+import { participantSeed } from "@/lib/participant-seed";
 
 export async function GET(req: Request) {
   const session = await getAdminSession();
@@ -33,6 +34,7 @@ export async function GET(req: Request) {
     orderBy: { createdAt: "desc" },
     include: {
       members: {
+        orderBy: { createdAt: "asc" },
         select: {
           id: true,
           emailVerifiedAt: true,
@@ -61,6 +63,8 @@ export async function GET(req: Request) {
     createdAt: g.createdAt,
     totalMembers: g.members.length,
     verifiedMembers: g.members.filter((m) => m.emailVerifiedAt !== null).length,
+    // First few anonymous character seeds, for the avatar stack on the dashboard.
+    participantSeeds: g.members.slice(0, 8).map((m) => participantSeed(m.id)),
     emailSummary: {
       sent: g.emailLogs.filter((l) => l.status === "SENT").length,
       failed: g.emailLogs.filter((l) => l.status === "FAILED").length,

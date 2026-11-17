@@ -20,7 +20,6 @@ import {
   EyeOff,
   Info,
   Loader2,
-  Snowflake,
   X,
 } from "lucide-react";
 
@@ -44,7 +43,7 @@ export function PageContainer({
   }[size];
 
   return (
-    <div className={`mx-auto w-full px-4 py-8 sm:px-6 sm:py-12 ${maxWidth} ${className}`}>
+    <div className={`mx-auto w-full px-4 pt-12 pb-8 sm:px-6 sm:pt-16 sm:pb-12 ${maxWidth} ${className}`}>
       {children}
     </div>
   );
@@ -73,15 +72,15 @@ export function PageHeader({
         {(kicker || badge) && (
           <div className="flex flex-wrap items-center gap-2.5">
             {kicker && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-background/70 px-3 py-0.5 text-xs font-semibold tracking-wider text-primary uppercase">
-                <Snowflake className="h-3 w-3 shrink-0 text-ice-blue" aria-hidden="true" />
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold tracking-[0.18em] text-primary uppercase">
+                <span aria-hidden="true" className="h-px w-6 bg-primary/70" />
                 <span>{kicker}</span>
               </span>
             )}
             {badge}
           </div>
         )}
-        <h1 className="thai-keep text-2xl font-bold leading-snug tracking-tight text-text-primary sm:text-3xl">
+        <h1 className="thai-keep text-3xl leading-tight text-text-primary sm:text-4xl">
           {title}
         </h1>
         {description && (
@@ -99,22 +98,28 @@ export function ChristmasCard({
   children,
   elevated = false,
   withStripe = false,
+  tone = "night",
   className = "",
 }: {
   children: ReactNode;
   elevated?: boolean;
+  /** Adds a thin red velvet ribbon along the top edge. */
   withStripe?: boolean;
+  /** "paper" renders an ivory invitation surface (tokens are re-scoped for ink-on-paper). */
+  tone?: "night" | "paper";
   className?: string;
 }) {
+  const surface =
+    tone === "paper"
+      ? "theme-paper"
+      : elevated
+        ? "christmas-card-elevated"
+        : "christmas-card";
   return (
     <div
-      className={`overflow-hidden rounded-2xl border transition-[border-color,box-shadow,transform] duration-200 ${
-        elevated
-          ? "christmas-card-elevated border-primary/30"
-          : "christmas-card border-border"
-      } ${className}`}
+      className={`overflow-hidden rounded-[1.4rem] transition-[border-color,box-shadow,transform] duration-200 ${surface} ${className}`}
     >
-      {withStripe && <div aria-hidden="true" className="candy-stripe-bar h-1.5 w-full" />}
+      {withStripe && <div aria-hidden="true" className="ribbon-bar h-1.5 w-full" />}
       {children}
     </div>
   );
@@ -314,28 +319,23 @@ const ALERT_STYLES: Record<
   { container: string; icon: ReactNode; role: "alert" | "status" }
 > = {
   info: {
-    container: "border-primary/40 bg-surface-elevated/90 text-text-primary",
+    container: "border-border-strong/60 bg-surface-elevated/80 text-text-primary",
     icon: <Info className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />,
     role: "status",
   },
   success: {
-    container: "border-emerald-400/45 bg-evergreen/80 text-emerald-100",
-    icon: <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-300" aria-hidden="true" />,
+    container: "border-success/45 bg-success-bg text-text-primary",
+    icon: <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden="true" />,
     role: "status",
   },
   warning: {
-    container: "border-amber-400/50 bg-amber-950/70 text-amber-100",
-    icon: <AlertTriangle className="h-5 w-5 shrink-0 text-amber-300" aria-hidden="true" />,
+    container: "border-warning/50 bg-warning-bg text-text-primary",
+    icon: <AlertTriangle className="h-5 w-5 shrink-0 text-warning" aria-hidden="true" />,
     role: "status",
   },
   error: {
-    container: "border-christmas-red-light/55 bg-[#45111c]/90 text-[#FFE8EC]",
-    icon: (
-      <AlertCircle
-        className="h-5 w-5 shrink-0 text-christmas-red-light"
-        aria-hidden="true"
-      />
-    ),
+    container: "border-error/55 bg-error-bg text-text-primary",
+    icon: <AlertCircle className="h-5 w-5 shrink-0 text-error" aria-hidden="true" />,
     role: "alert",
   },
 };
@@ -391,7 +391,7 @@ export function EmptyState({
             {icon}
           </div>
         )}
-        <h2 className="thai-keep text-lg font-bold text-text-primary sm:text-xl">{title}</h2>
+        <h2 className="thai-keep text-xl text-text-primary sm:text-2xl">{title}</h2>
         {description && (
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
             {description}
@@ -403,40 +403,45 @@ export function EmptyState({
   );
 }
 
+const LOADING_BULBS = ["#ffe7a8", "#ff6f61", "#ffc552", "#9fd0ff", "#ffe7a8", "#ff6f61", "#ffc552"];
+
 export function LoadingState({
-  label = "กำลังโหลดเวทมนตร์จาก North Pole...",
+  label = "กำลังเตรียมความอบอุ่นของคริสต์มาส...",
   rows = 3,
 }: {
   label?: string;
   rows?: number;
 }) {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="christmas-card space-y-5 rounded-2xl p-6 sm:p-8"
-    >
-      <div className="flex items-center gap-3.5">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/40 bg-background/70 shadow-inner">
-          <Snowflake
-            className="h-5 w-5 animate-spin text-primary"
-            style={{ animationDuration: "3.2s" }}
-            aria-hidden="true"
-          />
-        </div>
-        <div>
-          <span className="block text-[11px] font-bold tracking-widest text-primary uppercase">
-            NORTH POLE WORKSHOP
-          </span>
-          <span className="text-sm font-semibold text-text-primary">{label}</span>
+    <div role="status" aria-live="polite" className="christmas-card space-y-6 rounded-[1.4rem] p-6 sm:p-8">
+      {/* A little string of lights that twinkles while we wait */}
+      <div aria-hidden="true" className="relative h-8">
+        <svg viewBox="0 0 280 32" className="h-full w-full" preserveAspectRatio="none">
+          <path d="M0 6 Q 70 30 140 10 T 280 8" fill="none" stroke="#06140f" strokeWidth="1.2" />
+        </svg>
+        <div className="absolute inset-0 flex items-start justify-between px-[4%]">
+          {LOADING_BULBS.map((c, i) => (
+            <span
+              key={i}
+              className="fairy-bulb mt-2 block h-2.5 w-2.5 rounded-full"
+              style={{
+                background: c,
+                boxShadow: `0 0 12px 2px ${c}`,
+                marginTop: `${[10, 18, 20, 12, 8, 9, 8][i]}px`,
+                animationDelay: `${i * 0.28}s`,
+                animationDuration: "1.6s",
+              }}
+            />
+          ))}
         </div>
       </div>
+      <p className="text-center text-sm font-semibold text-text-primary">{label}</p>
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, idx) => (
           <div
             key={idx}
-            className="h-10 animate-pulse rounded-xl border border-white/5 bg-surface-elevated/70"
-            style={{ opacity: 1 - idx * 0.14 }}
+            className="h-10 animate-pulse rounded-xl bg-surface-elevated/70 motion-reduce:animate-none"
+            style={{ opacity: 1 - idx * 0.16 }}
           />
         ))}
       </div>
@@ -489,7 +494,7 @@ export function ConfirmationDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#060E1A]/75 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
       role="presentation"
       onClick={() => {
         if (!loading) onCancel();
@@ -501,9 +506,9 @@ export function ConfirmationDialog({
         aria-labelledby={titleId}
         aria-describedby={descId}
         onClick={(e) => e.stopPropagation()}
-        className="christmas-card-elevated w-full max-w-md overflow-hidden rounded-2xl border border-primary/35 shadow-2xl"
+        className="christmas-card-elevated parcel-reveal w-full max-w-md overflow-hidden rounded-[1.4rem] shadow-2xl"
       >
-        <div className="candy-stripe-bar h-1.5 w-full" />
+        <div className="ribbon-bar h-1.5 w-full" />
         <div className="p-6">
           <div className="flex items-start justify-between gap-3">
             <h2 id={titleId} className="thai-keep text-lg font-bold text-text-primary">

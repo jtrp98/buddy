@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useId, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -21,12 +21,9 @@ import {
   EMPTY_BUDDY_PROFILE,
   type BuddyProfileValues,
 } from "@/components/BuddyProfileFormFields";
-import {
-  ElfCharacter3D,
-  MagicalSparkleBurst,
-  NorthPoleMailbox3D,
-  SnowGlobe3D,
-} from "@/components/illustrations/ChristmasIllustrations";
+import { MagicalSparkleBurst } from "@/components/illustrations/ChristmasIllustrations";
+import { ChristmasTree } from "@/components/scenery/ChristmasTree";
+import { JoinScene, type SceneParticipant } from "@/components/join/JoinScene";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { formatBudget } from "@/lib/budget";
 import { formatThaiDateTime } from "@/lib/timezone";
@@ -56,6 +53,14 @@ interface InviteGroupInfo {
   totalMembers: number;
   verifiedMembers: number;
   isAcceptingRegistrations: boolean;
+  participants?: SceneParticipant[];
+}
+
+/** How often the scene checks for new participants while the page is visible. */
+const POLL_MS = 20_000;
+
+function mySeedKey(inviteCode: string) {
+  return `buddy_me_${inviteCode}`;
 }
 
 function JoinGroupContent() {
@@ -65,6 +70,7 @@ function JoinGroupContent() {
 
   const nameId = useId();
   const emailId = useId();
+  const sceneRef = useRef<HTMLDivElement | null>(null);
 
   const [group, setGroup] = useState<InviteGroupInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,22 +84,36 @@ function JoinGroupContent() {
   const [submitError, setSubmitError] = useState("");
   const [submittedMsg, setSubmittedMsg] = useState("");
   const [burstActive, setBurstActive] = useState(false);
-
-  const loadGroup = useCallback(async () => {
+  // Which character is "you" on this device (an anonymous seed, not personal data).
+  // Only read on the client; the scene that uses it renders after data loads.
+  const [mySeed, setMySeed] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
     try {
-      const res = await fetch(`/api/groups/invite/${inviteCode}`, { cache: "no-store" });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "ไม่พบกิจกรรมนี้");
-        return;
-      }
-      setGroup(data.group);
+      return window.localStorage.getItem(mySeedKey(inviteCode));
     } catch {
-      setError("ไม่สามารถโหลดข้อมูลกิจกรรมได้");
-    } finally {
-      setLoading(false);
+      return null;
     }
-  }, [inviteCode]);
+  });
+
+  /** `silent` refreshes (polling) never replace the page with an error state. */
+  const loadGroup = useCallback(
+    async (silent = false) => {
+      try {
+        const res = await fetch(`/api/groups/invite/${inviteCode}`, { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok) {
+          if (!silent) setError(data.error || "ไม่พบกิจกรรมนี้");
+          return;
+        }
+        setGroup(data.group);
+      } catch {
+        if (!silent) setError("ไม่สามารถโหลดข้อมูลกิจกรรมได้");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [inviteCode]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +137,28 @@ function JoinGroupContent() {
       cancelled = true;
     };
   }, [inviteCode]);
+
+  // Lightweight sync: refresh participants while the tab is visible and registration is open.
+  const accepting = Boolean(group?.isAcceptingRegistrations);
+  useEffect(() => {
+    if (!accepting) return;
+    const tick = () => {
+      if (!document.hidden) void loadGroup(true);
+    };
+    const timer = window.setInterval(tick, POLL_MS);
+    const onVisible = () => {
+      if (!document.hidden) void loadGroup(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [accepting, loadGroup]);
+
+  const handleExpire = useCallback(() => {
+    void loadGroup();
+  }, [loadGroup]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,14 +192,25 @@ function JoinGroupContent() {
       const data = await res.json();
       if (!res.ok) {
         setSubmitError(data.error || "ไม่สามารถลงทะเบียนได้");
-        await loadGroup();
+        await loadGroup(true);
         return;
+      }
+      if (typeof data.participantSeed === "string") {
+        setMySeed(data.participantSeed);
+        try {
+          window.localStorage.setItem(mySeedKey(inviteCode), data.participantSeed);
+        } catch {
+          // ignore
+        }
       }
       triggerChimeSound();
       setSubmittedMsg(data.message);
       setBurstActive(true);
       window.setTimeout(() => setBurstActive(false), 2200);
-      await loadGroup();
+      // Registration succeeded: now refresh so the new character walks into the scene.
+      await loadGroup(true);
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      sceneRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     } catch {
       setSubmitError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
     } finally {
@@ -168,7 +221,7 @@ function JoinGroupContent() {
   if (loading) {
     return (
       <PageContainer size="md">
-        <LoadingState label="กำลังเปิดซองจดหมายเชิญจาก North Pole..." rows={4} />
+        <LoadingState label="กำลังเปิดการ์ดเชิญคริสต์มาส..." rows={4} />
       </PageContainer>
     );
   }
@@ -177,7 +230,7 @@ function JoinGroupContent() {
     return (
       <PageContainer size="md">
         <EmptyState
-          icon={<SnowGlobe3D className="h-28 w-28" />}
+          icon={<ChristmasTree stage={1} className="h-36 w-auto" />}
           title="ไม่พบกิจกรรม Secret Buddy"
           description={error || "ลิงก์เชิญนี้อาจไม่ถูกต้องหรือถูกลบไปแล้ว"}
           action={
@@ -191,258 +244,244 @@ function JoinGroupContent() {
   }
 
   const budgetText = formatBudget(group.budgetType, group.budgetMin, group.budgetMax);
+  const participants = group.participants ?? [];
 
   return (
-    <PageContainer size="md" className="space-y-6">
-      <ChristmasJourney
-        mode="participant"
-        currentStep={submittedMsg ? 3 : 2}
-      />
-
-      {/* Personal Christmas Invitation Letter Header */}
-      <ChristmasCard elevated withStripe>
-        <div className="p-6 sm:p-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1 space-y-3">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/45 bg-background/70 px-3 py-1 text-[11px] font-bold tracking-wider text-primary uppercase">
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                  <span>SECRET CHRISTMAS INVITATION</span>
-                </span>
-                <StatusBadge status={group.status} />
-              </div>
-
-              <p className="font-display-en text-lg font-semibold italic text-primary sm:text-xl">
-                You&apos;re Invited to a Secret Christmas Mission!
-              </p>
-
-              <h1 className="thai-keep text-2xl font-bold leading-snug text-snow-white sm:text-3xl">
-                {group.title}
-              </h1>
-
-              {group.description && (
-                <p className="text-sm leading-relaxed text-text-secondary sm:text-base">
-                  {group.description}
-                </p>
-              )}
-            </div>
-
-            <div className="hidden shrink-0 rounded-2xl border border-primary/30 bg-background/70 p-2.5 sm:block">
-              <NorthPoleMailbox3D className="h-24 w-24" />
-            </div>
-          </div>
-
-          {group.isAcceptingRegistrations && (
-            <div className="mt-5">
-              <CountdownTimer
-                targetIso={group.registrationClosesAt}
-                onExpire={() => loadGroup()}
-              />
-            </div>
-          )}
-
-          <div className="mt-6 grid gap-3.5 border-t border-border pt-5 sm:grid-cols-3">
-            <div className="rounded-xl border border-primary/35 bg-background/60 p-4">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
-                <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>งบประมาณของขวัญ</span>
-              </div>
-              <div className="mt-1 text-base font-bold text-snow-white">{budgetText}</div>
-            </div>
-
-            <div className="rounded-xl border border-white/15 bg-background/60 p-4">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-christmas-red-light">
-                <CalendarClock className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>ปิดรับสมัคร</span>
-              </div>
-              <div className="mt-1 text-xs font-bold text-snow-white sm:text-sm">
-                {formatThaiDateTime(group.registrationClosesAt)}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-emerald-400/30 bg-evergreen/55 p-4">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-200">
-                <Users className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>เพื่อนร่วมทีมที่ยืนยันแล้ว</span>
-              </div>
-              <div className="mt-1 text-base font-bold text-emerald-100">
-                {group.verifiedMembers} คน
-              </div>
-            </div>
-          </div>
-
-          {group.revealAt && (
-            <p className="mt-4 text-xs font-medium text-text-secondary sm:text-sm">
-              วันนัดเฉลย Buddy:{" "}
-              <strong className="text-snow-white">
-                {formatThaiDateTime(group.revealAt)}
-              </strong>
-            </p>
-          )}
-
-          <div className="mt-4 flex justify-end border-t border-border pt-4">
-            <Link
-              href={`/join/${inviteCode}/recover`}
-              className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-semibold text-primary underline decoration-primary/50 underline-offset-4 hover:text-primary-hover sm:text-sm"
-            >
-              <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>เคยลงทะเบียนแล้ว? ขอลิงก์แก้ไขข้อมูล / ดูผลจับคู่ใหม่</span>
-            </Link>
-          </div>
+    <PageContainer size="lg" className="space-y-8 sm:space-y-10">
+      {/* Invitation heading */}
+      <header className="rise-in mx-auto max-w-3xl text-center">
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <span className="font-script text-xl text-primary sm:text-2xl">คุณได้รับเชิญ!</span>
+          <StatusBadge status={group.status} />
         </div>
-      </ChristmasCard>
-
-      {/* Registration Flow */}
-      {submittedMsg ? (
-        <ChristmasCard elevated className="relative p-6 text-center sm:p-10 parcel-reveal">
-          <MagicalSparkleBurst active={burstActive} />
-
-          <div className="mx-auto flex justify-center">
-            <ElfCharacter3D className="h-28 w-28" />
-          </div>
-
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/45 bg-evergreen/80 px-3.5 py-1 text-xs font-bold text-emerald-100">
-            <MailCheck className="h-4 w-4" aria-hidden="true" />
-            <span>บันทึก Wish List เรียบร้อยแล้ว!</span>
-          </div>
-
-          <h2 className="thai-keep mt-4 text-xl font-bold text-snow-white sm:text-2xl">
-            ขั้นตอนสุดท้าย: กดยืนยันอีเมลของคุณ
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary sm:text-base">
-            {submittedMsg}
+        <h1 className="thai-keep mt-2 text-3xl leading-tight text-text-primary sm:text-5xl">{group.title}</h1>
+        {group.description && (
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
+            {group.description}
           </p>
-          <p className="mt-2 text-xs text-text-secondary sm:text-sm">
-            ส่งไปที่อีเมล <strong className="text-primary">{email}</strong> •
-            หากไม่พบกรุณาตรวจสอบกล่องจดหมายขยะ (Spam / Junk)
-          </p>
+        )}
+      </header>
 
-          <div className="mx-auto mt-7 max-w-lg rounded-2xl border border-primary/25 bg-background/75 p-5 text-left">
-            <div className="text-xs font-bold tracking-wider text-primary uppercase">
-              WHAT HAPPENS NEXT · ภารกิจถัดไป
-            </div>
-            <ol className="mt-3 space-y-2.5 text-xs leading-relaxed text-text-secondary sm:text-sm">
-              <li>
-                <strong className="text-snow-white">1. เปิดอีเมลของคุณ</strong> แล้วคลิกปุ่มยืนยันตัวตนเพื่อเข้าร่วมการสุ่ม
-              </li>
-              <li>
-                <strong className="text-snow-white">2. รับลิงก์แก้ไข Wish List ส่วนตัว</strong> เผื่ออยากเปลี่ยนใจเพิ่มของที่อยากได้ก่อนปิดรับสมัคร
-              </li>
-              <li>
-                <strong className="text-snow-white">3. รอรับกล่องของขวัญลับทางอีเมล</strong> เมื่อถึงเวลาสุ่มจับคู่!
-              </li>
-            </ol>
-          </div>
-        </ChristmasCard>
-      ) : !group.isAcceptingRegistrations ? (
-        <ChristmasCard className="p-8 text-center sm:p-10">
-          <CheckCircle2 className="mx-auto h-11 w-11 text-primary" aria-hidden="true" />
-          <h2 className="thai-keep mt-3 text-xl font-bold text-snow-white">
-            กิจกรรมนี้ยังไม่เปิดหรือปิดรับสมัครแล้ว
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
-            {group.status === "DRAFT"
-              ? "ผู้ดูแลกิจกรรมกำลังตั้งค่ากลุ่ม และยังไม่เปิดรับสมัครในขณะนี้"
-              : "ขณะนี้หมดเวลาลงทะเบียนแล้ว หากคุณลงทะเบียนและยืนยันอีเมลไว้แล้ว สามารถขอลิงก์ส่วนตัวใหม่ได้ด้านล่าง"}
-          </p>
-          <div className="mt-6 flex justify-center">
-            <Link
-              href={`/join/${inviteCode}/recover`}
-              className={christmasButtonClass("primary", "md")}
-            >
-              <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>ขอลิงก์ส่วนตัวทางอีเมล</span>
-            </Link>
-          </div>
-        </ChristmasCard>
-      ) : (
-        <ChristmasCard elevated className="p-6 sm:p-8">
-          <form onSubmit={handleSubmit} noValidate className="space-y-7">
-            <div className="border-b border-border pb-5">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-evergreen/75 px-3 py-1 text-xs font-semibold text-emerald-100">
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span>ไม่ต้องสมัครบัญชี • ข้อมูลจะแสดงเฉพาะ Buddy ที่จับได้คุณเท่านั้น</span>
+      {/* The living Christmas scene */}
+      <div ref={sceneRef} className="rise-in scroll-mt-24" style={{ "--rise-delay": "120ms" } as React.CSSProperties}>
+        <JoinScene participants={participants} total={group.totalMembers} mySeed={mySeed} />
+      </div>
+
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+        {/* Invitation details */}
+        <aside className="space-y-4 lg:sticky lg:top-24">
+          <ChristmasCard elevated withStripe>
+            <div className="space-y-5 p-6">
+              <h2 className="text-xl text-text-primary">รายละเอียดคำเชิญ</h2>
+
+              <dl className="grid gap-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <dt className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                    <Gift className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">งบประมาณของขวัญ</span>
+                  </dt>
+                  <dd>
+                    <span className="block text-xs text-text-muted">งบประมาณของขวัญ</span>
+                    <span className="font-semibold text-text-primary">{budgetText}</span>
+                  </dd>
+                </div>
+                <div className="flex items-start gap-3">
+                  <dt className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-christmas-red/20 text-christmas-red-light">
+                    <CalendarClock className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">ปิดรับสมัคร</span>
+                  </dt>
+                  <dd>
+                    <span className="block text-xs text-text-muted">ปิดรับสมัคร</span>
+                    <span className="font-semibold text-text-primary">
+                      {formatThaiDateTime(group.registrationClosesAt)}
+                    </span>
+                  </dd>
+                </div>
+                <div className="flex items-start gap-3">
+                  <dt className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    <span className="sr-only">ผู้เข้าร่วม</span>
+                  </dt>
+                  <dd>
+                    <span className="block text-xs text-text-muted">ผู้เข้าร่วม</span>
+                    <span className="font-semibold text-text-primary">
+                      ลงทะเบียน {group.totalMembers} คน · ยืนยันอีเมลแล้ว {group.verifiedMembers} คน
+                    </span>
+                  </dd>
+                </div>
+                {group.revealAt && (
+                  <div className="flex items-start gap-3">
+                    <dt className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/12 text-primary">
+                      <Sparkles className="h-4 w-4" aria-hidden="true" />
+                      <span className="sr-only">วันนัดเฉลย Buddy</span>
+                    </dt>
+                    <dd>
+                      <span className="block text-xs text-text-muted">วันนัดเฉลย Buddy</span>
+                      <span className="font-semibold text-text-primary">{formatThaiDateTime(group.revealAt)}</span>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+
+              {group.isAcceptingRegistrations && (
+                <CountdownTimer targetIso={group.registrationClosesAt} onExpire={handleExpire} />
+              )}
+
+              <div className="border-t border-border pt-4">
+                <Link
+                  href={`/join/${inviteCode}/recover`}
+                  className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-primary underline decoration-primary/40 underline-offset-4 hover:text-primary-hover"
+                >
+                  <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>เคยลงทะเบียนแล้ว? ขอลิงก์ส่วนตัวใหม่</span>
+                </Link>
               </div>
-              <h2 className="thai-keep mt-3 text-xl font-bold text-snow-white sm:text-2xl">
-                ตอบรับภารกิจ &amp; เขียน Buddy Profile
+            </div>
+          </ChristmasCard>
+
+          <ChristmasJourney mode="participant" currentStep={submittedMsg ? 3 : 2} />
+        </aside>
+
+        {/* Registration */}
+        <div className="min-w-0">
+          {submittedMsg ? (
+            <ChristmasCard tone="paper" className="parcel-reveal relative p-6 text-center sm:p-10">
+              <div aria-hidden="true" className="paper-frame" />
+              <MagicalSparkleBurst active={burstActive} />
+
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-bg text-success">
+                <MailCheck className="h-8 w-8" aria-hidden="true" />
+              </div>
+              <p className="mt-4 font-script text-2xl text-primary">ยินดีต้อนรับสู่ต้นคริสต์มาส!</p>
+              <h2 className="thai-keep mt-1 text-2xl text-text-primary sm:text-3xl">
+                ขั้นตอนสุดท้าย: ยืนยันอีเมลของคุณ
               </h2>
-              <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-                กรอกชื่อ อีเมล ความชอบ และ Wish List แล้วกดยืนยันในอีเมลเพื่อเข้าร่วมการจับคู่
+              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-text-secondary sm:text-base">
+                {submittedMsg}
               </p>
-            </div>
+              <p className="mt-2 text-xs text-text-muted sm:text-sm">
+                ส่งไปที่ <strong className="text-text-primary">{email}</strong> · ถ้าไม่เจอ ลองดูในกล่องจดหมายขยะ
+              </p>
 
-            {submitError && <Alert tone="error">{submitError}</Alert>}
-
-            {/* Group 0: Personal Information */}
-            <section className="space-y-4">
-              <div>
-                <h3 className="text-base font-bold text-primary">
-                  ข้อมูลผู้เข้าร่วม (Personal Information)
-                </h3>
-                <p className="mt-0.5 text-xs text-text-secondary">
-                  ชื่อนี้จะแสดงบนกล่องของขวัญของเพื่อนที่จับได้คุณ และอีเมลใช้สำหรับส่งผลจับคู่ลับ
-                </p>
+              <div className="mx-auto mt-7 max-w-lg rounded-2xl border border-border bg-surface/60 p-5 text-left">
+                <p className="text-xs font-bold tracking-[0.16em] text-primary uppercase">ต่อจากนี้</p>
+                <ol className="mt-3 space-y-2.5 text-sm leading-relaxed text-text-secondary">
+                  <li>
+                    <strong className="text-text-primary">1. เปิดอีเมล</strong> แล้วกดยืนยันตัวตนเพื่อเข้าร่วมการสุ่ม
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">2. รับลิงก์แก้ไข Wish List ส่วนตัว</strong>{" "}
+                    เผื่ออยากเปลี่ยนใจก่อนปิดรับสมัคร
+                  </li>
+                  <li>
+                    <strong className="text-text-primary">3. รอเปิดกล่องของขวัญลับทางอีเมล</strong> เมื่อถึงเวลาจับคู่
+                  </li>
+                </ol>
               </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  label="ชื่อ / ชื่อเล่น"
-                  htmlFor={nameId}
-                  required
-                  helperText="ใส่ชื่อหรือแผนกที่เพื่อนในทีมจำได้ง่าย"
-                >
-                  <Input
-                    id={nameId}
-                    type="text"
-                    required
-                    disabled={submitting}
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="เช่น นนท์, แพรว (ฝ่ายการตลาด)"
-                  />
-                </FormField>
-
-                <FormField
-                  label="อีเมล"
-                  htmlFor={emailId}
-                  required
-                  helperText="ใช้ยืนยันตัวตนและรับลิงก์เปิดกล่อง Secret Buddy"
-                >
-                  <Input
-                    id={emailId}
-                    type="email"
-                    required
-                    disabled={submitting}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                  />
-                </FormField>
+            </ChristmasCard>
+          ) : !group.isAcceptingRegistrations ? (
+            <ChristmasCard elevated className="p-8 text-center sm:p-10">
+              <CheckCircle2 className="mx-auto h-11 w-11 text-primary" aria-hidden="true" />
+              <h2 className="thai-keep mt-3 text-2xl text-text-primary">กิจกรรมนี้ยังไม่เปิดหรือปิดรับสมัครแล้ว</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
+                {group.status === "DRAFT"
+                  ? "ผู้ดูแลกิจกรรมกำลังตั้งค่ากลุ่ม และยังไม่เปิดรับสมัครในขณะนี้"
+                  : "ขณะนี้หมดเวลาลงทะเบียนแล้ว หากคุณลงทะเบียนและยืนยันอีเมลไว้แล้ว สามารถขอลิงก์ส่วนตัวใหม่ได้ด้านล่าง"}
+              </p>
+              <div className="mt-6 flex justify-center">
+                <Link href={`/join/${inviteCode}/recover`} className={christmasButtonClass("primary", "md")}>
+                  <KeyRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>ขอลิงก์ส่วนตัวทางอีเมล</span>
+                </Link>
               </div>
-            </section>
+            </ChristmasCard>
+          ) : (
+            <ChristmasCard tone="paper" className="relative">
+              <div aria-hidden="true" className="paper-frame" />
+              <form onSubmit={handleSubmit} noValidate className="relative space-y-8 p-6 sm:p-10">
+                <div className="text-center">
+                  <p className="font-script text-2xl text-christmas-red-light">R.S.V.P.</p>
+                  <h2 className="thai-keep mt-1 text-2xl text-text-primary sm:text-3xl">
+                    ตอบรับคำเชิญ &amp; เขียน Buddy Profile
+                  </h2>
+                  <p className="mx-auto mt-2 max-w-md text-sm text-text-secondary">
+                    กรอกชื่อ อีเมล ความชอบ และ Wish List แล้วกดยืนยันในอีเมลเพื่อเข้าร่วมการจับคู่
+                  </p>
+                  <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success-bg px-3 py-1 text-xs font-semibold text-success">
+                    <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    ไม่ต้องสมัครบัญชี · ข้อมูลแสดงเฉพาะ Buddy ที่จับได้คุณ
+                  </p>
+                </div>
 
-            <div className="border-t border-border pt-6">
-              <BuddyProfileFormFields
-                value={profile}
-                onChange={setProfile}
-                disabled={submitting}
-              />
-            </div>
+                {submitError && <Alert tone="error">{submitError}</Alert>}
 
-            <ChristmasButton
-              type="submit"
-              variant="primary"
-              size="lg"
-              loading={submitting}
-              loadingText="กำลังส่งคำขอเข้าร่วม..."
-              className="w-full"
-            >
-              <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
-              <span>ส่งข้อมูลเข้าร่วมภารกิจ Secret Buddy</span>
-            </ChristmasButton>
-          </form>
-        </ChristmasCard>
-      )}
+                <section className="space-y-4">
+                  <div>
+                    <h3 className="text-base font-bold text-primary sm:text-lg">ข้อมูลผู้เข้าร่วม</h3>
+                    <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
+                      ชื่อนี้จะแสดงบนกล่องของขวัญของเพื่อนที่จับได้คุณ และอีเมลใช้สำหรับส่งผลจับคู่ลับ
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      label="ชื่อ / ชื่อเล่น"
+                      htmlFor={nameId}
+                      required
+                      helperText="ใส่ชื่อที่ทุกคนในกลุ่มจำได้ง่าย"
+                    >
+                      <Input
+                        id={nameId}
+                        type="text"
+                        required
+                        autoComplete="nickname"
+                        disabled={submitting}
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="เช่น นนท์, แพรว, พี่ต้น"
+                      />
+                    </FormField>
+
+                    <FormField
+                      label="อีเมล"
+                      htmlFor={emailId}
+                      required
+                      helperText="ใช้ยืนยันตัวตนและรับลิงก์เปิดกล่อง Secret Buddy"
+                    >
+                      <Input
+                        id={emailId}
+                        type="email"
+                        required
+                        autoComplete="email"
+                        disabled={submitting}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                      />
+                    </FormField>
+                  </div>
+                </section>
+
+                <div className="border-t border-border pt-6">
+                  <BuddyProfileFormFields value={profile} onChange={setProfile} disabled={submitting} />
+                </div>
+
+                <ChristmasButton
+                  type="submit"
+                  variant="primary"
+                  size="lg"
+                  loading={submitting}
+                  loadingText="กำลังส่งคำตอบรับ..."
+                  className="w-full"
+                >
+                  <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span>ตอบรับคำเชิญ แล้วไปยืนที่ต้นคริสต์มาส</span>
+                </ChristmasButton>
+              </form>
+            </ChristmasCard>
+          )}
+        </div>
+      </div>
     </PageContainer>
   );
 }
@@ -452,7 +491,7 @@ export default function JoinGroupPage() {
     <Suspense
       fallback={
         <PageContainer size="md">
-          <LoadingState label="กำลังเปิดซองจดหมายเชิญจาก North Pole..." rows={4} />
+          <LoadingState label="กำลังเปิดการ์ดเชิญคริสต์มาส..." rows={4} />
         </PageContainer>
       }
     >

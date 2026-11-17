@@ -35,7 +35,7 @@ export function ChristmasJourney({
   return (
     <nav
       aria-label="ความคืบหน้ากิจกรรม Secret Buddy"
-      className={`rounded-2xl border border-primary/25 bg-[#0D1E31]/85 p-3.5 sm:p-4 ${className}`}
+      className={`rounded-2xl border border-border bg-surface/70 p-3 sm:p-3.5 ${className}`}
     >
       <ol className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
         {steps.map((item) => {
@@ -48,10 +48,10 @@ export function ChristmasJourney({
               key={item.step}
               className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-xs font-semibold transition ${
                 isCurrent
-                  ? "border-primary bg-primary/15 text-text-primary shadow-[0_0_16px_rgba(232,196,122,0.16)]"
+                  ? "border-primary bg-primary/12 text-text-primary"
                   : isCompleted
-                    ? "border-emerald-400/40 bg-evergreen/65 text-emerald-100"
-                    : "border-white/10 bg-background/45 text-text-muted"
+                    ? "border-success/35 bg-success-bg text-text-primary"
+                    : "border-transparent bg-transparent text-text-muted"
               }`}
             >
               <span
@@ -59,8 +59,8 @@ export function ChristmasJourney({
                   isCurrent
                     ? "border-primary bg-primary text-primary-foreground"
                     : isCompleted
-                      ? "border-emerald-400/60 bg-emerald-500/25 text-emerald-200"
-                      : "border-white/15 bg-surface text-text-muted"
+                      ? "border-success/60 bg-success/20 text-success"
+                      : "border-border bg-surface-elevated text-text-muted"
                 }`}
               >
                 {isCompleted ? (

@@ -1,15 +1,16 @@
-import { HeroPostcard } from "@/components/landing/HeroPostcard";
-import { LetterJourney } from "@/components/landing/LetterJourney";
-import { PostalFeatureCards } from "@/components/landing/PostalFeatureCards";
-import { TelegramCTA } from "@/components/landing/TelegramCTA";
+import { LandingHero } from "@/components/landing/LandingHero";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { RevealPreview } from "@/components/landing/RevealPreview";
+import { ClosingInvite, Promises } from "@/components/landing/PromisesAndInvite";
 
 export default function HomePage() {
   return (
-    <div className="pb-6">
-      <HeroPostcard />
-      <LetterJourney />
-      <PostalFeatureCards />
-      <TelegramCTA />
+    <div>
+      <LandingHero />
+      <HowItWorks />
+      <RevealPreview />
+      <Promises />
+      <ClosingInvite />
     </div>
   );
 }

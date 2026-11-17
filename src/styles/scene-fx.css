@@ -1,0 +1,451 @@
+/* ==========================================================================
+   Scenery: Christmas tree progression, winter scenes, snow drifts
+   ========================================================================== */
+
+/* ---------- Christmas tree stages (see components/scenery/ChristmasTree) ---------- */
+
+.xmas-tree .tree-aura {
+  opacity: 0;
+  transition: opacity 1.6s var(--ease-soft);
+}
+.xmas-tree[data-lit="true"] .tree-aura {
+  opacity: 0.55;
+}
+.xmas-tree[data-full="true"] .tree-aura {
+  opacity: 1;
+}
+
+.xmas-tree .tree-decor,
+.xmas-tree .tree-full {
+  opacity: 0;
+  transition: opacity 900ms var(--ease-soft);
+}
+.xmas-tree[data-decorated="true"] .tree-decor,
+.xmas-tree[data-full="true"] .tree-full {
+  opacity: 1;
+}
+
+/* Lights: unlit bulbs are dark glass; lighting sweeps across the strands */
+.xmas-tree .tree-bulb-core {
+  fill: #33433a;
+  transition: fill 500ms ease;
+  transition-delay: var(--d, 0ms);
+}
+.xmas-tree .tree-bulb-glow {
+  opacity: 0;
+  transition: opacity 900ms var(--ease-soft);
+  transition-delay: var(--d, 0ms);
+}
+.xmas-tree[data-lit="true"] .tree-bulb-core {
+  fill: var(--on, #ffe7a8);
+}
+.xmas-tree[data-lit="true"] .tree-bulb-glow {
+  opacity: 1;
+}
+.xmas-tree .tree-bulb-twinkle {
+  animation: fairyTwinkle 3.4s ease-in-out infinite;
+}
+
+/* Gifts drop in with a little bounce */
+.xmas-tree .tree-gifts > g {
+  opacity: 0;
+  transform: translateY(-18px) scale(0.6);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition:
+    opacity 400ms ease,
+    transform 700ms var(--ease-bounce);
+  transition-delay: var(--d, 0ms);
+}
+.xmas-tree[data-gifts="true"] .tree-gifts > g {
+  opacity: 1;
+  transform: none;
+}
+
+/* Star: dim gold until stage 4, then it glows */
+.xmas-tree .tree-star-bright {
+  opacity: 0.45;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 1.2s var(--ease-soft);
+}
+.xmas-tree[data-star="true"] .tree-star-bright {
+  opacity: 1;
+}
+.xmas-tree .tree-star-halo {
+  opacity: 0;
+  transition: opacity 1.4s var(--ease-soft);
+}
+.xmas-tree[data-star="true"] .tree-star-halo {
+  opacity: 0.85;
+}
+.xmas-tree[data-full="true"] .tree-star-halo {
+  opacity: 1;
+}
+
+@keyframes starRaysSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.xmas-tree .tree-star-rays {
+  transform-origin: 150px 30px;
+  animation: starRaysSpin 48s linear infinite;
+}
+
+@keyframes starCelebrate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+}
+.xmas-tree[data-celebrating="true"] .tree-star-bright {
+  animation: starCelebrate 900ms var(--ease-bounce) 3;
+}
+
+/* ---------- Snow drift that slowly builds up along the bottom of a scene ---------- */
+
+@keyframes driftGrow {
+  from {
+    transform: scaleY(0.55);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.snow-drift {
+  transform-origin: 50% 100%;
+  animation: driftGrow 60s var(--ease-soft) both;
+}
+
+/* ---------- Pixel buddies (Join page only) ---------- */
+
+.pixel-buddy {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  will-change: transform;
+}
+
+.pixel-buddy svg {
+  display: block;
+  image-rendering: pixelated;
+  shape-rendering: crispEdges;
+  overflow: visible;
+}
+
+/* Frame flipping: two-frame loops with hard steps */
+@keyframes pbFrameA {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pbFrameB {
+  0%,
+  49.9% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.pixel-buddy .pb-frame {
+  opacity: 0;
+}
+.pixel-buddy[data-action="idle"] .pb-idle,
+.pixel-buddy[data-action="turn"] .pb-idle {
+  opacity: 1;
+}
+.pixel-buddy[data-action="walk"] .pb-walk-a,
+.pixel-buddy[data-action="wave"] .pb-wave-a {
+  animation: pbFrameA 0.46s infinite;
+}
+.pixel-buddy[data-action="walk"] .pb-walk-b,
+.pixel-buddy[data-action="wave"] .pb-wave-b {
+  animation: pbFrameB 0.46s infinite;
+}
+.pixel-buddy[data-action="jump"] .pb-jump {
+  opacity: 1;
+}
+
+/* Idle breathing: a 1px bob with hard steps keeps the 8-bit feel */
+@keyframes pbBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--px, 3px));
+  }
+}
+.pixel-buddy .pb-body {
+  animation: pbBob 1.6s steps(1, end) infinite;
+  animation-delay: var(--bob-delay, 0s);
+}
+
+@keyframes pbJump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(calc(var(--px, 3px) * -7));
+  }
+}
+.pixel-buddy[data-action="jump"] .pb-body {
+  animation: pbJump 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) 2;
+}
+
+.pixel-buddy .pb-facing {
+  transition: transform 120ms steps(1, end);
+}
+.pixel-buddy[data-flip="true"] .pb-facing {
+  transform: scaleX(-1);
+}
+
+/* Some buddies stroll slowly back and forth around their spot */
+@keyframes pbStroll {
+  0% {
+    transform: translateX(calc(var(--stroll, 14px) * -1));
+  }
+  45% {
+    transform: translateX(var(--stroll, 14px));
+  }
+  50% {
+    transform: translateX(var(--stroll, 14px));
+  }
+  95% {
+    transform: translateX(calc(var(--stroll, 14px) * -1));
+  }
+  100% {
+    transform: translateX(calc(var(--stroll, 14px) * -1));
+  }
+}
+@keyframes pbStrollFace {
+  0%,
+  47% {
+    transform: scaleX(1);
+  }
+  47.1%,
+  97% {
+    transform: scaleX(-1);
+  }
+  97.1%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+.pixel-buddy[data-stroll="true"] .pb-stroll {
+  animation: pbStroll var(--stroll-dur, 11s) linear infinite;
+  animation-delay: var(--stroll-delay, 0s);
+}
+.pixel-buddy[data-stroll="true"] .pb-stroll-face {
+  animation: pbStrollFace var(--stroll-dur, 11s) linear infinite;
+  animation-delay: var(--stroll-delay, 0s);
+}
+
+/* Entrance: walk in from the edge of the scene to the assigned spot */
+@keyframes pbEnter {
+  from {
+    transform: translateX(var(--enter-from, -200px));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.pixel-buddy[data-entering="true"] .pb-enter {
+  animation: pbEnter 2.4s linear both;
+}
+
+@keyframes pbBubble {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.8);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -4px) scale(0.95);
+  }
+}
+.pb-welcome {
+  animation: pbBubble 3.2s var(--ease-soft) 2.3s both;
+}
+
+/* Celebration banner */
+@keyframes bannerIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.celebration-banner {
+  animation: bannerIn 700ms var(--ease-bounce) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xmas-tree .tree-bulb-twinkle,
+  .xmas-tree .tree-star-rays,
+  .xmas-tree[data-celebrating="true"] .tree-star-bright,
+  .snow-drift,
+  .pixel-buddy .pb-body,
+  .pixel-buddy[data-stroll="true"] .pb-stroll,
+  .pixel-buddy[data-stroll="true"] .pb-stroll-face,
+  .pixel-buddy[data-entering="true"] .pb-enter,
+  .celebration-banner {
+    animation: none !important;
+  }
+  .pixel-buddy[data-action="walk"] .pb-walk-a,
+  .pixel-buddy[data-action="wave"] .pb-wave-a {
+    animation: none !important;
+    opacity: 1;
+  }
+  .pixel-buddy[data-action="walk"] .pb-walk-b,
+  .pixel-buddy[data-action="wave"] .pb-wave-b {
+    animation: none !important;
+  }
+  .pb-welcome {
+    animation: none !important;
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .xmas-tree .tree-gifts > g,
+  .xmas-tree .tree-bulb-glow,
+  .xmas-tree .tree-bulb-core {
+    transition: none !important;
+  }
+}
+
+/* ---------- Navbar Christmas lights (components/atmosphere/ChristmasLights) ---------- */
+
+.xl-bulb {
+  width: 18px;
+  height: 25px;
+  transform: translateX(-50%) rotate(var(--rot, 0deg));
+  transform-origin: 50% 0%;
+}
+
+@media (min-width: 640px) {
+  .xl-bulb {
+    width: 22px;
+    height: 31px;
+  }
+}
+
+.xl-svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.xl-bulb .xl-lit {
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.xl-halo {
+  position: absolute;
+  left: 50%;
+  top: 66%;
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(var(--halo), 0.4) 0%, rgba(var(--halo), 0.14) 42%, transparent 70%);
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+  pointer-events: none;
+}
+
+.xl-bulb[data-on="1"] .xl-lit,
+.xl-bulb:hover .xl-lit {
+  opacity: 1;
+}
+
+.xl-bulb[data-on="1"] .xl-halo,
+.xl-bulb:hover .xl-halo {
+  opacity: 1;
+}
+
+/* Party mode: snappier switching and a bigger glow */
+.xl-strip[data-party="1"] .xl-lit,
+.xl-strip[data-party="1"] .xl-halo {
+  transition-duration: 60ms;
+}
+.xl-strip[data-party="1"] .xl-halo {
+  width: 60px;
+  height: 60px;
+}
+
+/* A soft idle sway, and a proper swing when you touch a bulb */
+@keyframes xlSway {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(calc(var(--rot, 0deg) - 3deg));
+  }
+  50% {
+    transform: translateX(-50%) rotate(calc(var(--rot, 0deg) + 3deg));
+  }
+}
+
+@keyframes xlSwing {
+  0% {
+    transform: translateX(-50%) rotate(var(--rot, 0deg));
+  }
+  20% {
+    transform: translateX(-50%) rotate(calc(var(--rot, 0deg) + 22deg));
+  }
+  45% {
+    transform: translateX(-50%) rotate(calc(var(--rot, 0deg) - 15deg));
+  }
+  70% {
+    transform: translateX(-50%) rotate(calc(var(--rot, 0deg) + 7deg));
+  }
+  100% {
+    transform: translateX(-50%) rotate(var(--rot, 0deg));
+  }
+}
+
+.xl-strip[data-animate="1"] .xl-bulb {
+  animation: xlSway 5.5s ease-in-out infinite;
+}
+
+.xl-strip[data-animate="1"] .xl-bulb:hover {
+  animation: xlSwing 900ms ease-out;
+}
+
+.xl-strip[data-animate="1"] .xl-bulb:active .xl-svg {
+  transform: scale(1.12);
+  transition: transform 80ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xl-bulb,
+  .xl-bulb:hover {
+    animation: none !important;
+  }
+}

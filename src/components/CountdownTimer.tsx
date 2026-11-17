@@ -20,7 +20,7 @@ function calcRemaining(targetMs: number) {
 function FlipDigitTile({ value, unit }: { value: string; unit: string }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="relative flex min-w-[2.4rem] items-center justify-center overflow-hidden rounded-lg border border-primary/50 bg-[#091526] px-2 py-1 font-mono text-xs font-bold tabular-nums text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_4px_10px_rgba(4,10,20,0.4)]">
+      <div className="relative flex min-w-[2.4rem] items-center justify-center overflow-hidden rounded-lg border border-primary/40 bg-input-bg px-2 py-1 font-display text-base font-semibold tabular-nums text-primary">
         <span className="relative z-10">{value}</span>
       </div>
       <span className="mt-0.5 text-[10px] font-semibold text-text-secondary">{unit}</span>
@@ -61,7 +61,7 @@ export function CountdownTimer({ targetIso, onExpire }: CountdownTimerProps) {
 
   if (remaining.diff === 0) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-christmas-red-light/50 bg-[#45111C]/85 px-3 py-1 text-xs font-semibold text-[#FFE8EC]">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-error/50 bg-error-bg px-3 py-1 text-xs font-semibold text-text-primary">
         <Clock className="h-3.5 w-3.5" aria-hidden="true" />
         <span>หมดเวลาเปิดรับสมัครแล้ว</span>
       </span>
@@ -73,7 +73,7 @@ export function CountdownTimer({ targetIso, onExpire }: CountdownTimerProps) {
   return (
     <div
       aria-label="เวลานับถอยหลังก่อนปิดรับสมัคร"
-      className="inline-flex flex-wrap items-center gap-2.5 rounded-2xl border border-primary/40 bg-[#0E2034]/90 px-3.5 py-2 shadow-sm"
+      className="inline-flex flex-wrap items-center gap-2.5 rounded-2xl border border-border-strong/60 bg-surface/70 px-3.5 py-2"
     >
       <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
         <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />

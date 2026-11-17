@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { jsonNoStore } from "@/lib/api-response";
 import { ensureGroupUpToDate } from "@/lib/cron";
 import { getAppBaseUrl } from "@/lib/url";
+import { participantSeed } from "@/lib/participant-seed";
 
 type RouteContext = { params: Promise<{ inviteCode: string }> };
 
@@ -32,7 +33,8 @@ export async function GET(req: Request, context: RouteContext) {
       revealAt: true,
       status: true,
       members: {
-        select: { emailVerifiedAt: true },
+        select: { id: true, emailVerifiedAt: true },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
@@ -60,6 +62,12 @@ export async function GET(req: Request, context: RouteContext) {
       totalMembers: group.members.length,
       verifiedMembers: group.members.filter((m) => m.emailVerifiedAt !== null).length,
       isAcceptingRegistrations,
+      // Anonymous, one per registered member, oldest first — powers the Join page
+      // characters. A one-way hash: no ids, names or emails leave the server.
+      participants: group.members.map((m) => ({
+        seed: participantSeed(m.id),
+        verified: m.emailVerifiedAt !== null,
+      })),
     },
   });
 }

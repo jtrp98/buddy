@@ -3,25 +3,23 @@
    Cozy Winter Midnight + Deep Evergreen + Champagne Gold Lighting
    ========================================================================== */
 
-/* Midnight Winter Sky & Evergreen Backdrop */
+/* Night sky over an evergreen forest: the page backdrop */
 .evergreen-canvas,
 .linen-desk {
   background-color: var(--color-background);
   background-image:
-    radial-gradient(ellipse 95% 52% at 50% -6%, rgba(32, 74, 108, 0.52), transparent 68%),
-    radial-gradient(ellipse 70% 45% at 85% 15%, rgba(232, 196, 122, 0.11), transparent 55%),
-    radial-gradient(circle at 12% 24%, rgba(198, 40, 56, 0.12), transparent 44%),
-    radial-gradient(ellipse 80% 55% at 50% 100%, rgba(18, 61, 50, 0.48), transparent 72%);
+    radial-gradient(ellipse 90% 50% at 50% -8%, rgba(40, 70, 110, 0.55), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 82% 8%, rgba(255, 210, 122, 0.07), transparent 60%),
+    radial-gradient(ellipse 90% 60% at 50% 105%, rgba(18, 55, 42, 0.75), transparent 72%);
 }
 
-/* Hero & Magical Reveal Stage */
+/* Hero & reveal stage */
 .felt-blotter {
   position: relative;
   background:
-    radial-gradient(ellipse 85% 65% at 50% 25%, rgba(28, 66, 98, 0.65), transparent 72%),
-    radial-gradient(circle at 22% 75%, rgba(18, 61, 50, 0.68), transparent 60%),
-    radial-gradient(circle at 78% 20%, rgba(198, 40, 56, 0.16), transparent 50%),
-    linear-gradient(180deg, rgba(11, 23, 40, 0.96) 0%, rgba(15, 36, 48, 0.98) 100%);
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(40, 70, 110, 0.5), transparent 72%),
+    radial-gradient(circle at 20% 80%, rgba(18, 55, 42, 0.7), transparent 60%),
+    linear-gradient(180deg, #0d1829 0%, #0b2b26 100%);
 }
 
 /* Elevated Surfaces */
@@ -91,7 +89,7 @@
   bottom: 12px;
   right: 12px;
   width: 0;
-  border-right: 1px dashed rgba(232, 196, 122, 0.35);
+  border-right: 1px dashed rgba(220, 183, 94, 0.35);
   pointer-events: none;
 }
 
@@ -99,10 +97,10 @@
 .airmail-stripe {
   background-image: repeating-linear-gradient(
     -45deg,
-    #c62838 0 11px,
-    #fff9f0 11px 20px,
-    #123d32 20px 31px,
-    #fff9f0 31px 40px
+    #b3262e 0 11px,
+    #fff8e7 11px 20px,
+    #12372a 20px 31px,
+    #fff8e7 31px 40px
   );
 }
 
@@ -110,10 +108,10 @@
   padding: 4px;
   background-image: repeating-linear-gradient(
     -45deg,
-    #c62838 0 12px,
-    rgba(255, 249, 240, 0.92) 12px 22px,
-    #123d32 22px 34px,
-    rgba(255, 249, 240, 0.92) 34px 44px
+    #b3262e 0 12px,
+    rgba(255, 248, 231, 0.92) 12px 22px,
+    #12372a 22px 34px,
+    rgba(255, 248, 231, 0.92) 34px 44px
   );
 }
 
@@ -123,9 +121,9 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(232, 196, 122, 0.35) 14%,
-    rgba(232, 196, 122, 0.85) 50%,
-    rgba(232, 196, 122, 0.35) 86%,
+    rgba(220, 183, 94, 0.35) 14%,
+    rgba(220, 183, 94, 0.85) 50%,
+    rgba(220, 183, 94, 0.35) 86%,
     transparent
   );
 }
@@ -140,7 +138,7 @@
 
 /* Decorative Postal Tape */
 .gummed-tape {
-  background-color: rgba(232, 196, 122, 0.88);
+  background-color: rgba(220, 183, 94, 0.88);
   border: 1px solid rgba(19, 34, 52, 0.25);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
 }

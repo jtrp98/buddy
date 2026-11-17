@@ -3,9 +3,9 @@
 import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarClock, Gift, Info, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarClock, Gift, Info } from "lucide-react";
 import { formatBudget, type BudgetTypeValue } from "@/lib/budget";
-import { ElfCharacter3D } from "@/components/illustrations/ChristmasIllustrations";
+import { ChristmasTree } from "@/components/scenery/ChristmasTree";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import {
   Alert,
@@ -119,25 +119,21 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
         className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        <span>กลับไปหน้า Mission Control</span>
+        <span>กลับไปหน้ากิจกรรมของคุณ</span>
       </Link>
 
-      <ChristmasCard elevated withStripe className="mt-3">
+      <ChristmasCard tone="paper" className="mt-3">
         <div className="p-6 sm:p-8">
           <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center">
-            <div className="shrink-0 self-start rounded-2xl border border-primary/30 bg-background/70 p-2">
-              <ElfCharacter3D className="h-20 w-20" />
-            </div>
+            <ChristmasTree stage={2} ground={false} className="h-20 w-auto shrink-0 self-start" />
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-primary uppercase">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>PREPARE YOUR CHRISTMAS PARTY</span>
-              </span>
-              <h1 className="thai-keep mt-1 text-xl font-bold text-snow-white sm:text-2xl">
-                เตรียมจัดกิจกรรม Secret Buddy ใหม่
-              </h1>
-              <p className="mt-0.5 text-xs text-text-secondary sm:text-sm">
-                ตั้งชื่อปาร์ตี้ งบประมาณของขวัญ และกำหนดเวลาปิดรับสมัคร (อ้างอิงเวลาประเทศไทย UTC+7)
+              <p className="flex items-center gap-2 text-[11px] font-bold tracking-[0.18em] text-primary uppercase">
+                <span aria-hidden="true" className="h-px w-6 bg-primary/70" />
+                ปาร์ตี้ใหม่
+              </p>
+              <h1 className="thai-keep mt-1 text-3xl text-text-primary">สร้างกิจกรรม Secret Buddy</h1>
+              <p className="mt-1 text-sm text-text-secondary">
+                ตั้งชื่อปาร์ตี้ งบประมาณของขวัญ และเวลาปิดรับสมัคร (เวลาประเทศไทย UTC+7)
               </p>
             </div>
           </div>
@@ -150,7 +146,7 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-7">
             {/* Section 1: Event Details */}
-            <fieldset className="space-y-4 rounded-2xl border border-white/12 bg-background/45 p-5">
+            <fieldset className="space-y-4 rounded-2xl border border-border bg-surface/40 p-5">
               <legend className="px-2 text-base font-bold text-primary">
                 1. ข้อมูลปาร์ตี้คริสต์มาส
               </legend>
@@ -169,7 +165,7 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
                   disabled={submitting}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="เช่น แลกของขวัญคริสต์มาส ทีม Product 2026"
+                  placeholder="เช่น แลกของขวัญคริสต์มาส แก๊งเพื่อนมัธยม 2026"
                 />
               </FormField>
 
@@ -190,7 +186,7 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
             </fieldset>
 
             {/* Section 2: Gift Budget */}
-            <fieldset className="space-y-4 rounded-2xl border border-primary/25 bg-background/55 p-5">
+            <fieldset className="space-y-4 rounded-2xl border border-border-strong/60 bg-surface/40 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <legend className="flex items-center gap-2 text-base font-bold text-primary">
                   <Gift className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -216,11 +212,11 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
                       }}
                       className={`analog-btn flex min-h-[60px] flex-col items-start justify-center rounded-xl border px-4 py-3 text-left transition ${
                         selected
-                          ? "border-primary bg-primary/15 text-snow-white ring-1 ring-primary shadow-[0_0_16px_rgba(232,196,122,0.16)]"
-                          : "border-border bg-surface text-text-secondary hover:border-white/35 hover:text-snow-white"
+                          ? "border-primary bg-primary/12 text-text-primary ring-1 ring-primary"
+                          : "border-border bg-input-bg text-text-secondary hover:border-border-strong hover:text-text-primary"
                       }`}
                     >
-                      <span className="text-sm font-bold text-snow-white">
+                      <span className="text-sm font-bold text-text-primary">
                         {opt.label}
                       </span>
                       <span className="text-xs text-text-secondary">{opt.hint}</span>
@@ -297,7 +293,7 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
             </fieldset>
 
             {/* Section 3: Schedule */}
-            <fieldset className="space-y-4 rounded-2xl border border-white/12 bg-background/45 p-5">
+            <fieldset className="space-y-4 rounded-2xl border border-border bg-surface/40 p-5">
               <legend className="px-2 text-base font-bold text-primary">
                 3. กำหนดวันและเวลา (เวลาไทย UTC+7)
               </legend>
@@ -344,7 +340,7 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
             </fieldset>
 
             {/* Section 4: Publish Status */}
-            <label className="flex cursor-pointer items-start gap-3.5 rounded-2xl border border-emerald-400/35 bg-evergreen/50 p-4 transition hover:border-emerald-400/60">
+            <label className="flex cursor-pointer items-start gap-3.5 rounded-2xl border border-success/35 bg-success-bg p-4 transition hover:border-success/60">
               <input
                 type="checkbox"
                 checked={publishNow}
@@ -353,10 +349,10 @@ export function NewGroupForm({ defaultCloseAt }: { defaultCloseAt: string }) {
                   triggerClickSound();
                   setPublishNow(e.target.checked);
                 }}
-                className="mt-1 h-5 w-5 shrink-0 accent-[#E8C47A]"
+                className="mt-1 h-5 w-5 shrink-0 accent-[var(--color-primary)]"
               />
               <div>
-                <div className="text-sm font-bold text-snow-white">
+                <div className="text-sm font-bold text-text-primary">
                   เปิดรับสมัครทันทีหลังสร้างกลุ่ม (สถานะ: เปิดรับสมัคร)
                 </div>
                 <p className="mt-0.5 text-xs leading-relaxed text-text-secondary">
