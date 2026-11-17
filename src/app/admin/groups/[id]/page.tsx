@@ -362,7 +362,7 @@ function AdminGroupDetailContent() {
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-12">
-        <div className="analog-card h-48 animate-pulse rounded-3xl" />
+        <div className="analog-card h-48 animate-pulse rounded-md" />
       </div>
     );
   }
@@ -370,8 +370,8 @@ function AdminGroupDetailContent() {
   if (!group) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
-        <p className="font-bold text-[#c8322b]">{error || "ไม่พบกลุ่มกิจกรรมนี้"}</p>
-        <Link href="/admin" className="mt-4 inline-block text-sm font-bold text-[#1f5e46] underline">
+        <p className="font-bold text-xmas-red">{error || "ไม่พบกลุ่มกิจกรรมนี้"}</p>
+        <Link href="/admin" className="mt-4 inline-block text-sm font-bold text-pine underline">
           กลับไปหน้าแดชบอร์ด
         </Link>
       </div>
@@ -389,7 +389,7 @@ function AdminGroupDetailContent() {
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#5c493e] hover:text-[#c8322b]"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-ink-soft hover:text-xmas-red"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>กลับไปหน้าแดชบอร์ด</span>
@@ -401,7 +401,7 @@ function AdminGroupDetailContent() {
             triggerClickSound();
             void loadGroup();
           }}
-          className="analog-btn inline-flex items-center gap-1.5 rounded-xl bg-[#fffdf7] px-3.5 py-1.5 text-xs font-bold text-[#2a1f1b] hover:bg-[#f3e7d1]"
+          className="analog-btn inline-flex items-center gap-1.5 rounded bg-paper px-3.5 py-1.5 text-xs font-bold text-ink hover:bg-cream"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>รีเฟรช</span>
@@ -409,19 +409,19 @@ function AdminGroupDetailContent() {
       </div>
 
       {notice && (
-        <div className="rounded-2xl border-2 border-[#1f5e46] bg-[#edf7f1] px-4 py-3 text-sm font-bold text-[#154231] shadow-[2px_2px_0_#1f5e46]">
+        <div className="rounded-md border border-pine/45 bg-pine-wash px-4 py-3 text-sm font-bold text-pine-deep shadow-paper-pressed">
           {notice}
         </div>
       )}
 
       {error && (
-        <div className="rounded-2xl border-2 border-[#c8322b] bg-[#fdeceb] px-4 py-3 text-sm font-bold text-[#8b1a15]">
+        <div className="rounded-md border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-bold text-xmas-red-deep">
           {error}
         </div>
       )}
 
       {group.drawError && (
-        <div className="flex items-start gap-3 rounded-2xl border-2 border-[#b7791f] bg-[#fdf3db] p-4 text-sm text-[#7c4d08]">
+        <div className="flex items-start gap-3 rounded-md border border-amber-ink/40 bg-amber-wash p-4 text-sm text-amber-ink">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <div className="font-bold">ยังไม่สามารถสุ่มจับคู่ได้</div>
@@ -431,9 +431,9 @@ function AdminGroupDetailContent() {
       )}
 
       {/* Header Control Card */}
-      <section className="analog-card-lg overflow-hidden rounded-3xl">
+      <section className="analog-card-lg printed-double-rule overflow-hidden rounded-md">
         <CandyStripeBar />
-        <div className="p-6 sm:p-8">
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-3">
@@ -445,9 +445,11 @@ function AdminGroupDetailContent() {
                   />
                 )}
               </div>
-              <h1 className="text-2xl font-bold text-[#2a1f1b] sm:text-3xl">{group.title}</h1>
+              <h1 className="thai-keep letterpress font-display text-2xl leading-[1.35] text-ink sm:text-3xl">
+                {group.title}
+              </h1>
               {group.description && (
-                <p className="max-w-2xl text-sm leading-relaxed text-[#5c493e]">
+                <p className="max-w-2xl font-serif text-sm leading-[1.75] text-ink-soft">
                   {group.description}
                 </p>
               )}
@@ -458,7 +460,7 @@ function AdminGroupDetailContent() {
                 <button
                   type="button"
                   onClick={handlePublishOpen}
-                  className="analog-btn rounded-xl bg-[#1f5e46] px-4 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#174a37]"
+                  className="analog-btn rounded bg-pine px-4 py-2.5 text-sm font-bold text-paper hover:bg-pine-deep"
                 >
                   เปิดรับสมัคร (Open)
                 </button>
@@ -469,7 +471,7 @@ function AdminGroupDetailContent() {
                   type="button"
                   disabled={drawing}
                   onClick={handleDrawNow}
-                  className="analog-btn inline-flex items-center gap-2 rounded-xl bg-[#c8322b] px-4 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923] disabled:opacity-60"
+                  className="analog-btn inline-flex items-center gap-2 rounded bg-xmas-red px-4 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
                 >
                   <Shuffle className="h-4 w-4" />
                   <span>{drawing ? "กำลังสุ่ม..." : "ปิดรับสมัครและสุ่มจับคู่ทันที"}</span>
@@ -480,7 +482,7 @@ function AdminGroupDetailContent() {
                 <button
                   type="button"
                   onClick={() => handleToggleCompleted("COMPLETED")}
-                  className="analog-btn rounded-xl bg-[#5148a3] px-4 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#413987]"
+                  className="analog-btn rounded bg-plum px-4 py-2.5 text-sm font-bold text-paper hover:bg-plum"
                 >
                   จบกิจกรรม (Completed)
                 </button>
@@ -490,7 +492,7 @@ function AdminGroupDetailContent() {
                 <button
                   type="button"
                   onClick={() => handleToggleCompleted("ACTIVE")}
-                  className="analog-btn rounded-xl bg-[#fffdf7] px-4 py-2.5 text-sm font-bold text-[#2a1f1b] hover:bg-[#f3e7d1]"
+                  className="analog-btn rounded bg-paper px-4 py-2.5 text-sm font-bold text-ink hover:bg-cream"
                 >
                   เปิดให้ดูผลต่อ (Active)
                 </button>
@@ -502,7 +504,7 @@ function AdminGroupDetailContent() {
                   triggerClickSound();
                   setEditing((v) => !v);
                 }}
-                className="analog-btn rounded-xl bg-[#fffdf7] px-4 py-2.5 text-sm font-bold text-[#2a1f1b] hover:bg-[#f3e7d1]"
+                className="analog-btn rounded bg-paper px-4 py-2.5 text-sm font-bold text-ink hover:bg-cream"
               >
                 {editing ? "ยกเลิกแก้ไข" : "แก้ไขรายละเอียด"}
               </button>
@@ -511,81 +513,81 @@ function AdminGroupDetailContent() {
 
           {/* Info Grid */}
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#fde2df] p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#9e221d]">
+            <div className="rounded-md border border-ink/25 bg-red-wash p-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-xmas-red-deep">
                 <Gift className="h-3.5 w-3.5" />
                 <span>งบประมาณของขวัญ</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-[#2a1f1b]">
+              <div className="mt-1 text-sm font-bold text-ink">
                 {formatBudgetWithPrefix(group.budgetType, group.budgetMin, group.budgetMax)}
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#fdf6e9] p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#675449]">
-                <CalendarClock className="h-3.5 w-3.5 text-[#c8322b]" />
+            <div className="rounded-md border border-ink/25 bg-cream p-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
+                <CalendarClock className="h-3.5 w-3.5 text-xmas-red" />
                 <span>วันเวลาปิดรับสมัคร</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-[#2a1f1b]">
+              <div className="mt-1 text-sm font-bold text-ink">
                 {formatThaiDateTime(group.registrationClosesAt)}
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#dff0e6] p-4">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#154231]">
+            <div className="rounded-md border border-ink/25 bg-pine-wash p-4">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-pine-deep">
                 <Users className="h-3.5 w-3.5" />
                 <span>ผู้ลงทะเบียนที่ยืนยันแล้ว</span>
               </div>
-              <div className="mt-1 text-sm font-bold text-[#154231]">
+              <div className="mt-1 text-sm font-bold text-pine-deep">
                 {verifiedMembers.length} คน (ทั้งหมด {members.length} คน)
               </div>
             </div>
           </div>
 
           {group.revealAt && (
-            <p className="mt-3 text-xs font-medium text-[#5c493e]">
-              🎉 วันเฉลย Buddy: <span className="font-bold text-[#2a1f1b]">{formatThaiDateTime(group.revealAt)}</span>
+            <p className="mt-3 text-xs font-medium text-ink-soft">
+              วันเฉลย Buddy: <span className="font-bold text-ink">{formatThaiDateTime(group.revealAt)}</span>
             </p>
           )}
 
           {/* Perforated Invite Ticket Stub */}
-          <div className="mt-6 rounded-2xl border-2 border-dashed border-[#c8322b] bg-[#fdf6e9] p-4 sm:p-5">
+          <div className="perforated-edge-right mt-6 rounded-md border border-dashed border-xmas-red/65 bg-cream p-4 pr-7 shadow-paper-pressed sm:p-5 sm:pr-8">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <div className="font-mono text-xs font-bold uppercase tracking-wider text-[#9e221d]">
-                  🎟️ INVITE TICKET STUB — ลิงก์เชิญสมาชิกเข้าร่วม
+                <div className="font-type text-xs font-bold uppercase tracking-wider text-xmas-red-deep">
+                  INVITE TICKET STUB — ลิงก์เชิญสมาชิกเข้าร่วม
                 </div>
-                <p className="mt-0.5 text-xs text-[#5c493e]">
+                <p className="mt-0.5 text-xs text-ink-soft">
                   แชร์ลิงก์นี้ให้สมาชิกทุกคนกรอกชื่อ อีเมล และ Buddy Profile (ไม่ต้องสมัครบัญชี)
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={copyInviteLink}
-                  className="analog-btn inline-flex items-center gap-1.5 rounded-xl bg-[#fffdf7] px-3.5 py-2 text-xs font-bold text-[#2a1f1b] hover:bg-[#fdf3d7]"
+                  className="analog-btn inline-flex min-h-[40px] items-center gap-1.5 rounded bg-paper px-3.5 py-2 text-xs font-bold text-ink hover:bg-cream"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-[#1f5e46]" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? <Check className="h-3.5 w-3.5 text-pine" /> : <Copy className="h-3.5 w-3.5" />}
                   <span>{copied ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</span>
                 </button>
                 <Link
                   href={`/join/${group.inviteCode}`}
                   target="_blank"
-                  className="analog-btn inline-flex items-center gap-1 rounded-xl bg-[#c8322b] px-3.5 py-2 text-xs font-bold text-[#fffdf7] hover:bg-[#b22923]"
+                  className="analog-btn inline-flex min-h-[40px] items-center gap-1 rounded bg-xmas-red px-3.5 py-2 text-xs font-bold text-paper hover:bg-xmas-red-deep"
                 >
                   <span>เปิดหน้าลงทะเบียน</span>
                   <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
-            <div className="mt-3 truncate rounded-xl border-2 border-[#2a1f1b] bg-[#fffdf7] px-3.5 py-2 font-mono text-xs font-medium text-[#2a1f1b]">
+            <div className="mt-3 truncate rounded border border-ink/25 bg-paper px-3.5 py-2 font-mono text-xs font-medium text-ink">
               {inviteUrl}
             </div>
           </div>
 
           {/* Secrecy Note */}
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-[#5c493e]">
-            <Lock className="h-3.5 w-3.5 text-[#1f5e46]" />
+          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-ink-soft">
+            <Lock className="h-3.5 w-3.5 text-pine" />
             <span>
               ระบบรักษาความลับ: หน้าจัดการ Admin จะแสดงเฉพาะรายชื่อและสถานะส่งอีเมล โดยไม่มีผลจับคู่แสดงในหน้าเว็บ
             </span>
@@ -595,54 +597,54 @@ function AdminGroupDetailContent() {
           {editing && (
             <form
               onSubmit={handleSaveEdit}
-              className="mt-6 space-y-4 rounded-2xl border-2 border-[#2a1f1b] bg-[#f3e7d1] p-5"
+              className="mt-6 space-y-4 rounded-md border border-ink/25 bg-cream p-5"
             >
-              <h2 className="text-base font-bold text-[#2a1f1b]">แก้ไขรายละเอียดกลุ่ม</h2>
+              <h2 className="text-base font-bold text-ink">แก้ไขรายละเอียดกลุ่ม</h2>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-[#2a1f1b]">ชื่อกิจกรรม</label>
+                  <label className="block text-xs font-bold text-ink">ชื่อกิจกรรม</label>
                   <input
                     type="text"
                     required
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#2a1f1b]">
+                  <label className="block text-xs font-bold text-ink">
                     วันเฉลย Buddy (ไม่บังคับ)
                   </label>
                   <input
                     type="datetime-local"
                     value={editRevealAt}
                     onChange={(e) => setEditRevealAt(e.target.value)}
-                    className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                    className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#2a1f1b]">รายละเอียด</label>
+                <label className="block text-xs font-bold text-ink">รายละเอียด</label>
                 <textarea
                   rows={2}
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                  className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                 />
               </div>
 
               {!isDrawn && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-bold text-[#2a1f1b]">
+                    <label className="block text-xs font-bold text-ink">
                       ประเภทงบประมาณ
                     </label>
                     <select
                       value={editBudgetType}
                       onChange={(e) => setEditBudgetType(e.target.value as BudgetTypeValue)}
-                      className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     >
                       <option value="FIXED">งบตายตัว</option>
                       <option value="RANGE">งบแบบช่วง</option>
@@ -652,7 +654,7 @@ function AdminGroupDetailContent() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#2a1f1b]">
+                    <label className="block text-xs font-bold text-ink">
                       วันเวลาปิดรับสมัคร (เวลาไทย)
                     </label>
                     <input
@@ -660,13 +662,13 @@ function AdminGroupDetailContent() {
                       required
                       value={editCloseAt}
                       onChange={(e) => setEditCloseAt(e.target.value)}
-                      className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                      className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                     />
                   </div>
 
                   {editBudgetType !== "UNLIMITED" && (
                     <div>
-                      <label className="block text-xs font-bold text-[#2a1f1b]">
+                      <label className="block text-xs font-bold text-ink">
                         {editBudgetType === "RANGE" ? "งบต่ำสุด (บาท)" : "จำนวนเงิน (บาท)"}
                       </label>
                       <input
@@ -675,14 +677,14 @@ function AdminGroupDetailContent() {
                         required
                         value={editBudgetMin}
                         onChange={(e) => setEditBudgetMin(e.target.value)}
-                        className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                        className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                       />
                     </div>
                   )}
 
                   {editBudgetType === "RANGE" && (
                     <div>
-                      <label className="block text-xs font-bold text-[#2a1f1b]">
+                      <label className="block text-xs font-bold text-ink">
                         งบสูงสุด (บาท)
                       </label>
                       <input
@@ -691,7 +693,7 @@ function AdminGroupDetailContent() {
                         required
                         value={editBudgetMax}
                         onChange={(e) => setEditBudgetMax(e.target.value)}
-                        className="analog-input mt-1 w-full rounded-xl px-3.5 py-2 text-sm"
+                        className="analog-input mt-1 w-full rounded px-3.5 py-2 text-sm"
                       />
                     </div>
                   )}
@@ -702,7 +704,7 @@ function AdminGroupDetailContent() {
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="analog-btn rounded-xl bg-[#c8322b] px-5 py-2 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923] disabled:opacity-60"
+                  className="analog-btn rounded bg-xmas-red px-5 py-2 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
                 >
                   {savingEdit ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
                 </button>
@@ -713,16 +715,16 @@ function AdminGroupDetailContent() {
       </section>
 
       {/* Members & Email Status Ledger */}
-      <section className="analog-card rounded-3xl p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-[#cbb7a6] pb-4">
+      <section className="analog-card printed-double-rule rounded-md p-6 sm:p-8">
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-rule pb-4">
           <div>
-            <span className="font-mono text-[10px] font-bold tracking-[0.15em] text-[#1f5e46] uppercase">
+            <span className="font-type text-[10px] font-bold tracking-[0.16em] text-pine uppercase">
               WORKSHOP LEDGER
             </span>
-            <h2 className="text-lg font-bold text-[#2a1f1b]">
+            <h2 className="thai-keep letterpress font-display text-lg text-ink sm:text-xl">
               รายชื่อผู้ลงทะเบียน ({members.length} คน)
             </h2>
-            <p className="text-xs text-[#675449]">
+            <p className="text-xs text-ink-soft">
               เฉพาะสมาชิกที่ยืนยันอีเมลแล้ว ({verifiedMembers.length} คน) จึงจะถูกนำมารวมในการสุ่ม
             </p>
           </div>
@@ -732,7 +734,7 @@ function AdminGroupDetailContent() {
               type="button"
               disabled={resendingAll}
               onClick={handleResendFailed}
-              className="analog-btn inline-flex items-center gap-1.5 rounded-xl bg-[#d49a2a] px-4 py-2 text-xs font-bold text-[#2a1f1b] hover:bg-[#c1891f] disabled:opacity-60"
+              className="analog-btn inline-flex min-h-[40px] items-center gap-1.5 rounded bg-gold px-4 py-2 text-xs font-bold text-ink hover:bg-gold disabled:opacity-60"
             >
               <Send className="h-3.5 w-3.5" />
               <span>
@@ -745,14 +747,14 @@ function AdminGroupDetailContent() {
         </div>
 
         {members.length === 0 ? (
-          <div className="mt-6 rounded-2xl border-2 border-dashed border-[#cbb7a6] bg-[#fdf6e9] py-10 text-center text-sm font-medium text-[#675449]">
+          <div className="relative z-10 mt-6 rounded-md border border-dashed border-rule bg-cream py-10 text-center text-sm font-medium text-ink-soft">
             ยังไม่มีผู้ลงทะเบียน แชร์ลิงก์เชิญด้านบนให้สมาชิกได้เลย!
           </div>
         ) : (
-          <div className="mt-5 overflow-x-auto">
+          <div className="relative z-10 mt-5 overflow-x-auto rounded border border-rule/70 bg-paper/75 p-3">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b-2 border-[#2a1f1b] text-xs font-bold text-[#5c493e]">
+                <tr className="border-b border-ink/35 font-serif text-xs font-bold text-ink-soft">
                   <th className="pb-3 pr-4">ชื่อ / ชื่อเล่น</th>
                   <th className="pb-3 pr-4">อีเมล</th>
                   <th className="pb-3 pr-4">การยืนยันอีเมล</th>
@@ -760,19 +762,19 @@ function AdminGroupDetailContent() {
                   {isDrawn && <th className="pb-3 text-right">จัดการ</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-[#cbb7a6]">
+              <tbody className="divide-y divide-dashed divide-rule">
                 {members.map((m) => (
                   <tr key={m.id} className="align-middle">
-                    <td className="py-3.5 pr-4 font-bold text-[#2a1f1b]">{m.displayName}</td>
-                    <td className="py-3.5 pr-4 font-mono text-xs text-[#5c493e]">{m.email}</td>
+                    <td className="py-3.5 pr-4 font-bold text-ink">{m.displayName}</td>
+                    <td className="py-3.5 pr-4 font-mono text-xs text-ink-soft">{m.email}</td>
                     <td className="py-3.5 pr-4">
                       {m.verified ? (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-[#1f5e46] bg-[#dff0e6] px-2.5 py-0.5 text-xs font-bold text-[#154231]">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-pine bg-pine-wash px-2.5 py-0.5 text-xs font-bold text-pine-deep">
                           <CheckCircle2 className="h-3.5 w-3.5" />
                           ยืนยันแล้ว
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-[#b7791f] bg-[#fdf3db] px-2.5 py-0.5 text-xs font-bold text-[#7c4d08]">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-amber-ink/50 bg-amber-wash px-2.5 py-0.5 text-xs font-bold text-amber-ink">
                           รอยืนยันอีเมล
                         </span>
                       )}
@@ -781,26 +783,26 @@ function AdminGroupDetailContent() {
                     {isDrawn && (
                       <td className="py-3.5 pr-4">
                         {!m.verified ? (
-                          <span className="text-xs text-[#8e7a6d]">ไม่ได้ร่วมสุ่ม</span>
+                          <span className="text-xs text-ink-soft">ไม่ได้ร่วมสุ่ม</span>
                         ) : m.resultEmail?.status === "SENT" ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-[#154231]">
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-pine-deep">
                             <MailCheck className="h-3.5 w-3.5" />
                             ส่งแล้ว ({m.resultEmail.attempts} ครั้ง)
                           </span>
                         ) : m.resultEmail?.status === "FAILED" ? (
                           <div>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#c8322b]">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-xmas-red">
                               <XCircle className="h-3.5 w-3.5" />
                               ส่งไม่สำเร็จ
                             </span>
                             {m.resultEmail.lastError && (
-                              <div className="mt-0.5 max-w-xs truncate text-[11px] text-[#9e221d]">
+                              <div className="mt-0.5 max-w-xs truncate text-[11px] text-xmas-red-deep">
                                 {m.resultEmail.lastError}
                               </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs font-bold text-[#7c4d08]">รอส่ง</span>
+                          <span className="text-xs font-bold text-amber-ink">รอส่ง</span>
                         )}
                       </td>
                     )}
@@ -812,7 +814,7 @@ function AdminGroupDetailContent() {
                             type="button"
                             disabled={resendingMemberId === m.id}
                             onClick={() => handleResendOne(m.id, m.displayName)}
-                            className="analog-btn inline-flex items-center gap-1 rounded-lg bg-[#fffdf7] px-2.5 py-1.5 text-xs font-bold text-[#2a1f1b] hover:bg-[#fde2df] hover:text-[#9e221d] disabled:opacity-50"
+                            className="analog-btn inline-flex items-center gap-1 rounded-lg bg-paper px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-red-wash hover:text-xmas-red-deep disabled:opacity-50"
                           >
                             <Send className="h-3 w-3" />
                             <span>
@@ -835,7 +837,7 @@ function AdminGroupDetailContent() {
         <button
           type="button"
           onClick={handleDeleteGroup}
-          className="analog-btn inline-flex items-center gap-1.5 rounded-xl bg-[#fdeceb] px-4 py-2 text-xs font-bold text-[#9e221d] hover:bg-[#fbd5d2]"
+          className="analog-btn inline-flex items-center gap-1.5 rounded bg-red-wash px-4 py-2 text-xs font-bold text-xmas-red-deep hover:bg-red-wash"
         >
           <Trash2 className="h-3.5 w-3.5" />
           <span>ลบกลุ่มกิจกรรมนี้</span>
@@ -850,7 +852,7 @@ export default function AdminGroupDetailPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-5xl px-4 py-12">
-          <div className="analog-card h-48 animate-pulse rounded-3xl" />
+          <div className="analog-card h-48 animate-pulse rounded-md" />
         </div>
       }
     >

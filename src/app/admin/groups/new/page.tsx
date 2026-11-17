@@ -14,7 +14,7 @@ export default function NewGroupPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-2xl px-4 py-12">
-          <div className="analog-card h-64 animate-pulse rounded-3xl" />
+          <div className="analog-card h-64 animate-pulse rounded-md" />
         </div>
       }
     >

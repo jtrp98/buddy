@@ -43,34 +43,36 @@ export default function AdminRegisterPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-14">
-      <div className="analog-card-lg overflow-hidden rounded-3xl">
+      <div className="analog-card-lg printed-double-rule overflow-hidden rounded-md">
         <CandyStripeBar />
-        <div className="p-8">
+        <div className="relative z-10 p-7 sm:p-8">
           <div className="flex items-center gap-3">
             <WaxSeal tone="red" size="md">
               <UserPlus className="h-5 w-5" />
             </WaxSeal>
             <div>
-              <span className="font-mono text-[10px] font-bold tracking-[0.15em] text-[#9e221d] uppercase">
+              <span className="font-type text-[10px] font-bold tracking-[0.16em] text-xmas-red-deep uppercase">
                 NEW HOST BADGE
               </span>
-              <h1 className="text-2xl font-bold text-[#2a1f1b]">สมัครบัญชี Admin</h1>
+              <h1 className="thai-keep letterpress font-display text-2xl text-ink">
+                สมัครบัญชี Admin
+              </h1>
             </div>
           </div>
 
-          <p className="mt-2.5 text-sm text-[#675449]">
+          <p className="mt-2.5 text-sm leading-[1.7] text-ink-soft">
             สร้างบัญชีสำหรับผู้จัดกิจกรรม Secret Buddy (สมาชิกที่เข้าร่วมไม่ต้องสมัครบัญชี)
           </p>
 
           {error && (
-            <div className="mt-4 rounded-xl border-2 border-[#c8322b] bg-[#fdeceb] px-4 py-3 text-sm font-medium text-[#8b1a15]">
+            <div className="mt-4 rounded border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-medium text-xmas-red-deep">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="block text-sm font-bold text-[#2a1f1b]">
+              <label className="block font-serif text-sm font-bold text-ink">
                 ชื่อผู้ดูแลกิจกรรม
               </label>
               <input
@@ -80,24 +82,24 @@ export default function AdminRegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="เช่น พี่มิ้นต์ HR"
-                className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
+                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#2a1f1b]">อีเมล</label>
+              <label className="block font-serif text-sm font-bold text-ink">อีเมล</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
-                className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
+                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#2a1f1b]">
+              <label className="block font-serif text-sm font-bold text-ink">
                 รหัสผ่าน (อย่างน้อย 8 ตัวอักษร)
               </label>
               <input
@@ -107,24 +109,24 @@ export default function AdminRegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
+                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="analog-btn-lg w-full rounded-xl bg-[#c8322b] py-3 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923] disabled:opacity-60"
+              className="analog-btn-lg min-h-[46px] w-full rounded bg-xmas-red py-3 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
             >
               {loading ? "กำลังสร้างบัญชี..." : "สมัครสมาชิกและเริ่มใช้งาน"}
             </button>
           </form>
 
-          <p className="mt-6 border-t-2 border-dashed border-[#cbb7a6] pt-4 text-center text-sm text-[#675449]">
+          <p className="mt-6 border-t border-dashed border-rule pt-4 text-center text-sm text-ink-soft">
             มีบัญชี Admin อยู่แล้ว?{" "}
             <Link
               href="/admin/login"
-              className="font-bold text-[#c8322b] underline decoration-dashed underline-offset-4 hover:text-[#1f5e46]"
+              className="font-bold text-xmas-red underline decoration-dashed underline-offset-4 hover:text-pine"
             >
               เข้าสู่ระบบ
             </Link>
