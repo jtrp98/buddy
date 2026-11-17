@@ -150,7 +150,7 @@ function ProfileEditorContent() {
 
   if (loading) {
     return (
-      <div className="analog-card rounded-3xl p-10 text-center text-sm font-bold text-[#675449]">
+      <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
         กำลังโหลดข้อมูลของคุณ...
       </div>
     );
@@ -158,13 +158,13 @@ function ProfileEditorContent() {
 
   if (error || !group) {
     return (
-      <div className="analog-card rounded-3xl p-8 text-center">
-        <XCircle className="mx-auto h-12 w-12 text-[#c8322b]" />
-        <h1 className="mt-4 text-xl font-bold text-[#2a1f1b]">ไม่สามารถเข้าถึงข้อมูลได้</h1>
-        <p className="mt-2 text-sm font-medium text-[#9e221d]">{error}</p>
+      <div className="analog-card rounded-md p-8 text-center">
+        <XCircle className="mx-auto h-12 w-12 text-xmas-red" />
+        <h1 className="mt-4 text-xl font-bold text-ink">ไม่สามารถเข้าถึงข้อมูลได้</h1>
+        <p className="mt-2 text-sm font-medium text-xmas-red-deep">{error}</p>
         <Link
           href="/recover"
-          className="analog-btn-lg mt-6 inline-flex rounded-xl bg-[#c8322b] px-5 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923]"
+          className="analog-btn-lg mt-6 inline-flex rounded bg-xmas-red px-5 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
         >
           ขอลิงก์ส่วนตัวใหม่
         </Link>
@@ -176,21 +176,21 @@ function ProfileEditorContent() {
 
   return (
     <div className="space-y-6">
-      <section className="analog-card overflow-hidden rounded-3xl">
+      <section className="analog-card printed-double-rule overflow-hidden rounded-md">
         <CandyStripeBar />
-        <div className="p-6 sm:p-8">
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <StatusBadge status={group.status} />
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#2a1f1b] bg-[#fdf6e9] px-3 py-1 text-xs font-bold text-[#5c493e]">
-              <CalendarClock className="h-3.5 w-3.5 text-[#c8322b]" />
+            <span className="inline-flex items-center gap-1.5 rounded border border-ink/20 bg-paper px-3 py-1 text-xs font-bold text-ink-soft">
+              <CalendarClock className="h-3.5 w-3.5 text-xmas-red" />
               ปิดรับสมัคร: {formatThaiDateTime(group.registrationClosesAt)}
             </span>
           </div>
 
-          <h1 className="mt-4 text-2xl font-bold text-[#2a1f1b]">
+          <h1 className="thai-keep letterpress mt-4 font-display text-2xl leading-[1.35] text-ink">
             Buddy Profile ของคุณ — {group.title}
           </h1>
-          <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg border border-[#2a1f1b] bg-[#fde2df] px-3 py-1 text-sm font-bold text-[#9e221d]">
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded border border-xmas-red/30 bg-red-wash px-3 py-1 font-serif text-sm font-bold text-xmas-red-deep">
             <Gift className="h-4 w-4" />
             <span>
               งบประมาณของขวัญ:{" "}
@@ -202,80 +202,82 @@ function ProfileEditorContent() {
 
       <form
         onSubmit={handleSave}
-        className="analog-card-lg relative space-y-6 rounded-3xl p-6 sm:p-8"
+        className="analog-card-lg printed-double-rule relative space-y-6 rounded-md p-6 sm:p-8"
       >
-        <WashiTape tone="red" className="absolute -top-2.5 left-8 -rotate-3" />
+        <WashiTape tone="red" className="absolute -top-2 left-8 z-20 -rotate-3" />
 
-        {saveMessage && (
-          <div className="flex items-center gap-2 rounded-xl border-2 border-[#1f5e46] bg-[#edf7f1] px-4 py-3 text-sm font-bold text-[#154231]">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>{saveMessage}</span>
-          </div>
-        )}
+        <div className="relative z-10 space-y-6">
+          {saveMessage && (
+            <div className="flex items-center gap-2 rounded border border-pine/45 bg-pine-wash px-4 py-3 text-sm font-bold text-pine-deep">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>{saveMessage}</span>
+            </div>
+          )}
 
-        {saveError && (
-          <div className="rounded-xl border-2 border-[#c8322b] bg-[#fdeceb] px-4 py-3 text-sm font-medium text-[#8b1a15]">
-            {saveError}
-          </div>
-        )}
+          {saveError && (
+            <div className="rounded border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-medium text-xmas-red-deep">
+              {saveError}
+            </div>
+          )}
 
-        {!canEdit && (
-          <div className="rounded-xl border-2 border-[#2a1f1b] bg-[#efe5d5] px-4 py-3 text-sm font-bold text-[#4d3d35]">
-            กิจกรรมนี้จบลงแล้ว จึงไม่สามารถแก้ไขข้อมูลได้
-          </div>
-        )}
+          {!canEdit && (
+            <div className="rounded border border-ink/25 bg-cream px-4 py-3 text-sm font-bold text-ink-soft">
+              กิจกรรมนี้จบลงแล้ว จึงไม่สามารถแก้ไขข้อมูลได้
+            </div>
+          )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="block text-sm font-bold text-[#2a1f1b]">
-              ชื่อ / ชื่อเล่น
-            </label>
-            <input
-              type="text"
-              required
-              disabled={!canEdit || !isPreDraw}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
-            />
-            {!isPreDraw && (
-              <p className="mt-1 text-[11px] text-[#675449]">
-                หลังสุ่มจับคู่แล้วจะไม่สามารถเปลี่ยนชื่อได้ (แต่ยังแก้ไขความชอบและ Wish List ได้)
-              </p>
-            )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block font-serif text-sm font-bold text-ink">
+                ชื่อ / ชื่อเล่น
+              </label>
+              <input
+                type="text"
+                required
+                disabled={!canEdit || !isPreDraw}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
+              />
+              {!isPreDraw && (
+                <p className="mt-1 text-[11px] text-ink-soft">
+                  หลังสุ่มจับคู่แล้วจะไม่สามารถเปลี่ยนชื่อได้ (แต่ยังแก้ไขความชอบและ Wish List ได้)
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-serif text-sm font-bold text-ink">
+                อีเมลที่ลงทะเบียน
+              </label>
+              <input
+                type="email"
+                disabled
+                value={email}
+                className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-bold text-[#2a1f1b]">
-              อีเมลที่ลงทะเบียน
-            </label>
-            <input
-              type="email"
-              disabled
-              value={email}
-              className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
-            />
-          </div>
+          <hr className="border-t border-dashed border-rule" />
+
+          <BuddyProfileFormFields
+            value={profile}
+            onChange={setProfile}
+            disabled={!canEdit}
+          />
+
+          {canEdit && (
+            <button
+              type="submit"
+              disabled={saving}
+              className="analog-btn-lg inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded bg-pine py-3.5 text-sm font-bold text-paper hover:bg-pine-deep disabled:opacity-60"
+            >
+              <Save className="h-4 w-4" />
+              <span>{saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
+            </button>
+          )}
         </div>
-
-        <hr className="border-t-2 border-dashed border-[#cbb7a6]" />
-
-        <BuddyProfileFormFields
-          value={profile}
-          onChange={setProfile}
-          disabled={!canEdit}
-        />
-
-        {canEdit && (
-          <button
-            type="submit"
-            disabled={saving}
-            className="analog-btn-lg inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f5e46] py-3.5 text-sm font-bold text-[#fffdf7] hover:bg-[#174a37] disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            <span>{saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
-          </button>
-        )}
       </form>
     </div>
   );
@@ -286,7 +288,7 @@ export default function MyProfilePage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
       <Suspense
         fallback={
-          <div className="analog-card rounded-3xl p-10 text-center text-sm font-bold text-[#675449]">
+          <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
             กำลังโหลด...
           </div>
         }

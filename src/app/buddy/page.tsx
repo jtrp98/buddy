@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -11,7 +11,6 @@ import {
   Heart,
   MessageSquareHeart,
   Palette,
-  RotateCcw,
   Sparkles,
   ThumbsDown,
   XCircle,
@@ -25,7 +24,11 @@ import {
   WashiTape,
   WaxSeal,
 } from "@/components/AnalogPrimitives";
-import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
+import { EnvelopeLetter } from "@/components/envelope/EnvelopeLetter";
+import { SecretEnvelope } from "@/components/envelope/SecretEnvelope";
+import { Ornament } from "@/components/vintage/Ornament";
+import { OrnamentDivider } from "@/components/vintage/OrnamentDivider";
+import { Postmark } from "@/components/vintage/Postmark";
 
 interface BuddyRevealPayload {
   viewerName: string;
@@ -58,12 +61,12 @@ interface BuddyRevealPayload {
 function BuddyRevealContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { triggerStampSound, triggerChimeSound, triggerClickSound } = useFestiveAtmosphere();
 
   const [loading, setLoading] = useState(Boolean(token));
   const [error, setError] = useState(token ? "" : "ไม่พบลิงก์ดูผล Buddy ของคุณ");
   const [data, setData] = useState<BuddyRevealPayload | null>(null);
   const [isUnsealed, setIsUnsealed] = useState(false);
+  const revealHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -96,24 +99,13 @@ function BuddyRevealContent() {
     };
   }, [token]);
 
-  const handleUnseal = () => {
-    triggerStampSound();
-    setTimeout(() => triggerChimeSound(), 110);
-    setIsUnsealed(true);
-  };
-
-  const handleReseal = () => {
-    triggerClickSound();
-    setIsUnsealed(false);
-  };
-
   if (loading) {
     return (
-      <div className="analog-card rounded-3xl p-12 text-center">
+      <div className="analog-card rounded-md p-12 text-center">
         <WaxSeal tone="red" size="lg" className="mx-auto animate-pulse">
           <Gift className="h-7 w-7" />
         </WaxSeal>
-        <p className="mt-4 text-sm font-bold text-[#675449]">
+        <p className="mt-4 font-serif text-sm font-bold text-ink-soft">
           กำลังเปิดกล่องพัสดุลับจาก North Pole...
         </p>
       </div>
@@ -122,224 +114,264 @@ function BuddyRevealContent() {
 
   if (error || !data) {
     return (
-      <div className="analog-card rounded-3xl p-8 text-center">
-        <XCircle className="mx-auto h-12 w-12 text-[#c8322b]" />
-        <h1 className="mt-4 text-xl font-bold text-[#2a1f1b]">ไม่สามารถเปิดดูผล Buddy ได้</h1>
-        <p className="mt-2 text-sm font-medium text-[#9e221d]">{error}</p>
-        <Link
-          href="/recover"
-          className="analog-btn-lg mt-6 inline-flex rounded-xl bg-[#c8322b] px-5 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923]"
-        >
-          ขอลิงก์ดูผลใหม่ทางอีเมล
-        </Link>
+      <div className="analog-card printed-double-rule rounded-md p-8 text-center sm:p-10">
+        <div className="relative z-10">
+          <XCircle className="mx-auto h-12 w-12 text-xmas-red" />
+          <h1 className="thai-keep letterpress mt-4 font-display text-2xl text-ink">
+            ไม่สามารถเปิดดูผล Buddy ได้
+          </h1>
+          <p className="mt-2 font-serif text-sm font-medium text-xmas-red-deep">
+            {error}
+          </p>
+          <Link
+            href="/recover"
+            className="analog-btn-lg thai-keep mt-6 inline-flex min-h-[44px] items-center rounded bg-xmas-red px-6 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
+          >
+            ขอลิงก์ดูผลใหม่ทางอีเมล
+          </Link>
+        </div>
       </div>
     );
   }
 
   const { viewerName, group, buddy } = data;
   const budgetText = formatBudget(group.budgetType, group.budgetMin, group.budgetMax);
+  const topInterests = buddy.interests.map(getInterestLabel).slice(0, 3).join(", ");
 
-  if (!isUnsealed) {
-    return (
-      <section className="analog-card-lg relative overflow-hidden rounded-3xl">
-        <CandyStripeBar />
-        <div className="p-7 text-center sm:p-10">
-          <div className="flex items-center justify-between gap-2 text-left">
-            <span className="rounded-lg border-2 border-[#2a1f1b] bg-[#fdf3d7] px-3 py-1 font-mono text-[11px] font-bold text-[#2a1f1b]">
-              PARCEL FOR: {viewerName}
-            </span>
-            <PostageStamp topText="CONFIDENTIAL" mainText="SECRET" bottomText="BUDDY" tone="red" />
-          </div>
-
-          <div className="my-8 rounded-2xl border-2 border-dashed border-[#bfa995] bg-[#f3e7d1] px-6 py-10">
-            <p className="font-mono text-xs font-bold tracking-[0.18em] text-[#1f5e46] uppercase">
-              ★ {group.title} ★
-            </p>
-            <h1 className="mt-2 text-2xl font-bold text-[#2a1f1b] sm:text-3xl">
-              พัสดุลับของคุณมาถึงแล้ว!
-            </h1>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#5c493e]">
-              สวัสดีคุณ <span className="font-bold text-[#2a1f1b]">{viewerName}</span>{" "}
-              ตรวจดูรอบข้างให้แน่ใจว่าไม่มีใครแอบมอง แล้วกดแกะผนึกขี้ผึ้งเพื่อเปิดดูว่าคุณได้ดูแลใคร
-            </p>
-
-            <button
-              type="button"
-              onClick={handleUnseal}
-              className="analog-btn-lg mt-7 inline-flex items-center gap-3 rounded-2xl bg-[#c8322b] px-7 py-4 text-base font-bold text-[#fffdf7] hover:bg-[#b22923]"
-            >
-              <WaxSeal tone="gold" size="sm">
-                <Gift className="h-4 w-4" />
-              </WaxSeal>
-              <span>แกะผนึกขี้ผึ้งเพื่อดู Buddy ของฉัน</span>
-            </button>
-          </div>
-
-          <p className="text-xs font-medium text-[#675449]">
-            🤫 อย่าบอกใครว่าคุณได้ใครนะ • งบประมาณของขวัญ: {budgetText}
-          </p>
-        </div>
-      </section>
-    );
-  }
+  const letterRows = [
+    { label: "งบประมาณ", value: budgetText },
+    ...(group.revealAt
+      ? [{ label: "วันเฉลย", value: formatThaiDateTime(group.revealAt) }]
+      : []),
+    ...(topInterests ? [{ label: "ความชอบ", value: topInterests }] : []),
+  ];
 
   return (
-    <div className="parcel-reveal space-y-6">
-      {/* Secret Reveal Dossier Card */}
-      <section className="analog-card-lg relative overflow-hidden rounded-3xl">
+    <div className="space-y-6">
+      {/* Sealed / Interactive Envelope Dispatch Card */}
+      <section className="analog-card-lg relative overflow-hidden rounded-md">
         <CandyStripeBar />
-
-        <div className="relative border-b-2 border-[#2a1f1b] bg-[#1f5e46] p-7 text-[#fffdf7] sm:p-9">
-          <WashiTape tone="gold" className="absolute -top-2 right-8 rotate-3" />
-
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[#dff0e6]">
-            <span>🎄 กิจกรรม: {group.title}</span>
-            <div className="flex items-center gap-2">
-              <span>สำหรับคุณ {viewerName}</span>
-              <button
-                type="button"
-                onClick={handleReseal}
-                title="พับซองเก็บกลับ"
-                className="inline-flex items-center gap-1 rounded-lg border border-[#fffdf7]/35 bg-black/15 px-2.5 py-1 text-[11px] font-semibold text-[#fffdf7] hover:bg-black/25"
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>พับซอง</span>
-              </button>
-            </div>
-          </div>
-
-          <p className="mt-5 font-mono text-xs font-bold tracking-[0.18em] text-[#f6e3a8] uppercase">
-            🎁 YOUR SECRET BUDDY IS...
-          </p>
-          <h1 className="mt-1.5 inline-block rounded-2xl border-2 border-[#2a1f1b] bg-[#fffdf7] px-5 py-2 text-3xl font-bold tracking-tight text-[#c8322b] shadow-[4px_4px_0_#2a1f1b] sm:text-4xl">
-            {buddy.displayName}
-          </h1>
-          <p className="mt-3 text-sm text-[#edf7f1]">
-            นี่คือคนที่คุณจะต้องดูแลและเตรียมของขวัญให้ อย่าบอกใครว่าคุณได้ใครนะ 🤫
-          </p>
-
-          <div className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-xl border-2 border-[#2a1f1b] bg-[#fdf3d7] px-4 py-2 text-sm font-bold text-[#2a1f1b] shadow-[2px_2px_0_#2a1f1b]">
-            <Gift className="h-4 w-4 text-[#c8322b]" />
-            <span>งบประมาณของขวัญ: {budgetText}</span>
-          </div>
-
-          {group.revealAt && (
-            <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#dff0e6]">
-              <CalendarClock className="h-3.5 w-3.5 text-[#f6e3a8]" />
-              <span>วันเฉลย Buddy: {formatThaiDateTime(group.revealAt)}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-6 p-6 sm:p-8">
-          {group.status === "COMPLETED" && (
-            <div className="rounded-2xl border-2 border-[#5148a3] bg-[#e7e5f8] px-4 py-3 text-xs font-bold text-[#352f75]">
-              กิจกรรมนี้จบลงเรียบร้อยแล้ว (ข้อมูลนี้ยังคงแสดงให้ดูย้อนหลังได้)
-            </div>
-          )}
-
-          {/* Interests */}
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-bold text-[#2a1f1b]">
-              <Sparkles className="h-4 w-4 text-[#c8322b]" />
-              <span>สิ่งที่ชอบ</span>
-            </h2>
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {buddy.interests.map((key) => (
-                <span
-                  key={key}
-                  className="inline-flex items-center rounded-lg border-2 border-[#2a1f1b] bg-[#fde2df] px-3 py-1 text-xs font-bold text-[#9e221d] shadow-[2px_2px_0_#2a1f1b]"
-                >
-                  {getInterestLabel(key)}
-                </span>
-              ))}
-            </div>
-            {buddy.interestOther && (
-              <p className="mt-2.5 text-sm text-[#4d3d35]">
-                <span className="font-bold text-[#2a1f1b]">เพิ่มเติม:</span> {buddy.interestOther}
+        <div className="relative z-10 p-5 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-3 border-b border-dashed border-rule pb-4">
+            <div>
+              <span className="inline-block rounded-xs border border-ink/25 bg-cream px-2.5 py-0.5 font-type text-[10px] tracking-[0.14em] text-ink uppercase">
+                PARCEL FOR: {viewerName}
+              </span>
+              <p className="mt-2 font-type text-[11px] tracking-[0.18em] text-pine uppercase">
+                {group.title}
               </p>
-            )}
-          </div>
-
-          {/* Detail Cards */}
-          <div className="grid gap-3.5 sm:grid-cols-2">
-            <DetailBox
-              icon={<Palette className="h-4 w-4 text-[#c8322b]" />}
-              label="สีที่ชอบ"
-              value={buddy.favoriteColor}
-            />
-            <DetailBox
-              icon={<Coffee className="h-4 w-4 text-[#9e6c14]" />}
-              label="อาหารและเครื่องดื่มโปรด"
-              value={buddy.favoriteFoodDrink}
-            />
-            <DetailBox
-              icon={<Heart className="h-4 w-4 text-[#c8322b]" />}
-              label="งานอดิเรก"
-              value={buddy.hobbies}
-            />
-            <DetailBox
-              icon={<Gift className="h-4 w-4 text-[#1f5e46]" />}
-              label="สไตล์ของขวัญที่ชอบ"
-              value={buddy.giftStyle}
-            />
-          </div>
-
-          {/* Wish List */}
-          <div className="rounded-2xl border-2 border-[#1f5e46] bg-[#edf7f1] p-4 shadow-[3px_3px_0_#1f5e46] sm:p-5">
-            <h3 className="text-sm font-bold text-[#154231]">✨ Wish List ของที่อยากได้</h3>
-            <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-[#154231]">
-              {buddy.wishList || "ไม่ได้ระบุไว้เป็นพิเศษ"}
-            </p>
-          </div>
-
-          {/* Dislikes & Allergies */}
-          {(buddy.dislikes || buddy.allergies) && (
-            <div className="grid gap-3.5 sm:grid-cols-2">
-              {buddy.dislikes && (
-                <div className="rounded-2xl border-2 border-[#b7791f] bg-[#fdf3db] p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#7c4d08]">
-                    <ThumbsDown className="h-4 w-4" />
-                    <span>สิ่งที่ไม่ชอบ</span>
-                  </div>
-                  <p className="mt-1.5 whitespace-pre-line text-sm text-[#4a3208]">
-                    {buddy.dislikes}
-                  </p>
-                </div>
-              )}
-
-              {buddy.allergies && (
-                <div className="rounded-2xl border-2 border-[#c8322b] bg-[#fdeceb] p-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#8b1a15]">
-                    <AlertOctagon className="h-4 w-4" />
-                    <span>สิ่งที่แพ้หรือควรหลีกเลี่ยง</span>
-                  </div>
-                  <p className="mt-1.5 whitespace-pre-line text-sm font-bold text-[#741410]">
-                    {buddy.allergies}
-                  </p>
-                </div>
-              )}
+              <h1 className="thai-keep letterpress mt-0.5 font-display text-2xl leading-[1.35] text-ink sm:text-3xl">
+                {isUnsealed ? "ซองจดหมาย Secret Buddy ของคุณ" : "พัสดุลับของคุณมาถึงแล้ว"}
+              </h1>
             </div>
-          )}
 
-          {/* Note to Buddy */}
-          {buddy.noteToBuddy && (
-            <div className="rounded-2xl border-2 border-dashed border-[#8d7665] bg-[#f6eddd] p-4 sm:p-5">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#4d3d35]">
-                <MessageSquareHeart className="h-4 w-4 text-[#c8322b]" />
-                <span>ข้อความเพิ่มเติมถึง Buddy</span>
-              </div>
-              <p className="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-[#2a1f1b]">
-                “{buddy.noteToBuddy}”
-              </p>
+            <div className="relative shrink-0">
+              <PostageStamp
+                topText="CONFIDENTIAL"
+                mainText="SECRET"
+                bottomText="BUDDY"
+                tone="red"
+                vignette="star"
+              />
+              <Postmark
+                city="NORTH POLE"
+                date="25 DEC"
+                subtext="REGISTERED"
+                wavyLines={false}
+                tone="ink"
+                size="sm"
+                className="pointer-events-none absolute -bottom-2 -left-8 -rotate-12 opacity-45"
+              />
             </div>
-          )}
+          </div>
 
-          <p className="border-t-2 border-dashed border-[#dfd0bf] pt-4 text-center text-xs font-medium text-[#675449]">
-            คุณสามารถเปิดลิงก์นี้กลับมาดูข้อมูลได้ตลอดกิจกรรม • ผู้รับจะไม่ทราบว่าคุณเป็นคนดูแล
+          <p className="mx-auto mt-4 max-w-lg text-center font-serif text-sm leading-[1.75] text-ink-soft">
+            สวัสดีคุณ <span className="font-bold text-ink">{viewerName}</span>{" "}
+            {isUnsealed
+              ? "รายละเอียดทั้งหมดของเพื่อนที่คุณจะต้องดูแลแสดงอยู่ด้านล่างแล้ว"
+              : "ตรวจดูรอบข้างให้แน่ใจว่าไม่มีใครแอบมอง แล้วกดแกะผนึกขี้ผึ้งเพื่อเปิดดูว่าคุณได้ดูแลใคร"}
+          </p>
+
+          {/* Felt-lined tray framing the physical SecretEnvelope */}
+          <div className="felt-blotter mt-5 rounded-md border border-ink/25 px-4 py-6 shadow-inner sm:px-8 sm:py-8">
+            <SecretEnvelope
+              recipientLabel={viewerName}
+              hintText="กดที่ตราครั่งเพื่อแกะผนึก"
+              openButtonAriaLabel="แกะผนึกขี้ผึ้งเพื่อดู Buddy ของฉัน"
+              closeLabel="พับซองเก็บ"
+              headingRef={revealHeadingRef}
+              onOpen={() => setIsUnsealed(true)}
+              onClose={() => setIsUnsealed(false)}
+            >
+              <EnvelopeLetter
+                headingRef={revealHeadingRef}
+                letterhead={`NORTH POLE POST · ${group.title}`}
+                salutation={`ถึง คุณ${viewerName}`}
+                intro="นี่คือคนที่คุณจะต้องดูแลและเตรียมของขวัญให้ (อย่าบอกใครนะ)"
+                buddyName={buddy.displayName}
+                rows={letterRows}
+              />
+            </SecretEnvelope>
+          </div>
+
+          <p className="mt-4 text-center font-serif text-xs font-medium text-ink-soft">
+            อย่าบอกใครว่าคุณได้ใครนะ • งบประมาณของขวัญ: {budgetText}
           </p>
         </div>
       </section>
+
+      {/* Full Secret Reveal Dossier Card (mounted only after envelope is unsealed) */}
+      {isUnsealed && (
+        <section className="parcel-reveal analog-card-lg printed-double-rule relative overflow-hidden rounded-md">
+          <div className="relative border-b border-ink/25 bg-pine p-6 text-paper sm:p-8">
+            <WashiTape tone="gold" className="absolute -top-2 right-8 rotate-3" />
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-pine-wash">
+              <span className="flex items-center gap-1.5">
+                <Ornament name="holly" className="h-4 w-6 text-gold" />
+                <span>กิจกรรม: {group.title}</span>
+              </span>
+              <span className="font-type text-[10px] tracking-[0.15em] uppercase">
+                RECIPIENT: {viewerName}
+              </span>
+            </div>
+
+            <p className="mt-4 font-type text-[11px] tracking-[0.2em] text-gold uppercase">
+              YOUR SECRET BUDDY DOSSIER
+            </p>
+            <h2 className="thai-keep letterpress-on-dark mt-1.5 inline-block rounded border border-gold/40 bg-paper px-5 py-2 font-display text-2xl tracking-tight text-xmas-red shadow-paper sm:text-3xl">
+              {buddy.displayName}
+            </h2>
+
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded border border-ink/25 bg-cream px-3.5 py-1.5 font-serif text-sm font-bold text-ink shadow-paper-pressed">
+                <Gift className="h-4 w-4 text-xmas-red" />
+                <span>งบประมาณของขวัญ: {budgetText}</span>
+              </span>
+
+              {group.revealAt && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-pine-wash">
+                  <CalendarClock className="h-3.5 w-3.5 text-gold" />
+                  <span>วันเฉลย Buddy: {formatThaiDateTime(group.revealAt)}</span>
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="relative z-10 space-y-6 p-6 sm:p-8">
+            {group.status === "COMPLETED" && (
+              <div className="rounded border border-plum/45 bg-plum-wash px-4 py-3 text-xs font-bold text-plum">
+                กิจกรรมนี้จบลงเรียบร้อยแล้ว (ข้อมูลนี้ยังคงแสดงให้ดูย้อนหลังได้)
+              </div>
+            )}
+
+            {/* Interests */}
+            <div>
+              <h3 className="flex items-center gap-2 font-serif text-base font-bold text-ink">
+                <Sparkles className="h-4 w-4 text-xmas-red" />
+                <span>สิ่งที่ชอบ</span>
+              </h3>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {buddy.interests.map((key) => (
+                  <span
+                    key={key}
+                    className="inline-flex items-center rounded border border-xmas-red/35 bg-red-wash px-3 py-1 text-xs font-bold text-xmas-red-deep shadow-paper-pressed"
+                  >
+                    {getInterestLabel(key)}
+                  </span>
+                ))}
+              </div>
+              {buddy.interestOther && (
+                <p className="mt-2.5 text-sm text-ink-soft">
+                  <span className="font-bold text-ink">เพิ่มเติม:</span> {buddy.interestOther}
+                </p>
+              )}
+            </div>
+
+            <OrnamentDivider ornament="star" />
+
+            {/* Detail Cards */}
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              <DetailBox
+                icon={<Palette className="h-4 w-4 text-xmas-red" />}
+                label="สีที่ชอบ"
+                value={buddy.favoriteColor}
+              />
+              <DetailBox
+                icon={<Coffee className="h-4 w-4 text-gold-ink" />}
+                label="อาหารและเครื่องดื่มโปรด"
+                value={buddy.favoriteFoodDrink}
+              />
+              <DetailBox
+                icon={<Heart className="h-4 w-4 text-xmas-red" />}
+                label="งานอดิเรก"
+                value={buddy.hobbies}
+              />
+              <DetailBox
+                icon={<Gift className="h-4 w-4 text-pine" />}
+                label="สไตล์ของขวัญที่ชอบ"
+                value={buddy.giftStyle}
+              />
+            </div>
+
+            {/* Wish List */}
+            <div className="rounded border border-pine/40 bg-pine-wash/75 p-4 shadow-paper-pressed sm:p-5">
+              <h3 className="font-serif text-sm font-bold text-pine-deep">
+                Wish List ของที่อยากได้
+              </h3>
+              <p className="mt-1.5 whitespace-pre-line text-sm leading-[1.75] text-pine-deep">
+                {buddy.wishList || "ไม่ได้ระบุไว้เป็นพิเศษ"}
+              </p>
+            </div>
+
+            {/* Dislikes & Allergies */}
+            {(buddy.dislikes || buddy.allergies) && (
+              <div className="grid gap-3.5 sm:grid-cols-2">
+                {buddy.dislikes && (
+                  <div className="rounded border border-amber-ink/40 bg-amber-wash p-4">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-ink">
+                      <ThumbsDown className="h-4 w-4" />
+                      <span>สิ่งที่ไม่ชอบ</span>
+                    </div>
+                    <p className="mt-1.5 whitespace-pre-line text-sm text-amber-ink">
+                      {buddy.dislikes}
+                    </p>
+                  </div>
+                )}
+
+                {buddy.allergies && (
+                  <div className="rounded border border-xmas-red/45 bg-red-wash p-4">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-xmas-red-deep">
+                      <AlertOctagon className="h-4 w-4" />
+                      <span>สิ่งที่แพ้หรือควรหลีกเลี่ยง</span>
+                    </div>
+                    <p className="mt-1.5 whitespace-pre-line text-sm font-bold text-xmas-red-deep">
+                      {buddy.allergies}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Note to Buddy */}
+            {buddy.noteToBuddy && (
+              <div className="rounded border border-dashed border-ink-soft/45 bg-cream p-4 sm:p-5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
+                  <MessageSquareHeart className="h-4 w-4 text-xmas-red" />
+                  <span>ข้อความเพิ่มเติมถึง Buddy</span>
+                </div>
+                <p className="mt-1.5 whitespace-pre-line font-serif text-sm leading-[1.75] text-ink">
+                  “{buddy.noteToBuddy}”
+                </p>
+              </div>
+            )}
+
+            <p className="border-t border-dashed border-rule pt-4 text-center text-xs font-medium text-ink-soft">
+              คุณสามารถเปิดลิงก์นี้กลับมาดูข้อมูลได้ตลอดกิจกรรม • ผู้รับจะไม่ทราบว่าคุณเป็นคนดูแล
+            </p>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -354,13 +386,13 @@ function DetailBox({
   value: string | null;
 }) {
   return (
-    <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#fdf6e9] p-4">
-      <div className="flex items-center gap-1.5 text-xs font-bold text-[#675449]">
+    <div className="rounded border border-ink/20 bg-cream/70 p-4">
+      <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
         {icon}
         <span>{label}</span>
       </div>
-      <p className="mt-1.5 text-sm font-bold text-[#2a1f1b]">
-        {value || <span className="font-normal text-[#8e7a6d]">ไม่ได้ระบุ</span>}
+      <p className="mt-1.5 text-sm font-bold text-ink">
+        {value || <span className="font-normal text-ink-soft/75">ไม่ได้ระบุ</span>}
       </p>
     </div>
   );
@@ -371,7 +403,7 @@ export default function BuddyPage() {
     <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
       <Suspense
         fallback={
-          <div className="analog-card rounded-3xl p-12 text-center text-sm font-bold text-[#675449]">
+          <div className="analog-card rounded-md p-12 text-center text-sm font-bold text-ink-soft">
             กำลังโหลด...
           </div>
         }

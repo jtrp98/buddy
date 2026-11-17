@@ -134,7 +134,7 @@ function JoinGroupContent() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12">
-        <div className="analog-card h-48 animate-pulse rounded-3xl" />
+        <div className="analog-card h-48 animate-pulse rounded-md" />
       </div>
     );
   }
@@ -142,9 +142,9 @@ function JoinGroupContent() {
   if (error || !group) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <div className="analog-card rounded-3xl p-8">
-          <h1 className="text-xl font-bold text-[#2a1f1b]">ไม่พบกิจกรรม Secret Buddy</h1>
-          <p className="mt-2 text-sm text-[#675449]">
+        <div className="analog-card rounded-md p-8">
+          <h1 className="text-xl font-bold text-ink">ไม่พบกิจกรรม Secret Buddy</h1>
+          <p className="mt-2 text-sm text-ink-soft">
             {error || "ลิงก์เชิญนี้อาจไม่ถูกต้องหรือถูกลบไปแล้ว"}
           </p>
         </div>
@@ -157,9 +157,9 @@ function JoinGroupContent() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:py-12">
       {/* Group Holiday Invitation Ticket */}
-      <section className="analog-card-lg relative overflow-hidden rounded-3xl">
+      <section className="analog-card-lg printed-double-rule relative overflow-hidden rounded-md">
         <CandyStripeBar />
-        <div className="p-6 sm:p-8">
+        <div className="relative z-10 p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <StatusBadge status={group.status} />
             {group.isAcceptingRegistrations && (
@@ -170,40 +170,42 @@ function JoinGroupContent() {
             )}
           </div>
 
-          <h1 className="mt-4 text-2xl font-bold text-[#2a1f1b] sm:text-3xl">
-            🎁 {group.title}
+          <h1 className="thai-keep letterpress mt-4 font-display text-2xl leading-[1.35] text-ink sm:text-3xl">
+            {group.title}
           </h1>
 
           {group.description && (
-            <p className="mt-2 text-sm leading-relaxed text-[#5c493e]">{group.description}</p>
+            <p className="mt-2 font-serif text-sm leading-[1.75] text-ink-soft">
+              {group.description}
+            </p>
           )}
 
           <div className="perforated-divider mt-5 pt-5">
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#fde2df] p-3.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#9e221d]">
+              <div className="rounded border border-xmas-red/30 bg-red-wash/70 p-3.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-xmas-red-deep">
                   <Gift className="h-3.5 w-3.5" />
                   <span>งบประมาณของขวัญ</span>
                 </div>
-                <div className="mt-1 text-base font-bold text-[#2a1f1b]">{budgetText}</div>
+                <div className="mt-1 font-serif text-base font-bold text-ink">{budgetText}</div>
               </div>
 
-              <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#fdf6e9] p-3.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#675449]">
-                  <CalendarClock className="h-3.5 w-3.5 text-[#c8322b]" />
+              <div className="rounded border border-ink/20 bg-cream/75 p-3.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft">
+                  <CalendarClock className="h-3.5 w-3.5 text-xmas-red" />
                   <span>ปิดรับสมัคร</span>
                 </div>
-                <div className="mt-1 text-xs font-bold text-[#2a1f1b]">
+                <div className="mt-1 font-serif text-xs font-bold text-ink">
                   {formatThaiDateTime(group.registrationClosesAt)}
                 </div>
               </div>
 
-              <div className="rounded-2xl border-2 border-[#2a1f1b] bg-[#dff0e6] p-3.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#154231]">
+              <div className="rounded border border-pine/30 bg-pine-wash/75 p-3.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-pine-deep">
                   <Users className="h-3.5 w-3.5" />
                   <span>สมาชิกยืนยันแล้ว</span>
                 </div>
-                <div className="mt-1 text-base font-bold text-[#154231]">
+                <div className="mt-1 font-serif text-base font-bold text-pine-deep">
                   {group.verifiedMembers} คน
                 </div>
               </div>
@@ -211,9 +213,9 @@ function JoinGroupContent() {
           </div>
 
           {group.revealAt && (
-            <p className="mt-3 text-xs font-medium text-[#675449]">
-              🎉 วันเฉลย Buddy:{" "}
-              <span className="font-bold text-[#2a1f1b]">
+            <p className="mt-3 text-xs font-medium text-ink-soft">
+              วันเฉลย Buddy:{" "}
+              <span className="font-bold text-ink">
                 {formatThaiDateTime(group.revealAt)}
               </span>
             </p>
@@ -222,7 +224,7 @@ function JoinGroupContent() {
           <div className="mt-4 flex justify-end">
             <Link
               href={`/join/${inviteCode}/recover`}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1f5e46] underline decoration-dashed underline-offset-4 hover:text-[#c8322b]"
+              className="inline-flex min-h-[36px] items-center gap-1.5 text-xs font-bold text-pine underline decoration-dashed underline-offset-4 hover:text-xmas-red"
             >
               <KeyRound className="h-3.5 w-3.5" />
               <span>เคยลงทะเบียนแล้ว? ขอลิงก์แก้ไขข้อมูล / ดูผลจับคู่ใหม่</span>
@@ -233,108 +235,114 @@ function JoinGroupContent() {
 
       {/* Registration Section */}
       {submittedMsg ? (
-        <section className="analog-card rounded-3xl p-8 text-center">
-          <WaxSeal tone="green" size="lg" className="mx-auto">
-            <MailCheck className="h-7 w-7" />
-          </WaxSeal>
-          <h2 className="mt-4 text-xl font-bold text-[#2a1f1b]">
-            ตรวจสอบอีเมลเพื่อยืนยันตัวตน!
-          </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#5c493e]">
-            {submittedMsg}
-          </p>
-          <p className="mt-3 text-xs text-[#675449]">
-            ส่งไปที่อีเมล <span className="font-bold text-[#2a1f1b]">{email}</span> • หากไม่พบกรุณาเช็กกล่องจดหมายขยะ (Spam)
-          </p>
+        <section className="analog-card printed-double-rule rounded-md p-8 text-center">
+          <div className="relative z-10">
+            <WaxSeal tone="green" size="lg" className="mx-auto">
+              <MailCheck className="h-7 w-7" />
+            </WaxSeal>
+            <h2 className="thai-keep letterpress mt-4 font-display text-xl text-ink">
+              ตรวจสอบอีเมลเพื่อยืนยันตัวตน
+            </h2>
+            <p className="mx-auto mt-2 max-w-md font-serif text-sm leading-[1.75] text-ink-soft">
+              {submittedMsg}
+            </p>
+            <p className="mt-3 text-xs text-ink-soft">
+              ส่งไปที่อีเมล <span className="font-bold text-ink">{email}</span> • หากไม่พบกรุณาเช็กกล่องจดหมายขยะ (Spam)
+            </p>
+          </div>
         </section>
       ) : !group.isAcceptingRegistrations ? (
-        <section className="analog-card rounded-3xl p-8 text-center">
-          <CheckCircle2 className="mx-auto h-10 w-10 text-[#675449]" />
-          <h2 className="mt-3 text-lg font-bold text-[#2a1f1b]">
-            กิจกรรมนี้ปิดรับสมัครแล้ว
-          </h2>
-          <p className="mt-1.5 text-sm text-[#675449]">
-            {group.status === "DRAFT"
-              ? "ผู้ดูแลกิจกรรมกำลังตั้งค่ากลุ่ม และยังไม่เปิดรับสมัครในขณะนี้"
-              : "ขณะนี้หมดเวลาลงทะเบียนแล้ว หากคุณลงทะเบียนและยืนยันอีเมลไว้แล้ว สามารถขอลิงก์ส่วนตัวใหม่ได้ด้านล่าง"}
-          </p>
-          <Link
-            href={`/join/${inviteCode}/recover`}
-            className="analog-btn-lg mt-5 inline-flex items-center gap-2 rounded-xl bg-[#c8322b] px-5 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923]"
-          >
-            <KeyRound className="h-4 w-4" />
-            <span>ขอลิงก์ส่วนตัวทางอีเมล</span>
-          </Link>
+        <section className="analog-card printed-double-rule rounded-md p-8 text-center">
+          <div className="relative z-10">
+            <CheckCircle2 className="mx-auto h-10 w-10 text-ink-soft" />
+            <h2 className="thai-keep letterpress mt-3 font-display text-lg text-ink">
+              กิจกรรมนี้ปิดรับสมัครแล้ว
+            </h2>
+            <p className="mt-1.5 text-sm text-ink-soft">
+              {group.status === "DRAFT"
+                ? "ผู้ดูแลกิจกรรมกำลังตั้งค่ากลุ่ม และยังไม่เปิดรับสมัครในขณะนี้"
+                : "ขณะนี้หมดเวลาลงทะเบียนแล้ว หากคุณลงทะเบียนและยืนยันอีเมลไว้แล้ว สามารถขอลิงก์ส่วนตัวใหม่ได้ด้านล่าง"}
+            </p>
+            <Link
+              href={`/join/${inviteCode}/recover`}
+              className="analog-btn-lg thai-keep mt-5 inline-flex min-h-[44px] items-center gap-2 rounded bg-xmas-red px-5 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
+            >
+              <KeyRound className="h-4 w-4" />
+              <span>ขอลิงก์ส่วนตัวทางอีเมล</span>
+            </Link>
+          </div>
         </section>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="analog-card-lg relative space-y-6 rounded-3xl p-6 sm:p-8"
+          className="analog-card-lg printed-double-rule relative space-y-6 rounded-md p-6 sm:p-8"
         >
-          <WashiTape tone="green" className="absolute -top-2.5 right-8 rotate-2" />
+          <WashiTape tone="green" className="absolute -top-2 right-8 z-20 rotate-2" />
 
-          <div>
-            <span className="font-mono text-[10px] font-bold tracking-[0.16em] text-[#9e221d] uppercase">
-              CHRISTMAS WISH CARD
-            </span>
-            <h2 className="mt-0.5 text-xl font-bold text-[#2a1f1b]">
-              ลงทะเบียนเข้าร่วม &amp; กรอก Buddy Profile
-            </h2>
-            <p className="mt-1 text-xs text-[#675449]">
-              ไม่ต้องสมัครบัญชี • ข้อมูลความชอบนี้จะแสดงให้เฉพาะผู้ที่จับได้คุณเห็นเท่านั้น
-            </p>
-          </div>
-
-          {submitError && (
-            <div className="rounded-xl border-2 border-[#c8322b] bg-[#fdeceb] px-4 py-3 text-sm font-medium text-[#8b1a15]">
-              {submitError}
-            </div>
-          )}
-
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="relative z-10 space-y-6">
             <div>
-              <label className="block text-sm font-bold text-[#2a1f1b]">
-                ชื่อ / ชื่อเล่น <span className="text-[#c8322b]">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="เช่น นนท์, แพรว (ฝ่ายการตลาด)"
-                className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
-              />
+              <span className="font-type text-[10px] font-bold tracking-[0.16em] text-xmas-red-deep uppercase">
+                CHRISTMAS WISH CARD
+              </span>
+              <h2 className="thai-keep letterpress mt-0.5 font-display text-xl text-ink">
+                ลงทะเบียนเข้าร่วม &amp; กรอก Buddy Profile
+              </h2>
+              <p className="mt-1 text-xs text-ink-soft">
+                ไม่ต้องสมัครบัญชี • ข้อมูลความชอบนี้จะแสดงให้เฉพาะผู้ที่จับได้คุณเห็นเท่านั้น
+              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-[#2a1f1b]">
-                อีเมล (สำหรับยืนยันตัวตนและรับผล Buddy){" "}
-                <span className="text-[#c8322b]">*</span>
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="analog-input mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm"
-              />
+            {submitError && (
+              <div className="rounded border border-xmas-red/45 bg-red-wash px-4 py-3 text-sm font-medium text-xmas-red-deep">
+                {submitError}
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block font-serif text-sm font-bold text-ink">
+                  ชื่อ / ชื่อเล่น <span className="text-xmas-red">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="เช่น นนท์, แพรว (ฝ่ายการตลาด)"
+                  className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block font-serif text-sm font-bold text-ink">
+                  อีเมล (สำหรับยืนยันตัวตนและรับผล Buddy){" "}
+                  <span className="text-xmas-red">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="analog-input mt-1.5 w-full rounded px-4 py-2.5 text-sm"
+                />
+              </div>
             </div>
+
+            <hr className="border-t border-dashed border-rule" />
+
+            <BuddyProfileFormFields value={profile} onChange={setProfile} />
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="analog-btn-lg thai-keep min-h-[48px] w-full rounded bg-xmas-red py-3.5 text-sm font-bold text-paper hover:bg-xmas-red-deep disabled:opacity-60"
+            >
+              {submitting
+                ? "กำลังบันทึกและส่งอีเมลยืนยัน..."
+                : "ลงทะเบียนเข้าร่วมกิจกรรม"}
+            </button>
           </div>
-
-          <hr className="border-t-2 border-dashed border-[#cbb7a6]" />
-
-          <BuddyProfileFormFields value={profile} onChange={setProfile} />
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="analog-btn-lg w-full rounded-xl bg-[#c8322b] py-3.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923] disabled:opacity-60"
-          >
-            {submitting
-              ? "กำลังบันทึกและส่งอีเมลยืนยัน..."
-              : "🎁 ลงทะเบียนเข้าร่วมกิจกรรม"}
-          </button>
         </form>
       )}
     </div>
@@ -346,7 +354,7 @@ export default function JoinGroupPage() {
     <Suspense
       fallback={
         <div className="mx-auto max-w-3xl px-4 py-12">
-          <div className="analog-card h-48 animate-pulse rounded-3xl" />
+          <div className="analog-card h-48 animate-pulse rounded-md" />
         </div>
       }
     >

@@ -19,7 +19,7 @@ export default function GroupRecoverPage({
     <Suspense
       fallback={
         <div className="mx-auto max-w-md px-4 py-12">
-          <div className="analog-card h-48 animate-pulse rounded-3xl" />
+          <div className="analog-card h-48 animate-pulse rounded-md" />
         </div>
       }
     >

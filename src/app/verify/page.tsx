@@ -58,49 +58,59 @@ function VerifyContent() {
 
   if (status === "loading") {
     return (
-      <div className="analog-card rounded-3xl p-10 text-center">
-        <p className="text-sm font-bold text-[#5c493e]">กำลังตรวจสอบและประทับตรายืนยันอีเมลของคุณ...</p>
+      <div className="analog-card rounded-md p-10 text-center">
+        <p className="text-sm font-bold text-ink-soft">กำลังตรวจสอบและประทับตรายืนยันอีเมลของคุณ...</p>
       </div>
     );
   }
 
   if (status === "error" || !result) {
     return (
-      <div className="analog-card rounded-3xl p-8 text-center">
-        <XCircle className="mx-auto h-12 w-12 text-[#c8322b]" />
-        <h1 className="mt-4 text-xl font-bold text-[#2a1f1b]">ยืนยันอีเมลไม่สำเร็จ</h1>
-        <p className="mt-2 text-sm font-medium text-[#9e221d]">{error}</p>
-        <Link
-          href="/recover"
-          className="analog-btn-lg mt-6 inline-flex rounded-xl bg-[#c8322b] px-5 py-2.5 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923]"
-        >
-          ขอลิงก์ส่วนตัวใหม่
-        </Link>
+      <div className="analog-card printed-double-rule rounded-md p-8 text-center">
+        <div className="relative z-10">
+          <XCircle className="mx-auto h-12 w-12 text-xmas-red" />
+          <h1 className="thai-keep letterpress mt-4 font-display text-xl text-ink">
+            ยืนยันอีเมลไม่สำเร็จ
+          </h1>
+          <p className="mt-2 font-serif text-sm font-medium text-xmas-red-deep">{error}</p>
+          <Link
+            href="/recover"
+            className="analog-btn-lg thai-keep mt-6 inline-flex min-h-[44px] items-center rounded bg-xmas-red px-5 py-2.5 text-sm font-bold text-paper hover:bg-xmas-red-deep"
+          >
+            ขอลิงก์ส่วนตัวใหม่
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="analog-card-lg overflow-hidden rounded-3xl">
+    <div className="analog-card-lg printed-double-rule overflow-hidden rounded-md">
       <CandyStripeBar />
-      <div className="p-8 text-center">
+      <div className="relative z-10 p-8 text-center">
         <div className="flex justify-center">
-          <PostageStamp topText="POST OFFICE" mainText="VERIFIED" bottomText="CHECKED" tone="green" />
+          <PostageStamp
+            topText="POST OFFICE"
+            mainText="VERIFIED"
+            bottomText="CHECKED"
+            tone="green"
+            vignette="star"
+          />
         </div>
 
         <WaxSeal tone="green" size="lg" className="mx-auto mt-5">
           <CheckCircle2 className="h-8 w-8" />
         </WaxSeal>
 
-        <h1 className="mt-4 text-2xl font-bold text-[#2a1f1b]">
-          ยืนยันอีเมลเรียบร้อยแล้ว! 🎉
+        <h1 className="thai-keep letterpress mt-4 font-display text-2xl text-ink">
+          ยืนยันอีเมลเรียบร้อยแล้ว
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-[#5c493e]">
-          ยินดีต้อนรับคุณ <span className="font-bold text-[#2a1f1b]">{result.displayName}</span>{" "}
+        <p className="mt-2 font-serif text-sm leading-[1.75] text-ink-soft">
+          ยินดีต้อนรับคุณ <span className="font-bold text-ink">{result.displayName}</span>{" "}
           เข้าสู่กิจกรรม{" "}
-          <span className="font-bold text-[#c8322b]">{result.groupTitle}</span>
+          <span className="font-bold text-xmas-red">{result.groupTitle}</span>
         </p>
-        <p className="mt-2 text-xs text-[#675449]">
+        <p className="mt-2 text-xs leading-relaxed text-ink-soft">
           เราได้ส่งลิงก์สำหรับแก้ไขข้อมูล Buddy Profile ไปให้ทางอีเมลของคุณด้วยแล้ว
           และเมื่อถึงเวลาปิดรับสมัคร ระบบจะส่งอีเมลแจ้งผล Buddy ให้โดยอัตโนมัติ
         </p>
@@ -108,7 +118,7 @@ function VerifyContent() {
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link
             href={`/me/profile?token=${encodeURIComponent(result.manageToken)}`}
-            className="analog-btn-lg inline-flex items-center gap-2 rounded-xl bg-[#c8322b] px-5 py-3 text-sm font-bold text-[#fffdf7] hover:bg-[#b22923]"
+            className="analog-btn-lg thai-keep inline-flex min-h-[46px] items-center gap-2 rounded bg-xmas-red px-5 py-3 text-sm font-bold text-paper hover:bg-xmas-red-deep"
           >
             <Edit3 className="h-4 w-4" />
             <span>ดู / แก้ไข Buddy Profile ของฉัน</span>
@@ -124,7 +134,7 @@ export default function VerifyPage() {
     <div className="mx-auto max-w-lg px-4 py-14">
       <Suspense
         fallback={
-          <div className="analog-card rounded-3xl p-10 text-center text-sm font-bold text-[#675449]">
+          <div className="analog-card rounded-md p-10 text-center text-sm font-bold text-ink-soft">
             กำลังโหลด...
           </div>
         }
