@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
@@ -11,6 +10,19 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async headers() {
+    const secretPageHeaders = [
+      { key: "Referrer-Policy", value: "no-referrer" },
+      { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, private" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+    ];
+    return [
+      { source: "/buddy", headers: secretPageHeaders },
+      { source: "/me/profile", headers: secretPageHeaders },
+      { source: "/verify", headers: secretPageHeaders },
+    ];
   },
 };
 

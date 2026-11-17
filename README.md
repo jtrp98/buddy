@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎁 Secret Buddy — North Pole Post & Holiday Gift Exchange
 
-## Getting Started
+เว็บแอปพลิเคชันสำหรับจัดกิจกรรมจับคู่ **Secret Buddy / Secret Santa** ในสไตล์ **Analog Holiday Post** ที่เก็บความลับได้จริง — แม้แต่ Admin ก็ไม่สามารถเปิดดูผลการจับคู่ของสมาชิกได้
 
-First, run the development server:
+## จุดเด่นของระบบ
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **No-Account Member Flow**: สมาชิกเข้าร่วมผ่านลิงก์เชิญ (`/join/[inviteCode]`), กรอก Buddy Profile และ Wish List, แล้วยืนยันตัวตนผ่านอีเมลโดยไม่ต้องสมัครสมาชิก
+- **Cryptographic Privacy**: ผลจับคู่ถูกเข้ารหัสด้วย AES-256-GCM (`ASSIGNMENT_ENCRYPTION_KEY`) และ Admin Dashboard จะแสดงเฉพาะรายชื่อผู้เข้าร่วมและสถานะการส่งอีเมลเท่านั้น
+- **Fair Derangement Draw**: สุ่มจับคู่แบบ 1-to-1 ไม่จับได้ตัวเอง พร้อม database transaction lock ป้องกันการสุ่มซ้ำ
+- **Flexible Draw Trigger**: Admin กดปิดรับสมัครและสุ่มทันทีได้ตลอดเวลา หรือให้ระบบสุ่มให้อัตโนมัติเมื่อเปิดหน้าเว็บหลังครบกำหนดเวลาปิดรับสมัคร (`ensureGroupUpToDate`)
+- **Cozy Analog Christmas UI**: ตกแต่งสไตล์การ์ดกระดาษครีม ปุ่ม keycap ตราประทับยาง นาฬิกา flip-clock สายไฟคริสต์มาส สวิตช์หิมะ/เสียง Web Audio API และขั้นตอนแกะผนึกขี้ผึ้งก่อนดู Buddy
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## การพัฒนาบนเครื่อง Local
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. ติดตั้ง dependencies:
+   ```bash
+   npm install
+   ```
+2. คัดลอกไฟล์ `.env.example` เป็น `.env` และตั้งค่า `DATABASE_URL`, `AUTH_SECRET`, `ASSIGNMENT_ENCRYPTION_KEY`:
+   ```bash
+   cp .env.example .env
+   ```
+3. ซิงก์ Prisma schema กับ PostgreSQL และรัน dev server:
+   ```bash
+   npm run db:push
+   npm run dev
+   ```
+4. ในโหมด Development หากยังไม่ได้ตั้งค่า SMTP/Resend อีเมลทั้งหมดจะถูกบันทึกไว้ที่ `/dev/outbox` สำหรับทดสอบได้ทันที
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## การ Deploy บน Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Import Repository**: นำเข้า repository นี้จาก GitHub เข้าสู่ Vercel Dashboard
+2. **ตั้งค่า Environment Variables** (สำหรับ Production / Preview):
+   - `DATABASE_URL`: PostgreSQL Connection String (แนะนำ Neon Pooled URL ที่มี `?sslmode=require`)
+   - `AUTH_SECRET`: ค่าสุ่ม 32-byte hex สำหรับลงนาม Admin JWT cookie
+   - `ASSIGNMENT_ENCRYPTION_KEY`: ค่าสุ่ม 32-byte hex สำหรับเข้ารหัสผลจับคู่ Buddy
+   - `APP_URL`: URL จริงของเว็บ Vercel (เช่น `https://your-app.vercel.app`) เพื่อให้ลิงก์ในอีเมลชี้ไปยังโดเมนที่ถูกต้อง
+   - **ตั้งค่าการส่งอีเมล (เลือกอย่างใดอย่างหนึ่ง)**:
+     - **Gmail SMTP**: `SMTP_HOST="smtp.gmail.com"`, `SMTP_PORT="465"`, `SMTP_USER`, `SMTP_PASS` (App Password), `EMAIL_FROM`
+     - **Resend API**: `RESEND_API_KEY`, `EMAIL_FROM`
+   - *(ไม่บังคับ)* `CRON_SECRET`: ใช้เฉพาะกรณีต้องการเรียก `/api/cron/process-draws` จากภายนอก
+3. **ซิงก์ Database Schema**: รันคำสั่งต่อไปนี้โดยชี้ `DATABASE_URL` ไปยังฐานข้อมูล Production:
+   ```bash
+   npm run db:push
+   ```
+4. **Deploy**: กด Deploy บน Vercel (ระบบจะรัน `prisma generate && next build` ให้อัตโนมัติ)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## คำสั่งที่มีให้ใช้งาน
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — เปิด Next.js dev server
+- `npm run build` — `prisma generate && next build`
+- `npm test` — รันชุดทดสอบ Vitest
+- `npm run lint` — ตรวจสอบโค้ดด้วย ESLint
+- `npm run db:push` — ซิงก์ `prisma/schema.prisma` กับ PostgreSQL

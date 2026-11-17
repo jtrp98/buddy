@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BudgetType {
+  FIXED
+  RANGE
+  MIN
+  UNLIMITED
+}
+
+enum GroupStatus {
+  DRAFT
+  OPEN
+  DRAWING
+  ACTIVE
+  COMPLETED
+}
+
+enum EmailType {
+  VERIFY_EMAIL
+  MANAGE_LINK
+  RESULT_NOTIFICATION
+  LINK_RECOVERY
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  groups Group[]
+}
+
+model Group {
+  id                   String      @id @default(cuid())
+  adminId              String
+  title                String
+  description          String?
+  inviteCode           String      @unique
+  budgetType           BudgetType  @default(FIXED)
+  budgetMin            Int?
+  budgetMax            Int?
+  registrationClosesAt DateTime
+  revealAt             DateTime?
+  status               GroupStatus @default(DRAFT)
+  drawError            String?
+  drawnAt              DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  admin       Admin        @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  members     Member[]
+  assignments Assignment[]
+  emailLogs   EmailLog[]
+
+  @@index([adminId])
+  @@index([status, registrationClosesAt])
+}
+
+model Member {
+  id                   String    @id @default(cuid())
+  groupId              String
+  displayName          String
+  email                String
+  emailVerifiedAt      DateTime?
+  verifyTokenHash      String?   @unique
+  verifyTokenExpiresAt DateTime?
+  manageTokenHash      String?   @unique
+  resultTokenHash      String?   @unique
+
+  // Buddy Profile
+  interests         String[] @default([])
+  interestOther     String?
+  favoriteColor     String?
+  favoriteFoodDrink String?
+  hobbies           String?
+  giftStyle         String?
+  dislikes          String?
+  allergies         String?
+  wishList          String?
+  noteToBuddy       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group           Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  givenAssignment Assignment? @relation("GiverAssignment")
+  emailLogs       EmailLog[]
+
+  @@unique([groupId, email])
+  @@index([groupId, emailVerifiedAt])
+}
+
+model Assignment {
+  id                  String   @id @default(cuid())
+  groupId             String
+  giverMemberId       String   @unique
+  receiverHmac        String
+  encryptedReceiverId String
+  createdAt           DateTime @default(now())
+
+  group Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  giver Member @relation("GiverAssignment", fields: [giverMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, giverMemberId])
+  @@unique([groupId, receiverHmac])
+  @@index([groupId])
+}
+
+model EmailLog {
+  id        String      @id @default(cuid())
+  groupId   String
+  memberId  String
+  type      EmailType
+  status    EmailStatus @default(PENDING)
+  attempts  Int         @default(0)
+  lastError String?
+  sentAt    DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  group  Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, status])
+  @@index([memberId, type])
+}
