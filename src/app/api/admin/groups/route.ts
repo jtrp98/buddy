@@ -15,9 +15,11 @@ export async function GET(req: Request) {
   }
 
   const baseUrl = getAppBaseUrl(req);
+  const ownerFilter = session.isSuperAdmin ? {} : { adminId: session.adminId };
+
   const dueGroups = await prisma.group.findMany({
     where: {
-      adminId: session.adminId,
+      ...ownerFilter,
       status: "OPEN",
       registrationClosesAt: { lte: new Date() },
       drawError: null,
@@ -30,9 +32,16 @@ export async function GET(req: Request) {
   }
 
   const groups = await prisma.group.findMany({
-    where: { adminId: session.adminId },
+    where: ownerFilter,
     orderBy: { createdAt: "desc" },
     include: {
+      admin: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       members: {
         orderBy: { createdAt: "asc" },
         select: {
@@ -49,6 +58,8 @@ export async function GET(req: Request) {
 
   const payload = groups.map((g) => ({
     id: g.id,
+    adminId: g.adminId,
+    ...(session.isSuperAdmin ? { owner: g.admin } : {}),
     title: g.title,
     description: g.description,
     inviteCode: g.inviteCode,
@@ -71,6 +82,21 @@ export async function GET(req: Request) {
       pending: g.emailLogs.filter((l) => l.status === "PENDING").length,
     },
   }));
+
+  if (session.isSuperAdmin) {
+    const totalAdmins = await prisma.admin.count();
+    const overview = {
+      totalAdmins,
+      totalGroups: payload.length,
+      totalMembers: payload.reduce((sum, g) => sum + g.totalMembers, 0),
+      verifiedMembers: payload.reduce((sum, g) => sum + g.verifiedMembers, 0),
+      activeOrCompletedGroups: payload.filter(
+        (g) => g.status === "ACTIVE" || g.status === "COMPLETED"
+      ).length,
+      openGroups: payload.filter((g) => g.status === "OPEN").length,
+    };
+    return jsonNoStore({ groups: payload, overview });
+  }
 
   return jsonNoStore({ groups: payload });
 }

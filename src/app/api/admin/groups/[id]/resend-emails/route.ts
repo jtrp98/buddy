@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, groupAccessWhere } from "@/lib/auth";
 import { jsonNoStore } from "@/lib/api-response";
 import { resendGroupResultEmails } from "@/lib/draw";
 import { getAppBaseUrl } from "@/lib/url";
@@ -19,7 +19,7 @@ export async function POST(req: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const group = await prisma.group.findFirst({
-    where: { id, adminId: session.adminId },
+    where: groupAccessWhere(id, session),
     select: { id: true, status: true },
   });
 

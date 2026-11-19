@@ -5,18 +5,24 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   CalendarClock,
   Check,
   CheckCircle2,
   Clock,
   Copy,
+  Crown,
   Edit3,
   ExternalLink,
+  Eye,
+  EyeOff,
   Gift,
   Lock,
   MailCheck,
   RefreshCw,
+  Search,
   Send,
+  ShieldCheck,
   Shuffle,
   Trash2,
   UserMinus,
@@ -49,6 +55,12 @@ import {
 
 interface GroupDetail {
   id: string;
+  adminId?: string;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+  };
   title: string;
   description: string | null;
   inviteCode: string;
@@ -76,6 +88,19 @@ interface MemberRow {
     sentAt: string | null;
   } | null;
   participantSeed: string;
+}
+
+interface PairingPerson {
+  id: string;
+  displayName: string;
+  email: string;
+  participantSeed: string;
+}
+
+interface PairingRow {
+  id: string;
+  giver: PairingPerson | null;
+  receiver: PairingPerson | null;
 }
 
 function getAdminJourneyStep(status: GroupDetail["status"]): 1 | 2 | 3 | 4 {
@@ -115,6 +140,13 @@ function AdminGroupDetailContent() {
   const [deletingMember, setDeletingMember] = useState(false);
   const [resendingAll, setResendingAll] = useState(false);
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
+
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [pairingsOpen, setPairingsOpen] = useState(false);
+  const [loadingPairings, setLoadingPairings] = useState(false);
+  const [pairings, setPairings] = useState<PairingRow[] | null>(null);
+  const [pairingsError, setPairingsError] = useState("");
+  const [pairingSearch, setPairingSearch] = useState("");
 
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -166,10 +198,17 @@ function AdminGroupDetailContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/admin/groups/${groupId}`, { cache: "no-store" });
-        if (res.status === 401) {
+        const [meRes, res] = await Promise.all([
+          fetch("/api/admin/auth/me", { cache: "no-store" }),
+          fetch(`/api/admin/groups/${groupId}`, { cache: "no-store" }),
+        ]);
+        if (res.status === 401 || meRes.status === 401) {
           if (!cancelled) router.replace("/admin/login");
           return;
+        }
+        const meData = await meRes.json().catch(() => ({}));
+        if (!cancelled) {
+          setIsSuperAdmin(Boolean(meData?.admin?.isSuperAdmin));
         }
         const data = await res.json();
         if (cancelled) return;
@@ -192,6 +231,31 @@ function AdminGroupDetailContent() {
       cancelled = true;
     };
   }, [groupId, router]);
+
+  const handleTogglePairings = async () => {
+    triggerClickSound();
+    if (pairingsOpen) {
+      setPairingsOpen(false);
+      return;
+    }
+    setPairingsOpen(true);
+    if (pairings !== null) return;
+    setLoadingPairings(true);
+    setPairingsError("");
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/pairings`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) {
+        setPairingsError(data.error || "ไม่สามารถโหลดผลการจับคู่ได้");
+      } else {
+        setPairings(data.pairings || []);
+      }
+    } catch {
+      setPairingsError("เกิดข้อผิดพลาดในการโหลดผลการจับคู่");
+    } finally {
+      setLoadingPairings(false);
+    }
+  };
 
   const handleExpire = useCallback(() => {
     void loadGroup();
@@ -464,13 +528,21 @@ function AdminGroupDetailContent() {
     <PageContainer className="space-y-6">
       {/* Top bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href="/admin"
-          className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          <span>กลับไปหน้ากิจกรรมของคุณ</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin"
+            className="inline-flex min-h-[44px] items-center gap-2 text-sm font-semibold text-text-secondary hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span>{isSuperAdmin ? "กลับหน้าภาพรวม Superadmin" : "กลับไปหน้ากิจกรรมของคุณ"}</span>
+          </Link>
+          {isSuperAdmin && group.owner && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              ผู้จัด: {group.owner.name} ({group.owner.email})
+            </span>
+          )}
+        </div>
 
         <ChristmasButton
           variant="ghost"
@@ -759,6 +831,124 @@ function AdminGroupDetailContent() {
               </ul>
             )}
           </section>
+
+          {isSuperAdmin && isDrawn && (
+            <section
+              aria-labelledby="superadmin-pairings-heading"
+              className="christmas-card rounded-[1.5rem] border border-primary/35 p-5 sm:p-6"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-4 w-4 text-primary" aria-hidden="true" />
+                    <h2 id="superadmin-pairings-heading" className="text-xl text-text-primary">
+                      ตรวจสอบคู่บัดดี้ (Superadmin)
+                    </h2>
+                  </div>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    ซ่อนไว้เป็นค่าเริ่มต้นเพื่อป้องกันการเปิดเผยโดยไม่ตั้งใจ กดเพื่อดูว่าใครจับคู่กับใคร
+                  </p>
+                </div>
+                <ChristmasButton
+                  variant={pairingsOpen ? "secondary" : "gold"}
+                  size="sm"
+                  onClick={handleTogglePairings}
+                  loading={loadingPairings}
+                >
+                  {pairingsOpen ? (
+                    <EyeOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  )}
+                  <span>{pairingsOpen ? "ซ่อนรายชื่อคู่บัดดี้" : "แสดงรายชื่อคู่บัดดี้"}</span>
+                </ChristmasButton>
+              </div>
+
+              {pairingsOpen && (
+                <div className="mt-4 space-y-3 border-t border-border pt-4">
+                  {pairingsError && <Alert tone="error">{pairingsError}</Alert>}
+                  {loadingPairings && (
+                    <p className="text-sm text-text-secondary">กำลังถอดรหัสผลการจับคู่...</p>
+                  )}
+                  {!loadingPairings && pairings && (
+                    <>
+                      <div className="relative">
+                        <Search
+                          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+                          aria-hidden="true"
+                        />
+                        <Input
+                          type="search"
+                          value={pairingSearch}
+                          onChange={(e) => setPairingSearch(e.target.value)}
+                          placeholder="ค้นหาชื่อหรืออีเมล (ผู้ให้ หรือ ผู้รับ)..."
+                          className="pl-9"
+                          aria-label="ค้นหาคู่บัดดี้"
+                        />
+                      </div>
+                      <ul className="divide-y divide-border rounded-xl border border-border bg-surface-elevated/60">
+                        {pairings
+                          .filter((p) => {
+                            const q = pairingSearch.trim().toLowerCase();
+                            if (!q) return true;
+                            const text = [
+                              p.giver?.displayName ?? "",
+                              p.giver?.email ?? "",
+                              p.receiver?.displayName ?? "",
+                              p.receiver?.email ?? "",
+                            ]
+                              .join(" ")
+                              .toLowerCase();
+                            return text.includes(q);
+                          })
+                          .map((p) => (
+                            <li
+                              key={p.id}
+                              className="grid gap-2 px-4 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center"
+                            >
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                {p.giver && (
+                                  <span className="flex h-8 w-8 shrink-0 items-end justify-center overflow-hidden rounded-lg border border-border bg-[linear-gradient(180deg,#1a3a4c,#dce7ee_80%)]">
+                                    <PixelAvatar seed={p.giver.participantSeed} px={2} className="-mb-1" />
+                                  </span>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="truncate font-semibold text-text-primary">
+                                    {p.giver?.displayName ?? "ไม่พบข้อมูลผู้ให้"}
+                                  </p>
+                                  <p className="truncate font-mono text-xs text-text-muted">
+                                    {p.giver?.email ?? "-"}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                                <span className="sm:hidden">ส่งของขวัญให้</span>
+                                <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              </div>
+                              <div className="flex min-w-0 items-center gap-2.5">
+                                {p.receiver && (
+                                  <span className="flex h-8 w-8 shrink-0 items-end justify-center overflow-hidden rounded-lg border border-border bg-[linear-gradient(180deg,#1a3a4c,#dce7ee_80%)]">
+                                    <PixelAvatar seed={p.receiver.participantSeed} px={2} className="-mb-1" />
+                                  </span>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="truncate font-semibold text-success">
+                                    {p.receiver?.displayName ?? "ไม่สามารถถอดรหัสได้"}
+                                  </p>
+                                  <p className="truncate font-mono text-xs text-text-muted">
+                                    {p.receiver?.email ?? "-"}
+                                  </p>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
         </div>
 
         {/* ---------------- Side panel ---------------- */}
@@ -865,7 +1055,9 @@ function AdminGroupDetailContent() {
 
           <p className="flex items-start gap-2 px-1 text-xs leading-relaxed text-text-muted">
             <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-            Admin เห็นเฉพาะรายชื่อและสถานะอีเมล ไม่เห็นผลการจับคู่
+            {isSuperAdmin
+              ? "บัญชี Superadmin สามารถดูคู่บัดดี้ในกลุ่มที่สุ่มแล้วเพื่อตรวจสอบปัญหาได้"
+              : "Admin เห็นเฉพาะรายชื่อและสถานะอีเมล ไม่เห็นผลการจับคู่"}
           </p>
 
           <div className="border-t border-border pt-4">

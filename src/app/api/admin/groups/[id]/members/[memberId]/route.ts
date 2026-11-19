@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, groupAccessWhere } from "@/lib/auth";
 import { jsonNoStore } from "@/lib/api-response";
 
 type RouteContext = { params: Promise<{ id: string; memberId: string }> };
@@ -13,7 +13,7 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const { id, memberId } = await context.params;
 
   const group = await prisma.group.findFirst({
-    where: { id, adminId: session.adminId },
+    where: groupAccessWhere(id, session),
     select: { id: true, status: true },
   });
 

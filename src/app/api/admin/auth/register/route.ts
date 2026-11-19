@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const passwordHash = await hashPassword(password);
     const admin = await prisma.admin.create({
       data: { name, email, passwordHash },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true, email: true, isSuperAdmin: true },
     });
 
     const token = await signAdminToken({

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, groupAccessWhere } from "@/lib/auth";
 import { jsonNoStore } from "@/lib/api-response";
 import { bangkokLocalInputToUtc } from "@/lib/timezone";
 import { budgetSchema, normalizeNullableText, updateGroupSchema } from "@/lib/validation";
@@ -16,8 +16,9 @@ export async function GET(req: Request, context: RouteContext) {
   }
 
   const { id } = await context.params;
+  const accessWhere = groupAccessWhere(id, session);
   const owned = await prisma.group.findFirst({
-    where: { id, adminId: session.adminId },
+    where: accessWhere,
     select: { id: true },
   });
   if (!owned) {
@@ -28,8 +29,15 @@ export async function GET(req: Request, context: RouteContext) {
 
   // Strictly omit Assignment relations and raw/hashed tokens from Admin response
   const group = await prisma.group.findFirst({
-    where: { id, adminId: session.adminId },
+    where: accessWhere,
     include: {
+      admin: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       members: {
         orderBy: { createdAt: "asc" },
         select: {
@@ -73,6 +81,8 @@ export async function GET(req: Request, context: RouteContext) {
   return jsonNoStore({
     group: {
       id: group.id,
+      adminId: group.adminId,
+      ...(session.isSuperAdmin ? { owner: group.admin } : {}),
       title: group.title,
       description: group.description,
       inviteCode: group.inviteCode,
@@ -98,7 +108,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const existing = await prisma.group.findFirst({
-    where: { id, adminId: session.adminId },
+    where: groupAccessWhere(id, session),
   });
   if (!existing) {
     return jsonNoStore({ error: "ไม่พบกลุ่มนี้" }, 404);
@@ -232,7 +242,7 @@ export async function DELETE(_req: Request, context: RouteContext) {
 
   const { id } = await context.params;
   const deleted = await prisma.group.deleteMany({
-    where: { id, adminId: session.adminId },
+    where: groupAccessWhere(id, session),
   });
 
   if (deleted.count === 0) {

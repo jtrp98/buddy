@@ -9,11 +9,14 @@ import {
   CalendarClock,
   Check,
   Copy,
+  Crown,
   Gift,
   Lock,
   LogOut,
   MailCheck,
   Plus,
+  Search,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -28,13 +31,22 @@ import {
   Alert,
   ChristmasButton,
   EmptyState,
+  Input,
   LoadingState,
   PageContainer,
   christmasButtonClass,
 } from "@/components/ui/ChristmasUI";
 
+interface GroupOwner {
+  id: string;
+  name: string;
+  email: string;
+}
+
 interface AdminGroupSummary {
   id: string;
+  adminId: string;
+  owner?: GroupOwner;
   title: string;
   description: string | null;
   inviteCode: string;
@@ -60,6 +72,16 @@ interface AdminInfo {
   adminId: string;
   email: string;
   name: string;
+  isSuperAdmin?: boolean;
+}
+
+interface SuperAdminOverview {
+  totalAdmins: number;
+  totalGroups: number;
+  totalMembers: number;
+  verifiedMembers: number;
+  activeOrCompletedGroups: number;
+  openGroups: number;
 }
 
 export default function AdminDashboardPage() {
@@ -67,6 +89,9 @@ export default function AdminDashboardPage() {
   const { triggerClickSound } = useFestiveAtmosphere();
   const [admin, setAdmin] = useState<AdminInfo | null>(null);
   const [groups, setGroups] = useState<AdminGroupSummary[]>([]);
+  const [overview, setOverview] = useState<SuperAdminOverview | null>(null);
+  const [scopeFilter, setScopeFilter] = useState<"all" | "mine">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copiedGroupId, setCopiedGroupId] = useState<string | null>(null);
@@ -92,6 +117,7 @@ export default function AdminDashboardPage() {
         } else {
           setError("");
           setGroups(grpData.groups || []);
+          setOverview(grpData.overview ?? null);
         }
       } catch {
         if (!cancelled) setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
@@ -135,6 +161,25 @@ export default function AdminDashboardPage() {
     );
   }
 
+  const isSuperAdmin = Boolean(admin?.isSuperAdmin);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const visibleGroups = groups.filter((g) => {
+    if (isSuperAdmin && scopeFilter === "mine" && admin && g.adminId !== admin.adminId) {
+      return false;
+    }
+    if (!normalizedQuery) return true;
+    const haystack = [
+      g.title,
+      g.description ?? "",
+      g.inviteCode,
+      g.owner?.name ?? "",
+      g.owner?.email ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(normalizedQuery);
+  });
+
   const openCount = groups.filter((g) => g.status === "OPEN").length;
   const activeCount = groups.filter(
     (g) => g.status === "ACTIVE" || g.status === "COMPLETED"
@@ -142,8 +187,8 @@ export default function AdminDashboardPage() {
   const totalVerified = groups.reduce((acc, g) => acc + g.verifiedMembers, 0);
   const totalMembers = groups.reduce((acc, g) => acc + g.totalMembers, 0);
 
-  const inProgress = groups.filter((g) => g.status === "DRAFT" || g.status === "OPEN" || g.status === "DRAWING");
-  const finished = groups.filter((g) => g.status === "ACTIVE" || g.status === "COMPLETED");
+  const inProgress = visibleGroups.filter((g) => g.status === "DRAFT" || g.status === "OPEN" || g.status === "DRAWING");
+  const finished = visibleGroups.filter((g) => g.status === "ACTIVE" || g.status === "COMPLETED");
   // A small forest on the banner: one tree per group (most recent first), each at its own stage.
   const forest = groups.slice(0, 7);
 
@@ -166,6 +211,12 @@ export default function AdminDashboardPage() {
           <div className="min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-2.5">
               <StatusBadge status={g.status} />
+              {isSuperAdmin && g.owner && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                  <ShieldCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  ผู้จัด: {g.owner.name} ({g.owner.email})
+                </span>
+              )}
               {g.drawError && (
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-warning">
                   <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
@@ -278,10 +329,20 @@ export default function AdminDashboardPage() {
         />
         <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:p-10">
           <div>
-            <p className="font-script text-2xl text-primary">
-              {admin ? `สวัสดี ${admin.name}` : "สวัสดี"}
-            </p>
-            <h1 className="thai-keep mt-1 text-4xl leading-tight text-text-primary sm:text-5xl">กิจกรรมของคุณ</h1>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <p className="font-script text-2xl text-primary">
+                {admin ? `สวัสดี ${admin.name}` : "สวัสดี"}
+              </p>
+              {isSuperAdmin && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/50 bg-primary/15 px-3 py-0.5 text-xs font-bold uppercase tracking-wide text-primary">
+                  <Crown className="h-3.5 w-3.5" aria-hidden="true" />
+                  Superadmin
+                </span>
+              )}
+            </div>
+            <h1 className="thai-keep mt-1 text-4xl leading-tight text-text-primary sm:text-5xl">
+              {isSuperAdmin ? "ภาพรวมระบบทั้งหมด" : "กิจกรรมของคุณ"}
+            </h1>
             {admin && <p className="mt-2 text-sm text-text-secondary">{admin.email}</p>}
             <div className="mt-6 flex flex-wrap items-center gap-2.5">
               <Link href="/admin/groups/new" className={christmasButtonClass("primary", "md")}>
@@ -311,8 +372,14 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
-      {groups.length > 0 && (
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-5 sm:grid-cols-4">
+      {(groups.length > 0 || isSuperAdmin) && (
+        <dl className={`grid grid-cols-2 gap-x-6 gap-y-5 border-y border-border py-5 ${isSuperAdmin ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
+          {isSuperAdmin && overview && (
+            <div>
+              <dt className="text-xs text-text-muted">ผู้ดูแลระบบ (Admins)</dt>
+              <dd className="mt-1 font-display text-4xl text-primary">{overview.totalAdmins}</dd>
+            </div>
+          )}
           <div>
             <dt className="text-xs text-text-muted">กิจกรรมทั้งหมด</dt>
             <dd className="mt-1 font-display text-4xl text-text-primary">{groups.length}</dd>
@@ -333,6 +400,46 @@ export default function AdminDashboardPage() {
             </dd>
           </div>
         </dl>
+      )}
+
+      {isSuperAdmin && groups.length > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setScopeFilter("all")}
+              className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition sm:text-sm ${
+                scopeFilter === "all"
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border bg-surface-elevated text-text-secondary hover:border-primary/40"
+              }`}
+            >
+              ทุกกลุ่ม ({groups.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setScopeFilter("mine")}
+              className={`rounded-xl border px-3.5 py-2 text-xs font-semibold transition sm:text-sm ${
+                scopeFilter === "mine"
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border bg-surface-elevated text-text-secondary hover:border-primary/40"
+              }`}
+            >
+              กลุ่มของฉัน ({groups.filter((g) => g.adminId === admin?.adminId).length})
+            </button>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" aria-hidden="true" />
+            <Input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ค้นหาชื่อกลุ่ม, โค้ด, หรือผู้จัด..."
+              className="pl-9"
+              aria-label="ค้นหากลุ่ม"
+            />
+          </div>
+        </div>
       )}
 
       {toastTitle && (
@@ -378,7 +485,9 @@ export default function AdminDashboardPage() {
 
       <p className="flex items-center gap-2 px-1 text-xs text-text-muted sm:text-sm">
         <Lock className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-        Admin เห็นเฉพาะรายชื่อผู้เข้าร่วมและสถานะการส่งอีเมล ไม่เห็นผลการจับคู่
+        {isSuperAdmin
+          ? "บัญชี Superadmin สามารถดูภาพรวม จัดการทุกกลุ่ม และตรวจสอบคู่บัดดี้ภายในกลุ่มที่สุ่มจับคู่แล้วได้"
+          : "Admin เห็นเฉพาะรายชื่อผู้เข้าร่วมและสถานะการส่งอีเมล ไม่เห็นผลการจับคู่"}
       </p>
     </PageContainer>
   );

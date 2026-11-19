@@ -36,7 +36,12 @@ export async function POST(req: Request) {
     });
 
     const res = jsonNoStore({
-      admin: { id: admin.id, name: admin.name, email: admin.email },
+      admin: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        isSuperAdmin: admin.isSuperAdmin,
+      },
     });
     res.cookies.set(buildAdminSessionCookieOptions(token));
     return res;
