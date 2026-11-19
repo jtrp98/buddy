@@ -119,6 +119,31 @@ export async function PATCH(req: Request) {
     const data = parsed.data;
     const isPreDraw = member.group.status === "OPEN" || member.group.status === "DRAFT";
 
+    if (
+      isPreDraw &&
+      data.displayName &&
+      data.displayName.toLowerCase() !== member.displayName.toLowerCase()
+    ) {
+      const duplicateNameMember = await prisma.member.findFirst({
+        where: {
+          groupId: member.groupId,
+          id: { not: member.id },
+          displayName: { equals: data.displayName, mode: "insensitive" },
+        },
+        select: { id: true },
+      });
+
+      if (duplicateNameMember) {
+        return jsonNoStore(
+          {
+            error:
+              "ชื่อเล่นนี้มีผู้ลงทะเบียนในกลุ่มนี้แล้ว กรุณาใช้ชื่ออื่น (เช่น เติมชื่อจริงหรือนามสกุลย่อ)",
+          },
+          409
+        );
+      }
+    }
+
     const nextInterestOther = data.interests.includes("other")
       ? normalizeNullableText(data.interestOther)
       : null;

@@ -108,13 +108,24 @@ export const buddyProfileSchema = z.object({
   noteToBuddy: z.string().trim().max(600).optional().nullable(),
 });
 
+export function normalizeDisplayName(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
 export const memberRegisterSchema = buddyProfileSchema.extend({
-  displayName: z.string().trim().min(1, "กรุณากรอกชื่อ / ชื่อเล่น").max(80),
+  displayName: z
+    .string()
+    .transform(normalizeDisplayName)
+    .pipe(z.string().min(1, "กรุณากรอกชื่อ / ชื่อเล่น").max(80)),
   email: z.string().trim().toLowerCase().email("รูปแบบอีเมลไม่ถูกต้อง").max(160),
 });
 
 export const memberProfileUpdateSchema = buddyProfileSchema.extend({
-  displayName: z.string().trim().min(1, "กรุณากรอกชื่อ / ชื่อเล่น").max(80).optional(),
+  displayName: z
+    .string()
+    .transform(normalizeDisplayName)
+    .pipe(z.string().min(1, "กรุณากรอกชื่อ / ชื่อเล่น").max(80))
+    .optional(),
 });
 
 export const recoverLinkSchema = z.object({

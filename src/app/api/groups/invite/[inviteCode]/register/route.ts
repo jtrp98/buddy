@@ -71,6 +71,26 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
+    const duplicateNameMember = await prisma.member.findFirst({
+      where: {
+        groupId: group.id,
+        displayName: { equals: data.displayName, mode: "insensitive" },
+        ...(existingMember ? { id: { not: existingMember.id } } : {}),
+      },
+      select: { id: true, emailVerifiedAt: true },
+    });
+
+    if (duplicateNameMember) {
+      return jsonNoStore(
+        {
+          error: duplicateNameMember.emailVerifiedAt
+            ? "ชื่อเล่นนี้มีผู้ลงทะเบียนในกลุ่มนี้แล้ว กรุณาใช้ชื่ออื่น (เช่น เติมชื่อจริงหรือนามสกุลย่อ)"
+            : "ชื่อเล่นนี้ถูกใช้ลงทะเบียนไว้แล้ว (รอยืนยันอีเมล) หากคุณพิมพ์อีเมลผิด กรุณาติดต่อผู้ดูแลกลุ่มเพื่อลบรายการเดิมออก หรือใช้ชื่ออื่น",
+        },
+        409
+      );
+    }
+
     const rawVerifyToken = generateRawToken();
     const verifyTokenHash = hashToken(rawVerifyToken);
     const verifyTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -162,7 +182,18 @@ export async function POST(req: Request, context: RouteContext) {
       },
       201
     );
-  } catch {
+  } catch (err) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code?: unknown }).code === "P2002"
+    ) {
+      return jsonNoStore(
+        { error: "อีเมลนี้มีการลงทะเบียนในกลุ่มนี้อยู่แล้ว กรุณาลองใหม่อีกครั้ง" },
+        409
+      );
+    }
     return jsonNoStore({ error: "ไม่สามารถลงทะเบียนได้ กรุณาลองใหม่" }, 500);
   }
 }

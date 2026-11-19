@@ -19,6 +19,7 @@ import {
   Send,
   Shuffle,
   Trash2,
+  UserMinus,
   Users,
   XCircle,
 } from "lucide-react";
@@ -110,6 +111,8 @@ function AdminGroupDetailContent() {
   const [confirmDrawOpen, setConfirmDrawOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<MemberRow | null>(null);
+  const [deletingMember, setDeletingMember] = useState(false);
   const [resendingAll, setResendingAll] = useState(false);
   const [resendingMemberId, setResendingMemberId] = useState<string | null>(null);
 
@@ -394,6 +397,33 @@ function AdminGroupDetailContent() {
       setConfirmDeleteOpen(false);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleConfirmDeleteMember = async () => {
+    if (!memberToDelete) return;
+    triggerClickSound();
+    setDeletingMember(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch(
+        `/api/admin/groups/${groupId}/members/${memberToDelete.id}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "ไม่สามารถลบสมาชิกได้");
+      } else {
+        setNotice(`ลบคุณ${memberToDelete.displayName} ออกจากกลุ่มเรียบร้อยแล้ว`);
+      }
+      setMemberToDelete(null);
+      await loadGroup();
+    } catch {
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      setMemberToDelete(null);
+    } finally {
+      setDeletingMember(false);
     }
   };
 
@@ -706,6 +736,23 @@ function AdminGroupDetailContent() {
                           <span>ส่งอีเมลซ้ำ</span>
                         </ChristmasButton>
                       )}
+                      {(group.status === "DRAFT" ||
+                        group.status === "OPEN" ||
+                        (isDrawn && !m.verified)) && (
+                        <ChristmasButton
+                          variant="ghost"
+                          size="sm"
+                          className="text-christmas-red-light hover:border-christmas-red/50 hover:bg-christmas-red/12 hover:text-christmas-red-light"
+                          onClick={() => {
+                            triggerClickSound();
+                            setMemberToDelete(m);
+                          }}
+                          aria-label={`ลบคุณ${m.displayName}ออกจากกลุ่ม`}
+                        >
+                          <UserMinus className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>ลบออก</span>
+                        </ChristmasButton>
+                      )}
                     </div>
                   </li>
                 ))}
@@ -871,6 +918,38 @@ function AdminGroupDetailContent() {
         loading={deleting}
         onConfirm={handleConfirmDeleteGroup}
         onCancel={() => setConfirmDeleteOpen(false)}
+      />
+
+      <ConfirmationDialog
+        open={memberToDelete !== null}
+        title="ยืนยันลบสมาชิกออกจากกลุ่ม?"
+        description={
+          memberToDelete ? (
+            <div className="space-y-2">
+              <p>
+                คุณต้องการลบ{" "}
+                <strong className="text-text-primary">{memberToDelete.displayName}</strong>{" "}
+                <span className="font-mono text-xs text-text-secondary">
+                  ({memberToDelete.email})
+                </span>{" "}
+                ออกจากกลุ่มนี้ใช่หรือไม่?
+              </p>
+              <p className="text-xs text-christmas-red-light">
+                {memberToDelete.verified
+                  ? "* สมาชิกคนนี้ยืนยันอีเมลแล้ว หากลบออก ลิงก์ส่วนตัวเดิมจะใช้งานไม่ได้และจะไม่ถูกนำไปสุ่มจับคู่ (สามารถลงทะเบียนใหม่ได้หากยังไม่ปิดรับสมัคร)"
+                  : "* ข้อมูลการลงทะเบียนที่ยังไม่ยืนยันอีเมลนี้จะถูกลบถาวร"}
+              </p>
+            </div>
+          ) : (
+            ""
+          )
+        }
+        confirmLabel="ยืนยันลบสมาชิก"
+        cancelLabel="ยกเลิก"
+        tone="danger"
+        loading={deletingMember}
+        onConfirm={handleConfirmDeleteMember}
+        onCancel={() => setMemberToDelete(null)}
       />
     </PageContainer>
   );
