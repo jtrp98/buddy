@@ -108,6 +108,7 @@ export async function POST(req: Request, context: RouteContext) {
       dislikes: normalizeNullableText(data.dislikes),
       allergies: normalizeNullableText(data.allergies),
       wishList: normalizeNullableText(data.wishList),
+      wishListLinks: data.wishListLinks ?? [],
       noteToBuddy: normalizeNullableText(data.noteToBuddy),
       verifyTokenHash,
       verifyTokenExpiresAt,

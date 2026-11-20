@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
+  Ban,
   CalendarClock,
   Check,
   CheckCircle2,
@@ -17,18 +18,23 @@ import {
   Eye,
   EyeOff,
   Gift,
+  HelpCircle,
   Lock,
   MailCheck,
+  Plus,
+  QrCode,
   RefreshCw,
   Search,
   Send,
   ShieldCheck,
   Shuffle,
   Trash2,
+  Trophy,
   UserMinus,
   Users,
   XCircle,
 } from "lucide-react";
+import { InvitePosterModal } from "@/components/vintage/InvitePosterModal";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CountdownTimer } from "@/components/CountdownTimer";
 import { ChristmasJourney } from "@/components/ChristmasJourney";
@@ -70,8 +76,35 @@ interface GroupDetail {
   registrationClosesAt: string;
   revealAt: string | null;
   status: "DRAFT" | "OPEN" | "DRAWING" | "ACTIVE" | "COMPLETED";
+  guessOpen?: boolean;
   drawError: string | null;
   drawnAt: string | null;
+}
+
+interface ExclusionRow {
+  id: string;
+  memberAId: string;
+  memberBId: string;
+}
+
+interface GuessResultsData {
+  summary: {
+    totalMembers: number;
+    totalGuesses: number;
+    correctCount: number;
+  };
+  guesses: Array<{
+    guesserId: string;
+    guesserName: string;
+    guessedName: string;
+    actualGiverName: string;
+    isCorrect: boolean;
+  }>;
+  undetectedSantas: Array<{
+    id: string;
+    displayName: string;
+    receiverName: string;
+  }>;
 }
 
 interface MemberRow {
@@ -126,6 +159,14 @@ function AdminGroupDetailContent() {
 
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [exclusions, setExclusions] = useState<ExclusionRow[]>([]);
+  const [exclA, setExclA] = useState("");
+  const [exclB, setExclB] = useState("");
+  const [savingExcl, setSavingExcl] = useState(false);
+  const [posterOpen, setPosterOpen] = useState(false);
+  const [togglingGuess, setTogglingGuess] = useState(false);
+  const [guessResults, setGuessResults] = useState<GuessResultsData | null>(null);
+  const [loadingGuessResults, setLoadingGuessResults] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -185,6 +226,7 @@ function AdminGroupDetailContent() {
       const g: GroupDetail = data.group;
       setGroup(g);
       setMembers(data.members || []);
+      setExclusions(data.exclusions || []);
       syncEditFields(g);
     } catch {
       setError("ไม่สามารถโหลดข้อมูลกลุ่มได้");
@@ -220,6 +262,7 @@ function AdminGroupDetailContent() {
         const g: GroupDetail = data.group;
         setGroup(g);
         setMembers(data.members || []);
+        setExclusions(data.exclusions || []);
         syncEditFields(g);
       } catch {
         if (!cancelled) setError("ไม่สามารถโหลดข้อมูลกลุ่มได้");
@@ -498,6 +541,91 @@ function AdminGroupDetailContent() {
       </PageContainer>
     );
   }
+
+  const handleAddExclusion = async () => {
+    if (!exclA || !exclB || exclA === exclB) return;
+    triggerClickSound();
+    setSavingExcl(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/exclusions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ memberAId: exclA, memberBId: exclB }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "ไม่สามารถเพิ่มกติกาห้ามจับคู่ได้");
+        return;
+      }
+      triggerChimeSound();
+      setExclusions((prev) => [...prev, data.exclusion as ExclusionRow]);
+      setExclA("");
+      setExclB("");
+    } catch {
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    } finally {
+      setSavingExcl(false);
+    }
+  };
+
+  const handleDeleteExclusion = async (exclusionId: string) => {
+    triggerClickSound();
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/exclusions/${exclusionId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setExclusions((prev) => prev.filter((e) => e.id !== exclusionId));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleToggleGuessOpen = async () => {
+    if (!group) return;
+    triggerClickSound();
+    setTogglingGuess(true);
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/guess-results`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guessOpen: !group.guessOpen }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        triggerChimeSound();
+        setGroup((prev) => (prev ? { ...prev, guessOpen: data.guessOpen } : prev));
+        setNotice(
+          data.guessOpen
+            ? "เปิดรอบโหวตทายบัดดี้ให้สมาชิกแล้ว!"
+            : "ปิดรอบโหวตทายบัดดี้แบบ manual แล้ว"
+        );
+      }
+    } finally {
+      setTogglingGuess(false);
+    }
+  };
+
+  const handleLoadGuessResults = async () => {
+    triggerClickSound();
+    setLoadingGuessResults(true);
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/guess-results`, {
+        cache: "no-store",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGuessResults(data as GuessResultsData);
+      } else {
+        setError(data.error || "ไม่สามารถโหลดผลทายบัดดี้ได้");
+      }
+    } finally {
+      setLoadingGuessResults(false);
+    }
+  };
 
   if (!group) {
     return (
@@ -949,6 +1077,179 @@ function AdminGroupDetailContent() {
               )}
             </section>
           )}
+
+          {/* Exclusion Rules (DRAFT / OPEN) */}
+          {(group.status === "DRAFT" || group.status === "OPEN") && members.length >= 2 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Ban className="h-4 w-4 text-christmas-red-light" aria-hidden="true" />
+                <h2 className="text-xl text-text-primary">กติกาห้ามจับคู่ (Exclusion Rules)</h2>
+              </div>
+              <ChristmasCard className="p-4 sm:p-5">
+                <p className="text-xs leading-relaxed text-text-secondary">
+                  กำหนดคู่สมาชิกที่ห้ามจับได้กันเอง (เช่น แฟนกัน พี่น้อง หรือทีมเดียวกัน) ระบบจะนำไปคำนวณตอนสุ่มจับคู่ให้อัตโนมัติ
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <Select
+                    value={exclA}
+                    onChange={(e) => setExclA(e.target.value)}
+                    aria-label="สมาชิกคนที่ 1"
+                  >
+                    <option value="">-- เลือกสมาชิกคนที่ 1 --</option>
+                    {members.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.displayName}
+                      </option>
+                    ))}
+                  </Select>
+                  <Select
+                    value={exclB}
+                    onChange={(e) => setExclB(e.target.value)}
+                    aria-label="สมาชิกคนที่ 2"
+                  >
+                    <option value="">-- เลือกสมาชิกคนที่ 2 --</option>
+                    {members
+                      .filter((m) => m.id !== exclA)
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.displayName}
+                        </option>
+                      ))}
+                  </Select>
+                  <ChristmasButton
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    disabled={!exclA || !exclB || exclA === exclB || savingExcl}
+                    onClick={handleAddExclusion}
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    <span>เพิ่มคู่</span>
+                  </ChristmasButton>
+                </div>
+
+                {exclusions.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {exclusions.map((ex) => {
+                      const nameA = members.find((m) => m.id === ex.memberAId)?.displayName ?? "?";
+                      const nameB = members.find((m) => m.id === ex.memberBId)?.displayName ?? "?";
+                      return (
+                        <span
+                          key={ex.id}
+                          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-elevated px-3 py-1 text-xs font-semibold text-text-primary"
+                        >
+                          <span>
+                            {nameA} ↔ {nameB}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteExclusion(ex.id)}
+                            aria-label={`ลบคู่ ${nameA} และ ${nameB}`}
+                            className="text-text-muted hover:text-christmas-red-light"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </ChristmasCard>
+            </section>
+          )}
+
+          {/* Guess My Buddy Leaderboard (COMPLETED) */}
+          {group.status === "COMPLETED" && (
+            <section className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-gold" aria-hidden="true" />
+                  <h2 className="text-xl text-text-primary">ผลทายบัดดี้ (Guess My Buddy)</h2>
+                </div>
+                <ChristmasButton
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={loadingGuessResults}
+                  loadingText="กำลังโหลด..."
+                  onClick={handleLoadGuessResults}
+                >
+                  <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>{guessResults ? "รีเฟรชผลทาย" : "เปิดดู Leaderboard ขึ้นจอ"}</span>
+                </ChristmasButton>
+              </div>
+
+              {guessResults && (
+                <ChristmasCard elevated className="space-y-4 p-5">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl border border-border bg-surface/60 p-3 text-center">
+                      <p className="text-xs text-text-muted">ผู้ร่วมทาย</p>
+                      <p className="mt-1 text-2xl font-bold text-text-primary">
+                        {guessResults.summary.totalGuesses} / {guessResults.summary.totalMembers}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-accent/40 bg-accent/15 p-3 text-center">
+                      <p className="text-xs text-accent-light">ทายถูกเป๊ะ</p>
+                      <p className="mt-1 text-2xl font-bold text-accent-light">
+                        {guessResults.summary.correctCount} คน
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-gold/40 bg-gold/10 p-3 text-center">
+                      <p className="text-xs text-gold">ซานต้าเนียนระดับเทพ</p>
+                      <p className="mt-1 text-2xl font-bold text-gold">
+                        {guessResults.undetectedSantas.length} คน
+                      </p>
+                    </div>
+                  </div>
+
+                  {guessResults.undetectedSantas.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gold uppercase">
+                        🎭 สับขาหลอกเนียนสุด (ไม่มีใครทายถูก):
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {guessResults.undetectedSantas.map((s) => (
+                          <span
+                            key={s.id}
+                            className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-semibold text-text-primary"
+                          >
+                            {s.displayName} (ดูแล {s.receiverName})
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {guessResults.guesses.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-bold text-text-secondary uppercase">
+                        รายละเอียดคำทายทั้งหมด:
+                      </p>
+                      {guessResults.guesses.map((g) => (
+                        <div
+                          key={g.guesserId}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface/50 px-3 py-2 text-xs"
+                        >
+                          <span>
+                            <strong>{g.guesserName}</strong> ทายว่า{" "}
+                            <strong className="text-primary">{g.guessedName}</strong>{" "}
+                            <span className="text-text-muted">(ตัวจริง: {g.actualGiverName})</span>
+                          </span>
+                          <span
+                            className={`font-bold ${
+                              g.isCorrect ? "text-accent-light" : "text-christmas-red-light"
+                            }`}
+                          >
+                            {g.isCorrect ? "✓ ถูกเป๊ะ!" : "✗ โดนหลอก"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ChristmasCard>
+              )}
+            </section>
+          )}
         </div>
 
         {/* ---------------- Side panel ---------------- */}
@@ -977,6 +1278,19 @@ function AdminGroupDetailContent() {
                   <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </Link>
               </div>
+              <ChristmasButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="mt-2 w-full"
+                onClick={() => {
+                  triggerClickSound();
+                  setPosterOpen(true);
+                }}
+              >
+                <QrCode className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>การ์ดเชิญ &amp; QR Code (PNG)</span>
+              </ChristmasButton>
             </div>
           </ChristmasCard>
 
@@ -1022,6 +1336,20 @@ function AdminGroupDetailContent() {
               {group.status === "ACTIVE" && (
                 <>
                   <p className="text-sm text-text-secondary">จับคู่แล้ว ทุกคนได้รับลิงก์เปิดกล่องทางอีเมล</p>
+                  <ChristmasButton
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    disabled={togglingGuess}
+                    onClick={handleToggleGuessOpen}
+                  >
+                    <HelpCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>
+                      {group.guessOpen
+                        ? "ปิดรอบทายบัดดี้ (Manual)"
+                        : "เปิดรอบทายบัดดี้ทันที"}
+                    </span>
+                  </ChristmasButton>
                   <ChristmasButton variant="secondary" className="w-full" onClick={() => handleToggleCompleted("COMPLETED")}>
                     ปิดกิจกรรม (Completed)
                   </ChristmasButton>
@@ -1142,6 +1470,19 @@ function AdminGroupDetailContent() {
         loading={deletingMember}
         onConfirm={handleConfirmDeleteMember}
         onCancel={() => setMemberToDelete(null)}
+      />
+
+      <InvitePosterModal
+        open={posterOpen}
+        onClose={() => setPosterOpen(false)}
+        title={group.title}
+        description={group.description}
+        inviteCode={group.inviteCode}
+        inviteUrl={inviteUrl}
+        budgetType={group.budgetType}
+        budgetMin={group.budgetMin}
+        budgetMax={group.budgetMax}
+        registrationClosesAt={group.registrationClosesAt}
       />
     </PageContainer>
   );

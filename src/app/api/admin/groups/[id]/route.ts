@@ -59,6 +59,14 @@ export async function GET(req: Request, context: RouteContext) {
           },
         },
       },
+      exclusions: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          memberAId: true,
+          memberBId: true,
+        },
+      },
     },
   });
 
@@ -92,11 +100,13 @@ export async function GET(req: Request, context: RouteContext) {
       registrationClosesAt: group.registrationClosesAt,
       revealAt: group.revealAt,
       status: group.status,
+      guessOpen: group.guessOpen,
       drawError: group.drawError,
       drawnAt: group.drawnAt,
       createdAt: group.createdAt,
     },
     members,
+    exclusions: group.exclusions,
   });
 }
 

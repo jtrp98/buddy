@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { extractBearerToken, jsonNoStore } from "@/lib/api-response";
-import { decryptReceiverId, hashToken } from "@/lib/crypto";
+import { decryptReceiverId, decryptText, encryptText, hashToken } from "@/lib/crypto";
+import { parseWishListLinks, secretNoteSchema } from "@/lib/validation";
 
 export async function GET(req: Request) {
   const token = extractBearerToken(req);
@@ -70,6 +71,7 @@ export async function GET(req: Request) {
       dislikes: true,
       allergies: true,
       wishList: true,
+      wishListLinks: true,
       noteToBuddy: true,
     },
   });
@@ -78,9 +80,67 @@ export async function GET(req: Request) {
     return jsonNoStore({ error: "ไม่พบข้อมูล Buddy ของคุณ" }, 404);
   }
 
+  let secretNote = "";
+  if (giver.givenAssignment.encryptedSecretNote) {
+    try {
+      secretNote = decryptText(
+        giver.group.id,
+        giver.givenAssignment.encryptedSecretNote
+      );
+    } catch {
+      secretNote = "";
+    }
+  }
+
   return jsonNoStore({
     viewerName: giver.displayName,
     group: giver.group,
-    buddy,
+    buddy: {
+      ...buddy,
+      wishListLinks: parseWishListLinks(buddy.wishListLinks),
+    },
+    secretNote,
   });
+}
+
+export async function PATCH(req: Request) {
+  const token = extractBearerToken(req);
+  if (!token) {
+    return jsonNoStore({ error: "ไม่พบ Token สำหรับดูผล Buddy" }, 401);
+  }
+
+  const giver = await prisma.member.findUnique({
+    where: { resultTokenHash: hashToken(token) },
+    include: {
+      group: { select: { id: true, status: true } },
+      givenAssignment: { select: { id: true } },
+    },
+  });
+
+  if (!giver || !giver.givenAssignment) {
+    return jsonNoStore({ error: "ไม่พบข้อมูลการจับคู่ของคุณ" }, 404);
+  }
+
+  if (giver.group.status !== "ACTIVE" && giver.group.status !== "COMPLETED") {
+    return jsonNoStore({ error: "กิจกรรมนี้ยังไม่เปิดให้บันทึกโน้ต" }, 409);
+  }
+
+  const body = await req.json().catch(() => null);
+  const parsed = secretNoteSchema.safeParse(body);
+  if (!parsed.success) {
+    return jsonNoStore(
+      { error: parsed.error.issues[0]?.message || "ข้อมูลไม่ถูกต้อง" },
+      400
+    );
+  }
+
+  const rawNote = parsed.data.note?.trim() ?? "";
+  const encryptedSecretNote = rawNote ? encryptText(giver.group.id, rawNote) : null;
+
+  await prisma.assignment.update({
+    where: { id: giver.givenAssignment.id },
+    data: { encryptedSecretNote },
+  });
+
+  return jsonNoStore({ ok: true, secretNote: rawNote });
 }

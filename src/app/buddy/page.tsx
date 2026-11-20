@@ -75,7 +75,7 @@ function BuddyRevealContent() {
     );
   }
 
-  return <MagicalGiftReveal data={data} />;
+  return <MagicalGiftReveal data={data} token={token ?? undefined} />;
 }
 
 export default function BuddyPage() {

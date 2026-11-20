@@ -489,3 +489,43 @@ export function buildRecoveryLinkEmail(params: {
 
   return { subject, html, text: textLines.join("\n") };
 }
+
+export function buildChatNotificationEmail(params: {
+  memberName: string;
+  groupTitle: string;
+  senderCodename: string;
+  modeLabel: string;
+  chatUrl: string;
+}) {
+  const { memberName, groupTitle, senderCodename, modeLabel, chatUrl } = params;
+  const subject = `💬 มีข้อความลับใหม่ถึงคุณใน ${groupTitle}`;
+
+  const html = wrapEmailLayout(
+    subject,
+    `
+    <p style="font-size:16px;font-weight:700;margin:0 0 12px;color:#2a1f1b;">สวัสดีคุณ${escapeHtml(memberName)} 🎄</p>
+    <p style="font-size:15px;line-height:1.65;margin:0 0 16px;color:#4d3d35;">
+      <strong>${escapeHtml(senderCodename)}</strong> ได้ส่งข้อความถึงคุณใน <strong>${escapeHtml(modeLabel)}</strong> ของกิจกรรม <strong>${escapeHtml(groupTitle)}</strong>
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${chatUrl}" style="display:inline-block;background-color:#c8322b;color:#fffdf7;text-decoration:none;font-weight:700;font-size:15px;padding:13px 28px;border-radius:12px;border:2px solid #2a1f1b;box-shadow:0 3px 0 #2a1f1b;">
+        เปิดอ่านและตอบกลับในแชตลับ
+      </a>
+    </div>
+    <p style="font-size:12px;color:#7a6458;margin:0;">
+      (ระบบจะแจ้งเตือนทางอีเมลไม่เกิน 1 ครั้งทุก ๆ 6 ชั่วโมงเพื่อไม่ให้รบกวนกล่องจดหมายของคุณ)
+    </p>
+    `
+  );
+
+  const text = [
+    `สวัสดีคุณ${memberName}`,
+    ``,
+    `${senderCodename} ได้ส่งข้อความถึงคุณใน ${modeLabel} ของกิจกรรม ${groupTitle}`,
+    ``,
+    `เปิดอ่านและตอบกลับ:`,
+    chatUrl,
+  ].join("\n");
+
+  return { subject, html, text };
+}

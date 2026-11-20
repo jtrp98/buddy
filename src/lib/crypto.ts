@@ -44,14 +44,14 @@ export function computeReceiverHmac(groupId: string, receiverMemberId: string): 
     .digest("hex");
 }
 
-export function encryptReceiverId(groupId: string, receiverMemberId: string): string {
+export function encryptText(aad: string, plaintext: string): string {
   const key = getEncryptionKey();
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-  cipher.setAAD(Buffer.from(groupId, "utf8"));
+  cipher.setAAD(Buffer.from(aad, "utf8"));
 
   const encrypted = Buffer.concat([
-    cipher.update(receiverMemberId, "utf8"),
+    cipher.update(plaintext, "utf8"),
     cipher.final(),
   ]);
   const authTag = cipher.getAuthTag();
@@ -59,10 +59,10 @@ export function encryptReceiverId(groupId: string, receiverMemberId: string): st
   return `${iv.toString("base64url")}.${authTag.toString("base64url")}.${encrypted.toString("base64url")}`;
 }
 
-export function decryptReceiverId(groupId: string, payload: string): string {
+export function decryptText(aad: string, payload: string): string {
   const parts = payload.split(".");
   if (parts.length !== 3) {
-    throw new Error("Invalid encrypted assignment payload");
+    throw new Error("Invalid encrypted payload");
   }
   const [ivStr, tagStr, cipherStr] = parts;
   const iv = Buffer.from(ivStr, "base64url");
@@ -71,11 +71,19 @@ export function decryptReceiverId(groupId: string, payload: string): string {
 
   const key = getEncryptionKey();
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAAD(Buffer.from(groupId, "utf8"));
+  decipher.setAAD(Buffer.from(aad, "utf8"));
   decipher.setAuthTag(authTag);
 
   const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
   return decrypted.toString("utf8");
+}
+
+export function encryptReceiverId(groupId: string, receiverMemberId: string): string {
+  return encryptText(groupId, receiverMemberId);
+}
+
+export function decryptReceiverId(groupId: string, payload: string): string {
+  return decryptText(groupId, payload);
 }
 
 export function sanitizeLogError(error: unknown): string {

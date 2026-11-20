@@ -27,6 +27,12 @@ enum EmailType {
   MANAGE_LINK
   RESULT_NOTIFICATION
   LINK_RECOVERY
+  CHAT_NOTIFICATION
+}
+
+enum SecretChatMode {
+  PUBLIC_ROOM
+  PRIVATE_DM
 }
 
 enum EmailStatus {
@@ -59,15 +65,19 @@ model Group {
   registrationClosesAt DateTime
   revealAt             DateTime?
   status               GroupStatus @default(DRAFT)
+  guessOpen            Boolean     @default(false)
   drawError            String?
   drawnAt              DateTime?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
 
-  admin       Admin        @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  members     Member[]
-  assignments Assignment[]
-  emailLogs   EmailLog[]
+  admin         Admin            @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  members       Member[]
+  assignments   Assignment[]
+  emailLogs     EmailLog[]
+  exclusions    GroupExclusion[]
+  secretThreads SecretThread[]
+  buddyGuesses  BuddyGuess[]
 
   @@index([adminId])
   @@index([status, registrationClosesAt])
@@ -94,14 +104,23 @@ model Member {
   dislikes          String?
   allergies         String?
   wishList          String?
+  wishListLinks     Json?
   noteToBuddy       String?
+  lastChatNotifiedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  group           Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  givenAssignment Assignment? @relation("GiverAssignment")
-  emailLogs       EmailLog[]
+  group                 Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  givenAssignment       Assignment?      @relation("GiverAssignment")
+  emailLogs             EmailLog[]
+  exclusionsAsA         GroupExclusion[] @relation("ExclusionMemberA")
+  exclusionsAsB         GroupExclusion[] @relation("ExclusionMemberB")
+  secretThreadsTarget   SecretThread[]   @relation("SecretThreadTarget")
+  secretThreadsVisitor  SecretThread[]   @relation("SecretThreadVisitor")
+  secretMessagesSent    SecretMessage[]  @relation("SecretMessageSender")
+  buddyGuessesMade      BuddyGuess[]     @relation("BuddyGuessGuesser")
+  buddyGuessesReceived  BuddyGuess[]     @relation("BuddyGuessTarget")
 
   @@unique([groupId, email])
   @@index([groupId, emailVerifiedAt])
@@ -113,6 +132,7 @@ model Assignment {
   giverMemberId       String   @unique
   receiverHmac        String
   encryptedReceiverId String
+  encryptedSecretNote String?
   createdAt           DateTime @default(now())
 
   group Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -140,4 +160,68 @@ model EmailLog {
 
   @@index([groupId, status])
   @@index([memberId, type])
+}
+
+model GroupExclusion {
+  id        String   @id @default(cuid())
+  groupId   String
+  memberAId String
+  memberBId String
+  createdAt DateTime @default(now())
+
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  memberA Member @relation("ExclusionMemberA", fields: [memberAId], references: [id], onDelete: Cascade)
+  memberB Member @relation("ExclusionMemberB", fields: [memberBId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, memberAId, memberBId])
+  @@index([groupId])
+}
+
+model SecretThread {
+  id              String         @id @default(cuid())
+  groupId         String
+  targetMemberId  String
+  visitorMemberId String?
+  visitorKey      String
+  mode            SecretChatMode @default(PUBLIC_ROOM)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  group         Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  targetMember  Member          @relation("SecretThreadTarget", fields: [targetMemberId], references: [id], onDelete: Cascade)
+  visitorMember Member?         @relation("SecretThreadVisitor", fields: [visitorMemberId], references: [id], onDelete: Cascade)
+  messages      SecretMessage[]
+
+  @@unique([groupId, targetMemberId, mode, visitorKey])
+  @@index([groupId, targetMemberId, updatedAt])
+  @@index([groupId, visitorMemberId, updatedAt])
+}
+
+model SecretMessage {
+  id             String   @id @default(cuid())
+  threadId       String
+  senderMemberId String
+  content        String
+  createdAt      DateTime @default(now())
+
+  thread       SecretThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderMember Member       @relation("SecretMessageSender", fields: [senderMemberId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, createdAt])
+}
+
+model BuddyGuess {
+  id              String   @id @default(cuid())
+  groupId         String
+  guesserMemberId String
+  guessedGiverId  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  group        Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  guesser      Member @relation("BuddyGuessGuesser", fields: [guesserMemberId], references: [id], onDelete: Cascade)
+  guessedGiver Member @relation("BuddyGuessTarget", fields: [guessedGiverId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, guesserMemberId])
+  @@index([groupId])
 }

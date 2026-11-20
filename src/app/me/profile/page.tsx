@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CalendarClock, Gift, KeyRound, Save } from "lucide-react";
+import { CalendarClock, Gift, KeyRound, MessageCircle, Save } from "lucide-react";
 import {
   BuddyProfileFormFields,
   EMPTY_BUDDY_PROFILE,
@@ -11,6 +11,8 @@ import {
 } from "@/components/BuddyProfileFormFields";
 import { ChristmasJourney } from "@/components/ChristmasJourney";
 import { StatusBadge } from "@/components/StatusBadge";
+import { GuessBuddyCard } from "@/components/reveal/GuessBuddyCard";
+import type { WishListLink } from "@/lib/validation";
 import {
   WishListGiftStack3D,
 } from "@/components/illustrations/ChristmasIllustrations";
@@ -43,6 +45,7 @@ interface ProfileResponse {
     dislikes: string | null;
     allergies: string | null;
     wishList: string | null;
+    wishListLinks?: WishListLink[];
     noteToBuddy: string | null;
   };
   group: {
@@ -111,6 +114,7 @@ function ProfileEditorContent() {
           dislikes: typed.profile.dislikes || "",
           allergies: typed.profile.allergies || "",
           wishList: typed.profile.wishList || "",
+          wishListLinks: typed.profile.wishListLinks || [],
           noteToBuddy: typed.profile.noteToBuddy || "",
         });
         setLoading(false);
@@ -150,6 +154,9 @@ function ProfileEditorContent() {
         body: JSON.stringify({
           displayName,
           ...profile,
+          wishListLinks: (profile.wishListLinks ?? []).filter(
+            (l) => l.title.trim() || l.url.trim()
+          ),
         }),
       });
       const data = await res.json();
@@ -285,6 +292,32 @@ function ProfileEditorContent() {
           )}
         </form>
       </ChristmasCard>
+
+      {token && (
+        <div className="space-y-4">
+          <ChristmasCard className="p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-text-primary">
+                  ห้องแชตลับ &amp; ปั่นเพื่อน (ไม่ระบุตัวตน)
+                </p>
+                <p className="text-xs text-text-secondary">
+                  เข้าไปปั่นเพื่อนในห้องรวม (1-to-Many) หรือรับ-ส่ง DM ลับ 1-ต่อ-1 ได้ที่นี่
+                </p>
+              </div>
+              <Link
+                href={`/chat?token=${encodeURIComponent(token)}`}
+                className={christmasButtonClass("primary", "sm")}
+              >
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                <span>เปิดห้องแชตลับ</span>
+              </Link>
+            </div>
+          </ChristmasCard>
+
+          <GuessBuddyCard token={token} />
+        </div>
+      )}
     </div>
   );
 }

@@ -9,7 +9,11 @@ import {
 import { formatBudget } from "@/lib/budget";
 import { sendMail } from "@/lib/email/mailer";
 import { buildBuddyProfileUpdatedEmail } from "@/lib/email/templates";
-import { memberProfileUpdateSchema, normalizeNullableText } from "@/lib/validation";
+import {
+  memberProfileUpdateSchema,
+  normalizeNullableText,
+  parseWishListLinks,
+} from "@/lib/validation";
 import { ensureGroupUpToDate } from "@/lib/cron";
 import { getAppBaseUrl } from "@/lib/url";
 
@@ -77,6 +81,7 @@ export async function GET(req: Request) {
       dislikes: member.dislikes,
       allergies: member.allergies,
       wishList: member.wishList,
+      wishListLinks: parseWishListLinks(member.wishListLinks),
       noteToBuddy: member.noteToBuddy,
     },
     group: groupInfo,
@@ -154,11 +159,15 @@ export async function PATCH(req: Request) {
     const nextDislikes = normalizeNullableText(data.dislikes);
     const nextAllergies = normalizeNullableText(data.allergies);
     const nextWishList = normalizeNullableText(data.wishList);
+    const nextWishListLinks = data.wishListLinks ?? [];
     const nextNoteToBuddy = normalizeNullableText(data.noteToBuddy);
 
     const sameInterests =
       member.interests.length === data.interests.length &&
       member.interests.every((val, idx) => val === data.interests[idx]);
+    const prevWishListLinks = parseWishListLinks(member.wishListLinks);
+    const sameWishListLinks =
+      JSON.stringify(prevWishListLinks) === JSON.stringify(nextWishListLinks);
 
     const hasProfileChanged =
       !sameInterests ||
@@ -170,6 +179,7 @@ export async function PATCH(req: Request) {
       member.dislikes !== nextDislikes ||
       member.allergies !== nextAllergies ||
       member.wishList !== nextWishList ||
+      !sameWishListLinks ||
       member.noteToBuddy !== nextNoteToBuddy;
 
     const updated = await prisma.member.update({
@@ -185,6 +195,7 @@ export async function PATCH(req: Request) {
         dislikes: nextDislikes,
         allergies: nextAllergies,
         wishList: nextWishList,
+        wishListLinks: nextWishListLinks,
         noteToBuddy: nextNoteToBuddy,
       },
       select: {
@@ -199,6 +210,7 @@ export async function PATCH(req: Request) {
         dislikes: true,
         allergies: true,
         wishList: true,
+        wishListLinks: true,
         noteToBuddy: true,
       },
     });

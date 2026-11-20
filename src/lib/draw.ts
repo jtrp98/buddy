@@ -56,6 +56,9 @@ export async function executeGroupDraw(
           where: { emailVerifiedAt: { not: null } },
           select: { id: true },
         },
+        exclusions: {
+          select: { memberAId: true, memberBId: true },
+        },
       },
     });
 
@@ -81,7 +84,12 @@ export async function executeGroupDraw(
       };
     }
 
-    const pairings = generateDerangement(verifiedIds);
+    const verifiedSet = new Set(verifiedIds);
+    const activeExclusions = group.exclusions
+      .filter((e) => verifiedSet.has(e.memberAId) && verifiedSet.has(e.memberBId))
+      .map((e) => [e.memberAId, e.memberBId] as const);
+
+    const pairings = generateDerangement(verifiedIds, activeExclusions);
 
     await prisma.$transaction(async (tx) => {
       // Defensive guard: refuse if assignments already exist for this group

@@ -2,18 +2,21 @@
 
 import { useId, type RefObject } from "react";
 import { BUDDY_INTEREST_OPTIONS } from "@/lib/constants";
+import type { WishListLink } from "@/lib/validation";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { WishListGiftStack3D } from "@/components/illustrations/ChristmasIllustrations";
-import { FormField, Input, Textarea } from "@/components/ui/ChristmasUI";
+import { ChristmasButton, FormField, Input, Textarea } from "@/components/ui/ChristmasUI";
 import {
   AlertOctagon,
   BookOpen,
   Check,
   Coffee,
   Cookie,
+  ExternalLink,
   Gift,
   Headphones,
   Heart,
+  Link2,
   MessageSquareHeart,
   Palette,
   PenTool,
@@ -22,6 +25,7 @@ import {
   Sparkles,
   Sprout,
   ThumbsDown,
+  Trash2,
 } from "lucide-react";
 
 export interface BuddyProfileValues {
@@ -34,6 +38,7 @@ export interface BuddyProfileValues {
   dislikes: string;
   allergies: string;
   wishList: string;
+  wishListLinks?: WishListLink[];
   noteToBuddy: string;
 }
 
@@ -47,6 +52,7 @@ export const EMPTY_BUDDY_PROFILE: BuddyProfileValues = {
   dislikes: "",
   allergies: "",
   wishList: "",
+  wishListLinks: [],
   noteToBuddy: "",
 };
 
@@ -410,6 +416,100 @@ export function BuddyProfileFormFields({
                     </div>
                   </div>
                 )}
+
+                <div className="mt-4 rounded-xl border border-border-default bg-surface/50 p-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-text-primary">
+                      <Link2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                      <span>ลิงก์ของที่อยากได้ (สูงสุด 5 ลิงก์)</span>
+                    </span>
+                    {!disabled && (value.wishListLinks?.length ?? 0) < 5 && (
+                      <ChristmasButton
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          triggerClickSound();
+                          const current = value.wishListLinks ?? [];
+                          onChange({
+                            ...value,
+                            wishListLinks: [...current, { title: "", url: "" }],
+                          });
+                        }}
+                      >
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span>เพิ่มลิงก์</span>
+                      </ChristmasButton>
+                    )}
+                  </div>
+
+                  {(value.wishListLinks?.length ?? 0) === 0 ? (
+                    <p className="mt-1.5 text-xs text-text-muted">
+                      แนบลิงก์สินค้า Shopee / Lazada / เว็บที่อยากได้เพื่อให้บัดดี้เลือกถูกใจได้ง่ายขึ้น
+                    </p>
+                  ) : (
+                    <div className="mt-2.5 space-y-2">
+                      {(value.wishListLinks ?? []).map((link, idx) => (
+                        <div
+                          key={idx}
+                          className="grid gap-2 rounded-lg border border-border-default bg-surface-elevated/60 p-2 sm:grid-cols-[1fr_1.4fr_auto]"
+                        >
+                          <Input
+                            disabled={disabled}
+                            value={link.title}
+                            maxLength={80}
+                            placeholder="ชื่อสินค้า เช่น แก้วสีครีม"
+                            onChange={(e) => {
+                              const next = [...(value.wishListLinks ?? [])];
+                              next[idx] = { ...next[idx], title: e.target.value };
+                              onChange({ ...value, wishListLinks: next });
+                            }}
+                          />
+                          <Input
+                            disabled={disabled}
+                            type="url"
+                            value={link.url}
+                            maxLength={500}
+                            placeholder="https://..."
+                            onChange={(e) => {
+                              const next = [...(value.wishListLinks ?? [])];
+                              next[idx] = { ...next[idx], url: e.target.value };
+                              onChange({ ...value, wishListLinks: next });
+                            }}
+                          />
+                          {disabled ? (
+                            /^https?:\/\//i.test(link.url) ? (
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center rounded-lg border border-border-default px-2.5 text-xs text-primary hover:bg-primary/10"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            ) : null
+                          ) : (
+                            <ChristmasButton
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              aria-label="ลบลิงก์"
+                              onClick={() => {
+                                triggerClickSound();
+                                const next = (value.wishListLinks ?? []).filter(
+                                  (_, i) => i !== idx
+                                );
+                                onChange({ ...value, wishListLinks: next });
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-christmas-red-light" />
+                            </ChristmasButton>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

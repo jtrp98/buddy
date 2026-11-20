@@ -1,17 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   AlertOctagon,
   CalendarClock,
   Coffee,
+  ExternalLink,
   EyeOff,
   Gift,
   Heart,
+  Link2,
   Lock,
+  MessageCircle,
   MessageSquareHeart,
+  NotebookPen,
   Palette,
   RotateCcw,
+  Save,
   Sparkles,
   ThumbsDown,
 } from "lucide-react";
@@ -22,11 +28,13 @@ import {
 import { ChristmasJourney } from "@/components/ChristmasJourney";
 import { ChristmasTree } from "@/components/scenery/ChristmasTree";
 import { WinterScene } from "@/components/scenery/WinterScene";
-import { Alert, ChristmasButton } from "@/components/ui/ChristmasUI";
+import { GuessBuddyCard } from "@/components/reveal/GuessBuddyCard";
+import { Alert, ChristmasButton, Textarea, christmasButtonClass } from "@/components/ui/ChristmasUI";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { getInterestLabel } from "@/lib/constants";
 import { formatBudget } from "@/lib/budget";
 import { formatThaiDateTime } from "@/lib/timezone";
+import type { WishListLink } from "@/lib/validation";
 
 export interface BuddyRevealData {
   viewerName: string;
@@ -52,19 +60,30 @@ export interface BuddyRevealData {
     dislikes: string | null;
     allergies: string | null;
     wishList: string | null;
+    wishListLinks?: WishListLink[];
     noteToBuddy: string | null;
   };
+  secretNote?: string;
 }
 
 type RevealStage = "anticipation" | "untying" | "opening" | "revealed";
 
 const TEXT_GLOW = "[text-shadow:0_2px_14px_rgba(5,12,24,0.95)]";
 
-export function MagicalGiftReveal({ data }: { data: BuddyRevealData }) {
+export function MagicalGiftReveal({
+  data,
+  token,
+}: {
+  data: BuddyRevealData;
+  token?: string;
+}) {
   const { triggerStampSound, triggerChimeSound, triggerClickSound, boostSnow } =
     useFestiveAtmosphere();
   const [stage, setStage] = useState<RevealStage>("anticipation");
   const [celebrating, setCelebrating] = useState(false);
+  const [secretNote, setSecretNote] = useState(data.secretNote ?? "");
+  const [savingNote, setSavingNote] = useState(false);
+  const [noteStatus, setNoteStatus] = useState("");
   const timersRef = useRef<number[]>([]);
   const revealHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -405,6 +424,108 @@ export function MagicalGiftReveal({ data }: { data: BuddyRevealData }) {
                   “{buddy.noteToBuddy}”
                 </blockquote>
               </figure>
+            )}
+
+            {buddy.wishListLinks && buddy.wishListLinks.length > 0 && (
+              <div className="rounded-2xl border border-border bg-surface-elevated/60 p-4 sm:p-5">
+                <div className="flex items-center gap-1.5 text-sm font-bold text-primary">
+                  <Link2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>ลิงก์ของที่ {buddy.displayName} อยากได้</span>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {buddy.wishListLinks
+                    .filter((l) => /^https?:\/\//i.test(l.url))
+                    .map((link, idx) => (
+                      <a
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm font-semibold text-text-primary transition hover:border-primary hover:bg-primary/10"
+                      >
+                        <span className="truncate">{link.title}</span>
+                        <ExternalLink className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                      </a>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {token && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-border bg-surface-elevated/60 p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-gold">
+                      <NotebookPen className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      <span>สมุดโน้ตลับของซานต้า (เห็นเฉพาะคุณ)</span>
+                    </div>
+                    <ChristmasButton
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={savingNote}
+                      onClick={async () => {
+                        triggerClickSound();
+                        setSavingNote(true);
+                        setNoteStatus("");
+                        try {
+                          const res = await fetch("/api/members/buddy", {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ note: secretNote }),
+                          });
+                          if (res.ok) {
+                            triggerChimeSound();
+                            setNoteStatus("บันทึกโน้ตลับเรียบร้อยแล้ว");
+                          }
+                        } finally {
+                          setSavingNote(false);
+                        }
+                      }}
+                    >
+                      <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span>{savingNote ? "กำลังบันทึก..." : "บันทึกโน้ตลับ"}</span>
+                    </ChristmasButton>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">
+                    จดไอเดียของขวัญ งบที่ใช้ หรือคำใบ้ที่เตรียมไว้ (เข้ารหัสปลอดภัยบนเซิร์ฟเวอร์)
+                  </p>
+                  <Textarea
+                    rows={3}
+                    maxLength={1000}
+                    className="mt-2.5"
+                    value={secretNote}
+                    onChange={(e) => setSecretNote(e.target.value)}
+                    placeholder="เช่น ซื้อแก้วเก็บความเย็นสีดำ + เขียนการ์ดแกล้ง..."
+                  />
+                  {noteStatus && (
+                    <p className="mt-1.5 text-xs font-semibold text-accent-light">{noteStatus}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/35 bg-primary/10 p-4">
+                  <div>
+                    <p className="text-sm font-bold text-text-primary">
+                      อยากแอบถามไซส์เสื้อหรือเข้าไปปั่นเพื่อนแบบไม่ระบุตัวตน?
+                    </p>
+                    <p className="text-xs text-text-secondary">
+                      มีทั้งห้องปั่นรวม (1-to-Many) และแชตลับส่วนตัว (1-to-1)
+                    </p>
+                  </div>
+                  <Link
+                    href={`/chat?token=${encodeURIComponent(token)}`}
+                    className={christmasButtonClass("primary", "sm")}
+                  >
+                    <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                    <span>เข้าห้องแชตลับ</span>
+                  </Link>
+                </div>
+
+                <GuessBuddyCard token={token} />
+              </div>
             )}
 
             <p className="border-t border-border pt-4 text-center text-xs text-text-muted sm:text-sm">

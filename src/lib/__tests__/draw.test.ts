@@ -37,4 +37,48 @@ describe("Draw Engine (Sattolo Derangement)", () => {
       }
     }
   );
+
+  it("respects mutual exclusion pairs when drawing", () => {
+    const ids = ["a", "b", "c", "d", "e", "f"];
+    const exclusions = [
+      ["a", "b"],
+      ["c", "d"],
+    ] as const;
+
+    for (let trial = 0; trial < 30; trial++) {
+      const pairings = generateDerangement(ids, exclusions);
+      assertValidDerangement(ids, pairings, exclusions);
+      for (const p of pairings) {
+        expect(
+          (p.giverId === "a" && p.receiverId === "b") ||
+            (p.giverId === "b" && p.receiverId === "a") ||
+            (p.giverId === "c" && p.receiverId === "d") ||
+            (p.giverId === "d" && p.receiverId === "c")
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("falls back to non-single-cycle derangement when exclusions force 2-cycles", () => {
+    // With 4 members and (a,c), (a,d), (b,c), (b,d) excluded -> wait:
+    // If (a,c), (b,d), (a,d), (b,c) excluded, only (a<->b) and (c<->d) are valid!
+    const ids = ["a", "b", "c", "d"];
+    const exclusions = [
+      ["a", "c"],
+      ["a", "d"],
+      ["b", "c"],
+      ["b", "d"],
+    ] as const;
+    const pairings = generateDerangement(ids, exclusions);
+    assertValidDerangement(ids, pairings, exclusions);
+  });
+
+  it("throws a clear error when exclusions make any derangement impossible", () => {
+    const ids = ["a", "b", "c"];
+    const exclusions = [
+      ["a", "b"],
+      ["a", "c"],
+    ] as const;
+    expect(() => generateDerangement(ids, exclusions)).toThrow(/ห้ามจับคู่/);
+  });
 });
