@@ -5,9 +5,20 @@ export interface ReleaseEntry {
   highlights: string[];
 }
 
-export const CURRENT_VERSION = "0.2.0";
+export const CURRENT_VERSION = "0.3.0";
 
 export const RELEASES: ReleaseEntry[] = [
+  {
+    version: "0.3.0",
+    date: "2026-11-20",
+    title: "หมู่บ้าน 8-bit มีชีวิต & เสริมความปลอดภัยแชตลับ",
+    highlights: [
+      "8-bit Pixel Village Overhaul: ต้นคริสต์มาสและพร็อพ Pixel Art ใหม่ พร้อมลานหมู่บ้านแบบโค้ง",
+      "Interactive Buddies: แตะตัวละครเพื่อดูโค้ดเนมและคำทักทาย พร้อมอีโมจิและโมเมนต์คุยกันในหมู่บ้าน",
+      "Registered Members List: แสดงรายชื่อผู้ลงทะเบียนหน้า Join เรียงตามตัวอักษรแบบไม่เชื่อมโยงตัวละคร",
+      "Chat Privacy Hardening: ซ่อน Seed จริงของสมาชิกในแชต และจำกัดป้ายเจ้าของห้องเฉพาะแชตลับ 1-to-1",
+    ],
+  },
   {
     version: "0.2.0",
     date: "2026-11-20",

@@ -2,6 +2,16 @@
 
 All notable changes to **Secret Buddy** are documented in this file.
 
+## [0.3.0] - 2026-11-20
+
+### Added
+- **8-bit Pixel Village Overhaul (`JoinScene`):** อัปเกรดฉากหมู่บ้านคริสต์มาสด้วย `PixelChristmasTree`, `PixelProps`, และเลย์เอาต์ลานหมู่บ้านแบบโค้ง
+- **Interactive Buddies & Pair Chat:** กดทักทายตัวละครในหมู่บ้านเพื่อดูโค้ดเนมและคำอวยพรคริสต์มาส พร้อมอีโมจิโต้ตอบและโมเมนต์คุยกันระหว่างบัดดี้ใกล้เคียง
+- **Registered Members List:** แสดงรายชื่อผู้ลงทะเบียนบนหน้า Join เรียงตามตัวอักษรโดยไม่ผูกกับตัวละครหรือ Seed ในฉาก
+
+### Security & Fixed
+- **Anonymous Chat Privacy Hardening:** จำกัดป้าย `(เจ้าของห้อง)` เฉพาะห้องแชตลับ 1-to-1 (`PRIVATE_DM`), ซ่อน `participantSeed` จริงจาก Payload ของแชต, และเรียง `villageParticipants` ตามแฮชที่ไม่ระบุตัวตน
+
 ## [0.2.0] - 2026-11-20
 
 ### Added
