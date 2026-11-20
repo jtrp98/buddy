@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   CELEBRATION_THRESHOLD,
+  ambientEmoji,
+  buddyCodename,
+  buddyGreeting,
   buildSlots,
   entranceOffset,
+  giftCountForMembers,
   newlyUnlockedStage,
+  pickChatPair,
   seedJitter,
   shouldCelebrate,
   treeStage,
@@ -127,5 +132,51 @@ describe("characters", () => {
   it("walks newcomers in from the nearest edge", () => {
     expect(entranceOffset(100, 1000)).toBeLessThan(0);
     expect(entranceOffset(900, 1000)).toBeGreaterThan(0);
+  });
+
+  it("assigns winter hats and held props deterministically across seeds", () => {
+    const hats = new Set(Array.from({ length: 60 }, (_, i) => buddyLook(`hat-${i}`).hat));
+    const props = new Set(Array.from({ length: 60 }, (_, i) => buddyLook(`prop-${i}`).prop));
+    expect(hats.size).toBeGreaterThanOrEqual(5);
+    expect(props.size).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("village scene helpers", () => {
+  it("scales gift boxes from 0 up to 10 based on participant count", () => {
+    expect(giftCountForMembers(0)).toBe(0);
+    expect(giftCountForMembers(2)).toBe(0);
+    expect(giftCountForMembers(3)).toBe(3);
+    expect(giftCountForMembers(6)).toBe(6);
+    expect(giftCountForMembers(25)).toBe(10);
+  });
+
+  it("generates deterministic anonymous codenames, greetings, and emojis", () => {
+    expect(buddyCodename("seed-a")).toBe(buddyCodename("seed-a"));
+    expect(buddyCodename("seed-a")).toMatch(/#\d{2}$/);
+    const g0 = buddyGreeting("seed-a", 0);
+    const g1 = buddyGreeting("seed-a", 1);
+    expect(g0.length).toBeGreaterThan(0);
+    expect(g1).not.toBe(g0);
+    expect(ambientEmoji("seed-a", 4).length).toBeGreaterThan(0);
+  });
+
+  it("finds nearby pairs for ambient chat when multiple buddies are present", () => {
+    const slots = buildSlots({
+      width: 1100,
+      groundTop: 380,
+      groundBottom: 474,
+      treeHalfWidth: 120,
+      spriteWidth: 50,
+      rows: 3,
+    });
+    expect(pickChatPair(slots, 1, () => 0)).toBeNull();
+    const pair = pickChatPair(slots, 12, () => 0.25);
+    expect(pair).not.toBeNull();
+    if (pair) {
+      expect(pair[0]).not.toBe(pair[1]);
+      expect(pair[0]).toBeLessThan(12);
+      expect(pair[1]).toBeLessThan(12);
+    }
   });
 });

@@ -1,22 +1,27 @@
 import { hashString, seededRandom } from "@/lib/prng";
+import { gridToPaths, padAndOutlineGrid } from "./pixelGrid";
+
+export { gridToPaths };
 
 /**
- * 8-bit participant sprites for the Join page.
+ * 8-bit participant sprites for the Join page & avatars.
  *
- * Each buddy is a 12×16 palette-indexed pixel grid (plus an automatic 1px dark
- * outline → 14×18). The look — skin, hair style, coat, scarf, hat, boots — is
- * derived deterministically from the participant's anonymous seed, so the same
- * person always looks the same on every device without exposing who they are.
+ * Each buddy is a 12×16 palette-indexed pixel grid (plus an automatic 1px
+ * twilight-navy outline → 14×18). The look — skin, hair style, coat, scarf,
+ * hat, held winter prop, boots — is derived deterministically from the
+ * participant's anonymous seed, so the same person always looks the same on
+ * every device without exposing who they are.
  */
 
-export type FrameName = "idle" | "walkA" | "walkB" | "waveA" | "waveB" | "jump";
-export const FRAME_NAMES: FrameName[] = ["idle", "walkA", "walkB", "waveA", "waveB", "jump"];
+export type FrameName = "idle" | "walkA" | "walkB" | "waveA" | "waveB" | "jump" | "sit";
+export const FRAME_NAMES: FrameName[] = ["idle", "walkA", "walkB", "waveA", "waveB", "jump", "sit"];
 
 export const SPRITE_W = 14;
 export const SPRITE_H = 18;
 
 // Legend: . empty · H hair · S skin · E eye · R blush · C coat · c coat shade · W trim
-//         F scarf · f scarf shade · P trousers · B boots · T hat · t hat band · O pompom · X santa red
+//         F scarf · f scarf shade · P trousers · B boots · T hat · t hat band · O pompom
+//         X santa red · A wood/antler · M prop main · m prop glow/accent
 const BASE: string[] = [
   "............",
   "............",
@@ -28,8 +33,8 @@ const BASE: string[] = [
   "...SSSSSS...",
   "..FFFFFFFF..",
   ".CCCFfCCCCC.",
-  "SCCCFfCCCCcS",
-  ".cCCCCCCCCc.",
+  "SCCCFfWCCCcS",
+  ".cCCCCWCCCc.",
   "..WWWWWWWW..",
   "..PPP..PPP..",
   "..PPP..PPP..",
@@ -120,10 +125,18 @@ const FRAME_BUILDERS: Record<FrameName, (g: string[]) => string[]> = {
         [9, 11, "C"],
       ]
     ),
+  sit: (g) =>
+    applyRows(g, {
+      12: "..WWWWWWWW..",
+      13: "..PPPPPPPP..",
+      14: ".BBBB..BBBB.",
+      15: "............",
+    }),
 };
 
-type HairStyle = "short" | "long" | "bun" | "spiky";
-type HatStyle = "beanie" | "santa" | "earmuffs" | "none";
+export type HairStyle = "short" | "long" | "bun" | "spiky";
+export type HatStyle = "beanie" | "santa" | "earmuffs" | "antlers" | "trapper" | "none";
+export type BuddyProp = "none" | "cocoa" | "lantern" | "gift" | "candy";
 
 const HAIR_PATCHES: Record<HairStyle, Patch[]> = {
   short: [],
@@ -177,6 +190,54 @@ const HAT_LAYERS: Record<HatStyle, string[]> = {
     ".O........O.",
     ".O........O.",
   ],
+  antlers: [
+    ".A........A.",
+    ".AA......AA.",
+    "..A.XXXX.A..",
+    "............",
+  ],
+  trapper: [
+    "............",
+    "...TTTTTT...",
+    "..TTTTTTTT..",
+    "..WWWWWWWW..",
+    ".T........T.",
+    ".W........W.",
+  ],
+};
+
+const PROP_PATCHES: Record<BuddyProp, Patch[]> = {
+  none: [],
+  cocoa: [
+    [8, 0, "m"],
+    [9, 0, "W"],
+    [10, 0, "M"],
+    [11, 0, "M"],
+    [10, 1, "S"],
+  ],
+  lantern: [
+    [10, 0, "S"],
+    [11, 0, "A"],
+    [12, 0, "m"],
+    [13, 0, "A"],
+  ],
+  gift: [
+    [9, 0, "m"],
+    [10, 0, "M"],
+    [10, 1, "m"],
+    [11, 0, "M"],
+    [11, 1, "M"],
+    [9, 1, "S"],
+  ],
+  candy: [
+    [7, 0, "M"],
+    [7, 1, "W"],
+    [8, 0, "W"],
+    [9, 0, "M"],
+    [10, 0, "S"],
+    [11, 0, "W"],
+    [12, 0, "M"],
+  ],
 };
 
 const SKINS = ["#f7d7bb", "#ecb994", "#cf956b", "#9a6542", "#6e4529"];
@@ -206,16 +267,24 @@ const HATS: [string, string, string][] = [
   ["#3b6fb6", "#244a80", "#f8fafc"],
   ["#7a4fa8", "#523274", "#f3d27a"],
 ];
+const PROP_PALETTES: [string, string][] = [
+  ["#d23a40", "#ffe7a8"],
+  ["#2f8a5b", "#ffd27a"],
+  ["#3b6fb6", "#ffe7a8"],
+  ["#d9a03a", "#fff3d1"],
+];
 const TROUSERS = ["#2b2f3a", "#3d3328", "#24324a", "#3a2a3f"];
 const BOOTS = ["#5a3a24", "#2a1e18", "#7a2b2b", "#2f3a2f"];
 const HAIR_STYLES: HairStyle[] = ["short", "long", "bun", "spiky", "short", "long"];
-const HAT_STYLES: HatStyle[] = ["beanie", "santa", "earmuffs", "none", "beanie", "santa"];
+const HAT_STYLES: HatStyle[] = ["beanie", "santa", "earmuffs", "antlers", "trapper", "none", "beanie", "santa"];
+const PROPS: BuddyProp[] = ["none", "cocoa", "lantern", "gift", "candy", "none", "cocoa", "lantern"];
 
-export const OUTLINE = "#17121c";
+export const OUTLINE = "#1a2238";
 
 export interface BuddyLook {
   hair: HairStyle;
   hat: HatStyle;
+  prop: BuddyProp;
   palette: Record<string, string>;
 }
 
@@ -233,11 +302,14 @@ export function buddyLook(seed: string): BuddyLook {
   const hat = pick(HATS, rand);
   const hairStyle = pick(HAIR_STYLES, rand);
   const hatStyle = pick(HAT_STYLES, rand);
+  const prop = pick(PROPS, rand);
+  const propColor = pick(PROP_PALETTES, rand);
   // Avoid a scarf that disappears into a same-colour coat.
   if (scarf[0] === coat[0]) scarf = SCARVES[(SCARVES.indexOf(scarf) + 1) % SCARVES.length];
   return {
     hair: hairStyle,
     hat: hatStyle,
+    prop,
     palette: {
       H: hair,
       S: skin,
@@ -254,47 +326,22 @@ export function buddyLook(seed: string): BuddyLook {
       t: hat[1],
       O: hat[2],
       X: "#d23a40",
+      A: "#8b5a36",
+      M: propColor[0],
+      m: propColor[1],
     },
   };
 }
 
-/** Builds the grid for one frame, with hair and hat applied, padded + outlined (14×18). */
+/** Builds the grid for one frame, with hair, hat, and held prop applied, padded + outlined (14×18). */
 export function buildFrame(look: BuddyLook, frame: FrameName): string[] {
   let g = FRAME_BUILDERS[frame](BASE);
   g = applyPatches(g, HAIR_PATCHES[look.hair]);
   g = overlay(g, HAT_LAYERS[look.hat]);
-  // Pad by one pixel on every side, then outline every empty pixel touching a filled one.
-  const padded = [".".repeat(SPRITE_W), ...g.map((l) => `.${l}.`), ".".repeat(SPRITE_W)];
-  const filled = (r: number, c: number) => padded[r]?.[c] !== undefined && padded[r][c] !== "." && padded[r][c] !== "K";
-  return padded.map((line, r) =>
-    line
-      .split("")
-      .map((ch, c) =>
-        ch === "." && (filled(r - 1, c) || filled(r + 1, c) || filled(r, c - 1) || filled(r, c + 1)) ? "K" : ch
-      )
-      .join("")
-  );
-}
-
-/** One SVG path per colour: merges horizontal runs into rectangles. */
-export function gridToPaths(grid: string[], palette: Record<string, string>): { color: string; d: string }[] {
-  const byColor = new Map<string, string>();
-  grid.forEach((line, y) => {
-    let x = 0;
-    while (x < line.length) {
-      const ch = line[x];
-      if (ch === ".") {
-        x++;
-        continue;
-      }
-      let run = 1;
-      while (line[x + run] === ch) run++;
-      const color = ch === "K" ? OUTLINE : palette[ch] ?? OUTLINE;
-      byColor.set(color, (byColor.get(color) ?? "") + `M${x} ${y}h${run}v1h-${run}z`);
-      x += run;
-    }
-  });
-  return Array.from(byColor, ([color, d]) => ({ color, d }));
+  if (look.prop !== "none" && (frame === "idle" || frame === "walkA" || frame === "walkB" || frame === "sit")) {
+    g = applyPatches(g, PROP_PATCHES[look.prop]);
+  }
+  return padAndOutlineGrid(g, SPRITE_W, "K");
 }
 
 const cache = new Map<string, Record<FrameName, { color: string; d: string }[]>>();
@@ -305,7 +352,7 @@ export function spriteFrames(seed: string) {
   if (hit) return hit;
   const look = buddyLook(seed);
   const frames = Object.fromEntries(
-    FRAME_NAMES.map((f) => [f, gridToPaths(buildFrame(look, f), look.palette)])
+    FRAME_NAMES.map((f) => [f, gridToPaths(buildFrame(look, f), look.palette, OUTLINE)])
   ) as Record<FrameName, { color: string; d: string }[]>;
   if (cache.size > 400) cache.clear();
   cache.set(seed, frames);

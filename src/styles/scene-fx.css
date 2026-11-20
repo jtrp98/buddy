@@ -122,12 +122,16 @@
   animation: driftGrow 60s var(--ease-soft) both;
 }
 
-/* ---------- Pixel buddies (Join page only) ---------- */
+/* ---------- Pixel buddies (Join page & avatars) ---------- */
 
 .pixel-buddy {
   position: absolute;
-  transform: translate(-50%, -100%);
-  will-change: transform;
+  transform: translate(calc(-50% + var(--walk-x, 0px)), -100%);
+  transition:
+    left var(--walk-ms, 0ms) linear,
+    top var(--walk-ms, 0ms) linear,
+    transform 1.6s linear;
+  will-change: left, top, transform;
 }
 
 .pixel-buddy svg {
@@ -168,14 +172,20 @@
 }
 .pixel-buddy[data-action="walk"] .pb-walk-a,
 .pixel-buddy[data-action="wave"] .pb-wave-a {
-  animation: pbFrameA 0.46s infinite;
+  animation: pbFrameA 0.44s infinite;
 }
 .pixel-buddy[data-action="walk"] .pb-walk-b,
 .pixel-buddy[data-action="wave"] .pb-wave-b {
-  animation: pbFrameB 0.46s infinite;
+  animation: pbFrameB 0.44s infinite;
 }
 .pixel-buddy[data-action="jump"] .pb-jump {
   opacity: 1;
+}
+.pixel-buddy[data-action="sit"] .pb-sit {
+  opacity: 1;
+}
+.pixel-buddy[data-action="sit"] .pb-body {
+  animation: none;
 }
 
 /* Idle breathing: a 1px bob with hard steps keeps the 8-bit feel */
@@ -189,7 +199,7 @@
   }
 }
 .pixel-buddy .pb-body {
-  animation: pbBob 1.6s steps(1, end) infinite;
+  animation: pbBob 1.7s steps(1, end) infinite;
   animation-delay: var(--bob-delay, 0s);
 }
 
@@ -203,7 +213,7 @@
   }
 }
 .pixel-buddy[data-action="jump"] .pb-body {
-  animation: pbJump 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) 2;
+  animation: pbJump 0.56s cubic-bezier(0.3, 0.7, 0.4, 1) 2;
 }
 
 .pixel-buddy .pb-facing {
@@ -211,47 +221,6 @@
 }
 .pixel-buddy[data-flip="true"] .pb-facing {
   transform: scaleX(-1);
-}
-
-/* Some buddies stroll slowly back and forth around their spot */
-@keyframes pbStroll {
-  0% {
-    transform: translateX(calc(var(--stroll, 14px) * -1));
-  }
-  45% {
-    transform: translateX(var(--stroll, 14px));
-  }
-  50% {
-    transform: translateX(var(--stroll, 14px));
-  }
-  95% {
-    transform: translateX(calc(var(--stroll, 14px) * -1));
-  }
-  100% {
-    transform: translateX(calc(var(--stroll, 14px) * -1));
-  }
-}
-@keyframes pbStrollFace {
-  0%,
-  47% {
-    transform: scaleX(1);
-  }
-  47.1%,
-  97% {
-    transform: scaleX(-1);
-  }
-  97.1%,
-  100% {
-    transform: scaleX(1);
-  }
-}
-.pixel-buddy[data-stroll="true"] .pb-stroll {
-  animation: pbStroll var(--stroll-dur, 11s) linear infinite;
-  animation-delay: var(--stroll-delay, 0s);
-}
-.pixel-buddy[data-stroll="true"] .pb-stroll-face {
-  animation: pbStrollFace var(--stroll-dur, 11s) linear infinite;
-  animation-delay: var(--stroll-delay, 0s);
 }
 
 /* Entrance: walk in from the edge of the scene to the assigned spot */
@@ -270,20 +239,263 @@
 @keyframes pbBubble {
   0% {
     opacity: 0;
-    transform: translate(-50%, 6px) scale(0.8);
+    transform: translateY(6px) scale(0.84);
   }
   12%,
   85% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateY(0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -4px) scale(0.95);
+    transform: translateY(-4px) scale(0.95);
   }
 }
 .pb-welcome {
   animation: pbBubble 3.2s var(--ease-soft) 2.3s both;
+}
+
+@keyframes pbSpeechPop {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.86);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.pb-speech-pop {
+  animation: pbSpeechPop 240ms var(--ease-bounce) both;
+}
+
+@keyframes pbFootprint {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  45% {
+    opacity: 0.75;
+  }
+}
+.pb-footprint {
+  animation: pbFootprint 0.7s steps(2, end) infinite;
+}
+
+@keyframes pbBreath {
+  0%,
+  65%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  75% {
+    opacity: 0.65;
+    transform: translate(0, -2px);
+  }
+  92% {
+    opacity: 0;
+    transform: translate(3px, -6px);
+  }
+}
+.pb-breath {
+  animation: pbBreath 5.6s ease-out infinite;
+}
+
+/* ---------- Pixel Christmas tree & Hybrid HD-2D village props ---------- */
+
+.pixel-tree .pt-aura {
+  opacity: 0;
+}
+.pixel-tree[data-lit="true"] .pt-aura {
+  opacity: 0.65;
+}
+.pixel-tree[data-full="true"] .pt-aura {
+  opacity: 1;
+}
+
+.pixel-tree .pt-decor,
+.pixel-tree .pt-lit {
+  opacity: 0;
+  transition: opacity 650ms var(--ease-soft);
+}
+.pixel-tree[data-decorated="true"] .pt-decor,
+.pixel-tree[data-lit="true"] .pt-lit {
+  opacity: 1;
+}
+
+.pixel-tree .pt-star {
+  opacity: 0.35;
+  transition: opacity 750ms var(--ease-soft);
+}
+.pixel-tree .pt-star-halo {
+  opacity: 0;
+}
+.pixel-tree[data-star="true"] .pt-star,
+.pixel-tree[data-star="true"] .pt-star-halo {
+  opacity: 1;
+}
+
+.pixel-tree .pt-bulb-glow {
+  opacity: 0;
+  transition: opacity 550ms ease;
+}
+.pixel-tree[data-lit="true"] .pt-bulb-glow {
+  opacity: 0.24;
+}
+
+@keyframes ptTwinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.28;
+  }
+}
+@keyframes ptCandle {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  30% {
+    opacity: 0.52;
+  }
+  60% {
+    opacity: 0.95;
+  }
+}
+
+.pixel-tree[data-lit="true"][data-light-mode="twinkle"] .pt-bulb {
+  animation: ptTwinkle 2.1s steps(2, end) infinite;
+  animation-delay: var(--pt-delay, 0s);
+}
+.pixel-tree[data-lit="true"][data-light-mode="aurora"] .pt-bulb {
+  animation: ptTwinkle 3.2s ease-in-out infinite;
+  animation-delay: var(--pt-delay, 0s);
+}
+.pixel-tree[data-lit="true"][data-light-mode="candle"] .pt-bulb {
+  animation: ptCandle 2.6s ease-in-out infinite;
+  animation-delay: var(--pt-delay, 0s);
+}
+
+.pt-sparkle-px {
+  animation: ptTwinkle 2.2s steps(2, end) infinite;
+  animation-delay: var(--pt-delay, 0s);
+}
+
+.pt-festoon-bulb {
+  animation: ptTwinkle 2.8s ease-in-out infinite;
+  animation-delay: var(--pt-delay, 0s);
+}
+
+@keyframes pxSmokeRise {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.8);
+  }
+  20% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -24px) scale(1.45);
+  }
+}
+.px-smoke-puff {
+  animation: pxSmokeRise 3.5s ease-out infinite;
+  animation-delay: var(--smoke-delay, 0s);
+}
+
+@keyframes pxSnowmanWiggle {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-7deg) translateY(-4px);
+  }
+  50% {
+    transform: rotate(6deg) translateY(-1px);
+  }
+  75% {
+    transform: rotate(-4deg) translateY(-3px);
+  }
+}
+.px-snowman[data-wiggle="true"] .px-snowman-svg {
+  transform-origin: 50% 92%;
+  animation: pxSnowmanWiggle 0.65s ease-out 2;
+}
+
+@keyframes pxGiftPop {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.px-gift-box {
+  animation: pxGiftPop 480ms var(--ease-bounce) var(--gift-delay, 0ms) both;
+}
+
+@keyframes pxStageSnow {
+  0% {
+    transform: translate3d(0, -16px, 0);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: var(--flake-o, 0.55);
+  }
+  100% {
+    transform: translate3d(var(--flake-drift, 24px), 500px, 0);
+    opacity: 0;
+  }
+}
+.px-stage-flake {
+  animation: pxStageSnow var(--flake-dur, 11s) linear infinite;
+  animation-delay: var(--flake-delay, 0s);
+}
+
+@keyframes pxSparkPop {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--sx, 0px)), calc(-50% + var(--sy, -18px))) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--sx, 0px)), calc(-50% + var(--sy, -26px))) scale(0.5);
+  }
+}
+.px-spark-particle {
+  animation: pxSparkPop 650ms ease-out both;
+}
+
+@keyframes pxShootingStar {
+  0%,
+  82%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-22deg) scaleX(0.4);
+  }
+  85% {
+    opacity: 0.95;
+    transform: translate3d(0, 0, 0) rotate(-22deg) scaleX(1);
+  }
+  92% {
+    opacity: 0;
+    transform: translate3d(140px, 56px, 0) rotate(-22deg) scaleX(0.7);
+  }
+}
+.px-shooting-star {
+  animation: pxShootingStar 14s ease-out infinite;
 }
 
 /* Celebration banner */
@@ -311,11 +523,23 @@
   .xmas-tree[data-celebrating="true"] .tree-star-bright,
   .snow-drift,
   .pixel-buddy .pb-body,
-  .pixel-buddy[data-stroll="true"] .pb-stroll,
-  .pixel-buddy[data-stroll="true"] .pb-stroll-face,
   .pixel-buddy[data-entering="true"] .pb-enter,
+  .pb-breath,
+  .pb-footprint,
+  .pixel-tree .pt-bulb,
+  .pt-sparkle-px,
+  .pt-festoon-bulb,
+  .px-smoke-puff,
+  .px-snowman .px-snowman-svg,
+  .px-gift-box,
+  .px-stage-flake,
+  .px-spark-particle,
+  .px-shooting-star,
   .celebration-banner {
     animation: none !important;
+  }
+  .pixel-buddy {
+    transition: none !important;
   }
   .pixel-buddy[data-action="walk"] .pb-walk-a,
   .pixel-buddy[data-action="wave"] .pb-wave-a {
@@ -329,11 +553,15 @@
   .pb-welcome {
     animation: none !important;
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   .xmas-tree .tree-gifts > g,
   .xmas-tree .tree-bulb-glow,
-  .xmas-tree .tree-bulb-core {
+  .xmas-tree .tree-bulb-core,
+  .pixel-tree .pt-decor,
+  .pixel-tree .pt-lit,
+  .pixel-tree .pt-star,
+  .pixel-tree .pt-bulb-glow {
     transition: none !important;
   }
 }

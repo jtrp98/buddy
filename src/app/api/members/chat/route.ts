@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { extractBearerToken, jsonNoStore } from "@/lib/api-response";
 import { findMemberByToken } from "@/lib/member-auth";
 import { getAnonymousPersona } from "@/lib/codename";
-import { participantSeed } from "@/lib/participant-seed";
 import { chatMessageSchema } from "@/lib/validation";
 import { sendMail } from "@/lib/email/mailer";
 import { buildChatNotificationEmail } from "@/lib/email/templates";
@@ -94,10 +93,16 @@ export async function GET(req: Request) {
     members: members.map((m) => ({
       id: m.id,
       displayName: m.displayName,
-      avatarSeed: participantSeed(m.id),
       publicMessageCount: publicRoomSummary.get(m.id)?.messageCount ?? 0,
       publicLastMessage: publicRoomSummary.get(m.id)?.lastMessage ?? null,
     })),
+    // Sorted by anonymous seed hash so the array order cannot be correlated with real display names.
+    villageParticipants: members
+      .map((m) => ({
+        seed: getAnonymousPersona(me.group.id, m.id).avatarSeed,
+        verified: true,
+      }))
+      .sort((a, b) => a.seed.localeCompare(b.seed)),
     inboxDmThreads,
   });
 }
@@ -272,7 +277,7 @@ export async function POST(req: Request) {
   }
 
   const persona = getAnonymousPersona(me.group.id, me.id);
-  const isOwner = targetMember.id === me.id;
+  const isOwner = mode === "PRIVATE_DM" && targetMember.id === me.id;
 
   return jsonNoStore(
     {
@@ -284,7 +289,7 @@ export async function POST(req: Request) {
         isMine: true,
         isOwner,
         senderLabel: isOwner ? `${targetMember.displayName} (เจ้าของห้อง)` : persona.codename,
-        avatarSeed: isOwner ? participantSeed(targetMember.id) : persona.avatarSeed,
+        avatarSeed: isOwner ? "room-owner" : persona.avatarSeed,
       },
     },
     201

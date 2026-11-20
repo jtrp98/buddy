@@ -33,7 +33,7 @@ export async function GET(req: Request, context: RouteContext) {
       revealAt: true,
       status: true,
       members: {
-        select: { id: true, emailVerifiedAt: true },
+        select: { id: true, displayName: true, emailVerifiedAt: true },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -68,6 +68,14 @@ export async function GET(req: Request, context: RouteContext) {
         seed: participantSeed(m.id),
         verified: m.emailVerifiedAt !== null,
       })),
+      // Sorted alphabetically by displayName with no seed/id so names cannot be
+      // correlated with the anonymous village characters.
+      registeredMembers: [...group.members]
+        .sort((a, b) => a.displayName.localeCompare(b.displayName, "th"))
+        .map((m) => ({
+          displayName: m.displayName,
+          verified: m.emailVerifiedAt !== null,
+        })),
     },
   });
 }

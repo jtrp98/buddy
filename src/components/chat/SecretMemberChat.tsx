@@ -4,14 +4,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Home,
   Lock,
   MessageCircle,
   PauseCircle,
   RefreshCw,
   Send,
   Sparkles,
+  Trees,
   Users,
 } from "lucide-react";
+import { JoinScene, type SceneParticipant } from "@/components/join/JoinScene";
 import { PixelAvatar } from "@/components/join/PixelAvatar";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import {
@@ -26,7 +29,7 @@ import {
 interface ChatMember {
   id: string;
   displayName: string;
-  avatarSeed: string;
+  avatarSeed?: string;
   publicMessageCount: number;
   publicLastMessage: string | null;
 }
@@ -54,6 +57,7 @@ interface ChatBootstrap {
     status: string;
   };
   members: ChatMember[];
+  villageParticipants?: SceneParticipant[];
   inboxDmThreads: InboxDmThread[];
 }
 
@@ -86,6 +90,7 @@ export function SecretMemberChat({ token }: { token: string }) {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [showVillage, setShowVillage] = useState(false);
 
   const [idlePaused, setIdlePaused] = useState(false);
   const lastActivityRef = useRef<number>(0);
@@ -325,20 +330,58 @@ export function SecretMemberChat({ token }: { token: string }) {
           <h1 className="mt-1 text-2xl font-bold text-text-primary sm:text-3xl">
             ห้องแชตลับ &amp; ปั่นเพื่อน
           </h1>
-          <p className="mt-1 text-xs text-text-secondary">
-            ฉายานิรนามของคุณในกลุ่มนี้คือ{" "}
-            <strong className="text-gold">{bootstrap.me.codename}</strong>
-          </p>
+          <div className="mt-1.5 flex items-center gap-2 text-xs text-text-secondary">
+            <PixelAvatar seed={bootstrap.me.avatarSeed} px={2} />
+            <span>
+              ฉายานิรนามของคุณในกลุ่มนี้คือ{" "}
+              <strong className="text-gold">{bootstrap.me.codename}</strong>
+            </span>
+          </div>
         </div>
 
-        <Link
-          href={`/me/profile?token=${encodeURIComponent(token)}`}
-          className={christmasButtonClass("secondary", "sm")}
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          <span>กลับหน้าโปรไฟล์</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <ChristmasButton
+            type="button"
+            size="sm"
+            variant={showVillage ? "primary" : "secondary"}
+            onClick={() => {
+              markActivity();
+              triggerClickSound();
+              setShowVillage((v) => !v);
+            }}
+          >
+            <Trees className="h-4 w-4" aria-hidden="true" />
+            <span>{showVillage ? "ซ่อนลานหมู่บ้าน" : "แอบส่องลานหมู่บ้านสมาชิก"}</span>
+          </ChristmasButton>
+
+          <Link
+            href={`/me/profile?token=${encodeURIComponent(token)}`}
+            className={christmasButtonClass("secondary", "sm")}
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span>กลับหน้าโปรไฟล์</span>
+          </Link>
+        </div>
       </div>
+
+      {showVillage && (
+        <ChristmasCard className="space-y-3 p-3 sm:p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <p className="text-xs font-semibold text-primary">
+              ลานหมู่บ้านนิรนามของสมาชิกในกลุ่ม
+            </p>
+            <p className="text-[11px] text-text-muted">
+              ตัวละครและฉายาตรงกับคนปั่นในแชตเป๊ะๆ — แต่ไม่บอกหรอกนะว่าใครคือตัวไหน!
+            </p>
+          </div>
+          <JoinScene
+            compact
+            participants={bootstrap.villageParticipants ?? []}
+            total={(bootstrap.villageParticipants ?? []).length}
+            mySeed={bootstrap.me.avatarSeed}
+          />
+        </ChristmasCard>
+      )}
 
       {idlePaused && (
         <Alert tone="info">
@@ -392,7 +435,12 @@ export function SecretMemberChat({ token }: { token: string }) {
                         : "border-transparent bg-surface-elevated/40 text-text-secondary hover:border-border-default hover:text-text-primary"
                     }`}
                   >
-                    <PixelAvatar seed={m.avatarSeed} px={2} />
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary"
+                    >
+                      <Home className="h-4 w-4" />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-bold">
                         {m.displayName} {isMe ? "(ห้องฉัน)" : ""}
@@ -462,7 +510,14 @@ export function SecretMemberChat({ token }: { token: string }) {
           {/* Header & Mode Tabs */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-default pb-3">
             <div className="flex items-center gap-2.5">
-              {selectedMember && <PixelAvatar seed={selectedMember.avatarSeed} px={2} />}
+              {selectedMember && (
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/12 text-primary"
+                >
+                  <Home className="h-4 w-4" />
+                </span>
+              )}
               <div>
                 <h2 className="text-base font-bold text-text-primary">
                   {selectedMember ? `ห้องของ ${selectedMember.displayName}` : "เลือกห้องแชต"}
@@ -536,7 +591,16 @@ export function SecretMemberChat({ token }: { token: string }) {
                   key={m.id}
                   className={`flex items-start gap-2.5 ${m.isMine ? "flex-row-reverse" : ""}`}
                 >
-                  <PixelAvatar seed={m.avatarSeed} px={2} />
+                  {m.avatarSeed === "room-owner" ? (
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gold/35 bg-gold/12 text-gold"
+                    >
+                      <Home className="h-4 w-4" />
+                    </span>
+                  ) : (
+                    <PixelAvatar seed={m.avatarSeed} px={2} />
+                  )}
                   <div
                     className={`max-w-[78%] rounded-2xl border px-3.5 py-2.5 text-sm ${
                       m.isMine

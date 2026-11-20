@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { decryptText, encryptText } from "../crypto";
 import { getAnonymousPersona } from "../codename";
+import { buddyCodename } from "../join-scene";
+import { participantSeed } from "../participant-seed";
 import {
   buddyGuessSchema,
   chatMessageSchema,
@@ -24,6 +26,8 @@ describe("New Features Utilities & Validation", () => {
     const p3 = getAnonymousPersona("g1", "m2");
     expect(p1).toEqual(p2);
     expect(p1.codename).toMatch(/#\d{2}$/);
+    expect(p1.avatarSeed).toBe(participantSeed("m1"));
+    expect(p1.codename).toBe(buddyCodename(p1.avatarSeed));
     expect(p1.avatarSeed).not.toBe(p3.avatarSeed);
   });
 

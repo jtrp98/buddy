@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { extractBearerToken, jsonNoStore } from "@/lib/api-response";
 import { findMemberByToken } from "@/lib/member-auth";
 import { getAnonymousPersona } from "@/lib/codename";
-import { participantSeed } from "@/lib/participant-seed";
 
 const PUBLIC_VISITOR_KEY = "__PUBLIC__";
 
@@ -86,7 +85,7 @@ export async function GET(req: Request) {
   }
 
   const messages = thread.messages.map((m) => {
-    const isOwner = m.senderMemberId === targetMember.id;
+    const isOwner = thread.mode === "PRIVATE_DM" && m.senderMemberId === targetMember.id;
     const isMine = m.senderMemberId === me.id;
     const persona = getAnonymousPersona(me.group.id, m.senderMemberId);
     return {
@@ -96,7 +95,7 @@ export async function GET(req: Request) {
       isMine,
       isOwner,
       senderLabel: isOwner ? `${targetMember.displayName} (เจ้าของห้อง)` : persona.codename,
-      avatarSeed: isOwner ? participantSeed(targetMember.id) : persona.avatarSeed,
+      avatarSeed: isOwner ? "room-owner" : persona.avatarSeed,
     };
   });
 
