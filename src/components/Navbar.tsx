@@ -20,6 +20,8 @@ import { FestiveToggleSwitches } from "@/components/AnalogPrimitives";
 import { ChristmasLights } from "@/components/atmosphere/ChristmasLights";
 import { useFestiveAtmosphere } from "@/components/FestiveAtmosphere";
 import { christmasButtonClass } from "@/components/ui/buttonStyles";
+import { ReleaseNotesModal } from "@/components/vintage/ReleaseNotesModal";
+import { CURRENT_VERSION } from "@/lib/releases";
 
 function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
   const pathname = usePathname();
@@ -79,6 +81,7 @@ function DesktopNavLinks({ showDevOutbox }: { showDevOutbox: boolean }) {
 
 export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [releaseModalOpen, setReleaseModalOpen] = useState(false);
   const {
     festiveFx,
     toggleFestiveFx,
@@ -99,23 +102,34 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
         }}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
-          <Link
-            href="/"
-            onClick={() => setMobileMenuOpen(false)}
-            className="group flex min-w-0 shrink-0 items-center gap-2.5 text-text-primary transition sm:gap-3"
-          >
-            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-[linear-gradient(180deg,var(--color-christmas-red-hover),var(--color-christmas-red-deep))] text-ivory shadow-[0_4px_14px_-4px_rgba(179,38,46,0.7),inset_0_1px_0_rgba(255,255,255,0.3)] transition group-hover:scale-105">
-              <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
-            </span>
-            <div className="leading-tight">
-              <span className="font-display-en block whitespace-nowrap text-base font-bold tracking-tight text-text-primary group-hover:text-primary sm:text-lg">
-                Secret Buddy
+          <div className="flex min-w-0 shrink-0 items-center gap-2">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="group flex min-w-0 shrink-0 items-center gap-2.5 text-text-primary transition sm:gap-3"
+            >
+              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-[linear-gradient(180deg,var(--color-christmas-red-hover),var(--color-christmas-red-deep))] text-ivory shadow-[0_4px_14px_-4px_rgba(179,38,46,0.7),inset_0_1px_0_rgba(255,255,255,0.3)] transition group-hover:scale-105">
+                <Gift className="h-5 w-5 text-primary" aria-hidden="true" />
               </span>
-              <span className="mt-0.5 block text-[11px] font-medium text-primary/90">
-                แลกของขวัญแบบลับ ๆ
-              </span>
-            </div>
-          </Link>
+              <div className="leading-tight">
+                <span className="font-display-en block whitespace-nowrap text-base font-bold tracking-tight text-text-primary group-hover:text-primary sm:text-lg">
+                  Secret Buddy
+                </span>
+                <span className="mt-0.5 block text-[11px] font-medium text-primary/90">
+                  แลกของขวัญแบบลับ ๆ
+                </span>
+              </div>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setReleaseModalOpen(true)}
+              title="ดูรายการอัปเดตเวอร์ชัน"
+              aria-label={`เวอร์ชัน ${CURRENT_VERSION} — คลิกเพื่อดูรายการอัปเดต`}
+              className="inline-flex shrink-0 items-center rounded-full border border-primary/35 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-bold text-primary transition hover:border-primary hover:bg-primary/20"
+            >
+              v{CURRENT_VERSION}
+            </button>
+          </div>
 
           {/* Desktop & Tablet Navigation */}
           <Suspense
@@ -246,6 +260,10 @@ export function Navbar({ showDevOutbox = false }: { showDevOutbox?: boolean }) {
         </div>
       </header>
 
+      <ReleaseNotesModal
+        open={releaseModalOpen}
+        onClose={() => setReleaseModalOpen(false)}
+      />
     </>
   );
 }
