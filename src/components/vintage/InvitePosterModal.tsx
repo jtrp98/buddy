@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 import { Copy, Check, Download, QrCode, X } from "lucide-react";
 import { ChristmasButton, ChristmasCard } from "@/components/ui/ChristmasUI";
@@ -94,7 +95,7 @@ export function InvitePosterModal({
     };
   }, [open, inviteUrl]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   const budgetText = formatBudgetWithPrefix(budgetType, budgetMin, budgetMax);
   const closesText = formatThaiDateTime(registrationClosesAt);
@@ -204,12 +205,15 @@ export function InvitePosterModal({
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="การ์ดเชิญเข้ากลุ่มและ QR Code"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto">
         <ChristmasCard elevated withStripe className="p-5 sm:p-6">
@@ -295,6 +299,7 @@ export function InvitePosterModal({
           </div>
         </ChristmasCard>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

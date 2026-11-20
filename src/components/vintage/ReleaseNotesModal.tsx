@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Sparkles, Tag, X } from "lucide-react";
 import { ChristmasCard } from "@/components/ui/ChristmasUI";
 import { CURRENT_VERSION, RELEASES } from "@/lib/releases";
@@ -21,11 +22,11 @@ export function ReleaseNotesModal({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-label="บันทึกการอัปเดตเวอร์ชัน (Release Notes)"
@@ -89,6 +90,7 @@ export function ReleaseNotesModal({
           </div>
         </ChristmasCard>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
